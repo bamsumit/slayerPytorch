@@ -55,7 +55,7 @@ class DataReader(object):
 	# NOTE! Matlab version loads positive spikes first, Python version loads negative spikes first
 	def bin_spikes(self, raw_spike_array):
 		n_inputs = self.net_params.input_x * self.net_params.input_y * self.net_params.input_channels
-		n_timesteps = len(range(self.net_params.t_start,self.net_params.t_end,self.net_params.t_res))
+		n_timesteps = int((self.net_params.t_end - self.net_params.t_start) / self.net_params.t_res)
 		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.uint8)
 		# print(binned_array.shape)
 		# Now do the actual binning
@@ -65,7 +65,7 @@ class DataReader(object):
 			ev_y = ev[1]
 			ev_p = ev[2]
 			ev_ts = ev[3]
-			time_position = int(float(ev_ts) / self.net_params.time_unit)
+			time_position = int(ev_ts / self.net_params.time_unit)
 			# TODO do truncation if ts over t_end, checks on x and y
 			input_position = ev_p * (self.net_params.input_x * self.net_params.input_y) + (ev_y * self.net_params.input_x) + ev_x
 			binned_array[input_position, time_position] = 1
