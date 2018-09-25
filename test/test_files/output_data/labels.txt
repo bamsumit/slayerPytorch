@@ -1,0 +1,2 @@
+#sample #class
+1	5

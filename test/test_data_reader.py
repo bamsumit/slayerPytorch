@@ -10,6 +10,7 @@ import csv
 import operator
 import unittest
 import numpy as np
+
 # Parameters for NMNIST
 net_params = SlayerParams()
 net_params.t_start = 0
@@ -19,6 +20,11 @@ net_params.time_unit = 1000 # How many units in one t_res (i.e. 1000 if we sampl
 net_params.input_x = 34
 net_params.input_y = 34
 net_params.input_channels = 2
+net_params.positive_spikes = 50
+net_params.negative_spikes = 10
+
+NMNIST_SIZE = 1000
+SKIP_TIME_CONSUMING = True # Skip tests that take a long time
 
 def matlab_equal_to_python_event(matlab_event, python_event):
 	# Cast to avoid type problems
@@ -47,40 +53,30 @@ def is_array_equal_to_file(array, filepath, has_header=False, compare_function=o
 
 class TestDataReaderFolders(unittest.TestCase):
 
-	def test_open_nonexisting_folder(self):
-		self.assertRaises(FileNotFoundError, DataReader, "nonexisting_folder", net_params)
-
 	def test_open_valid_folder(self):
 		try:
-			reader = DataReader(CURRENT_TEST_DIR + "/test_files/input_data", net_params)
+			reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", net_params)
 		except FileNotFoundError:
 			self.fail("Valid input folder not found")
 
-	def test_number_of_files_invalid_folder(self):
-		# Should return 0 files valid
-		reader = DataReader(CURRENT_TEST_DIR + "/test_files/input_validate", net_params)
-		self.assertEqual(len(reader.input_files), 0)
-
 	def test_input_files_ordering(self):
-		file_folder = CURRENT_TEST_DIR + "/test_files/input_data/"
-		reader = DataReader(file_folder, net_params)
-		self.assertEqual(reader.input_files[0], file_folder + '1.bs2')
+		file_folder = CURRENT_TEST_DIR + "/test_files/NMNISTsmall/"
+		reader = DataReader(file_folder, "train1K.txt", "test100.txt", net_params)
+		self.assertEqual(reader.dataset_path + str(reader.training_samples[0].number) + ".bs2", file_folder + '1.bs2')
 
 	def test_init_invalid_network_params(self):
 		invalid_params = SlayerParams()
-		self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/input_data", invalid_params)
+		self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", invalid_params)
 
 
-class TestDataReaderFunc(unittest.TestCase):
+class TestDataReaderInputFile(unittest.TestCase):
 
 	def setUp(self):
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/input_data", net_params)
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", net_params)
+		self.minibatch_size = 10
 
 	def test_number_of_files_valid_folder(self):
-		self.assertEqual(len(self.reader.input_files), 2)
-
-	def test_read_invalid_input_file(self):
-		self.assertRaises(FileNotFoundError, self.reader.read_file, "nonexisting_file.garbage")
+		self.assertEqual(len(self.reader.training_samples), NMNIST_SIZE)
 
 	def test_process_event(self):
 		# Actually first line of test file
@@ -91,14 +87,33 @@ class TestDataReaderFunc(unittest.TestCase):
 
 	# Check proper I/O
 	def test_read_input_file(self):
-		ev_array = self.reader.read_file(self.reader.input_files[0])
+		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
 		self.assertTrue(is_array_equal_to_file(ev_array, "/test_files/input_validate/1_raw_spikes.csv", has_header=True, compare_function=matlab_equal_to_python_event))
 
 	def test_spikes_binning(self):
-		ev_array = self.reader.read_file(self.reader.input_files[0])
+		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
 		binned_spikes = self.reader.bin_spikes(ev_array)
 		self.assertTrue(is_array_equal_to_file(binned_spikes, "/test_files/input_validate/1_binned_spikes.csv", compare_function=binned_file_comparator))
 
+	def test_high_level_binning(self):
+		binned_spikes = self.reader.read_and_bin(self.reader.training_samples[0])
+		self.assertTrue(is_array_equal_to_file(binned_spikes, "/test_files/input_validate/1_binned_spikes.csv", compare_function=binned_file_comparator))
+
+	def test_loaded_label_value(self):
+		self.assertEqual(self.reader.training_samples[0].label, 5)
+
+	def test_minibatch_building(self):
+		input_minibatch = self.reader.get_minibatch(self.minibatch_size)
+		minibatch_input_size = net_params.input_x * net_params.input_y * net_params.input_channels
+		minibatch_length = int(self.minibatch_size * (net_params.t_end - net_params.t_start) / net_params.t_res)
+		self.assertEqual(input_minibatch.shape, (minibatch_input_size, minibatch_length))
+
+	@unittest.skipIf(SKIP_TIME_CONSUMING == True, 'msg')
+	def test_minibatch_number(self):
+		# We expect 1000 / 10 minibatches before getting an error
+		for i in range(int(NMNIST_SIZE / self.minibatch_size)):
+			self.reader.get_minibatch(self.minibatch_size)
+		self.assertRaises(IndexError, self.reader.get_minibatch, self.minibatch_size)
 
 if __name__ == '__main__':
 	unittest.main()
