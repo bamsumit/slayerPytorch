@@ -11,19 +11,8 @@ import operator
 import unittest
 import numpy as np
 
-# Parameters for NMNIST
-net_params = SlayerParams()
-net_params.t_start = 0
-net_params.t_end = 350
-net_params.t_res = 1
-net_params.time_unit = 1000 # How many units in one t_res (i.e. 1000 if we sample in microseconds but simulate at millisecond steps)
-net_params.input_x = 34
-net_params.input_y = 34
-net_params.input_channels = 2
-net_params.positive_spikes = 50
-net_params.negative_spikes = 10
-
 NMNIST_SIZE = 1000
+NMNIST_NUM_CLASSES = 10
 SKIP_TIME_CONSUMING = True # Skip tests that take a long time
 
 def matlab_equal_to_python_event(matlab_event, python_event):
@@ -51,29 +40,42 @@ def is_array_equal_to_file(array, filepath, has_header=False, compare_function=o
 				return False
 	return True
 
+class TestSlayerParamsLoader(unittest.TestCase):
+
+	def setUp(self):
+		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
+
+	# Just test one
+	def test_load(self):
+		self.assertEqual(self.net_params['t_end'], 350)
+
 class TestDataReaderFolders(unittest.TestCase):
+
+	def setUp(self):
+		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
 
 	def test_open_valid_folder(self):
 		try:
-			reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", net_params)
+			reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
 		except FileNotFoundError:
 			self.fail("Valid input folder not found")
 
 	def test_input_files_ordering(self):
 		file_folder = CURRENT_TEST_DIR + "/test_files/NMNISTsmall/"
-		reader = DataReader(file_folder, "train1K.txt", "test100.txt", net_params)
+		reader = DataReader(file_folder, "train1K.txt", "test100.txt", self.net_params)
 		self.assertEqual(reader.dataset_path + str(reader.training_samples[0].number) + ".bs2", file_folder + '1.bs2')
 
-	def test_init_invalid_network_params(self):
-		invalid_params = SlayerParams()
-		self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", invalid_params)
+	# def test_init_invalid_network_params(self):
+	# 	invalid_params = SlayerParams()
+	# 	self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", invalid_params)
 
 
 class TestDataReaderInputFile(unittest.TestCase):
 
 	def setUp(self):
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", net_params)
-		self.minibatch_size = 10
+		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
+		self.minibatch_size = 12
 
 	def test_number_of_files_valid_folder(self):
 		self.assertEqual(len(self.reader.training_samples), NMNIST_SIZE)
@@ -103,9 +105,10 @@ class TestDataReaderInputFile(unittest.TestCase):
 		self.assertEqual(self.reader.training_samples[0].label, 5)
 
 	def test_minibatch_building(self):
+		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
 		input_minibatch = self.reader.get_minibatch(self.minibatch_size)
-		minibatch_input_size = net_params.input_x * net_params.input_y * net_params.input_channels
-		minibatch_length = int(self.minibatch_size * (net_params.t_end - net_params.t_start) / net_params.t_res)
+		minibatch_input_size = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
+		minibatch_length = int(self.minibatch_size * num_time_samples)
 		self.assertEqual(input_minibatch.shape, (minibatch_input_size, minibatch_length))
 
 	@unittest.skipIf(SKIP_TIME_CONSUMING == True, 'msg')
@@ -114,6 +117,18 @@ class TestDataReaderInputFile(unittest.TestCase):
 		for i in range(int(NMNIST_SIZE / self.minibatch_size)):
 			self.reader.get_minibatch(self.minibatch_size)
 		self.assertRaises(IndexError, self.reader.get_minibatch, self.minibatch_size)
+
+class TestDataReaderOutputSpikes(unittest.TestCase):
+
+	def setUp(self):
+		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/training/", "train12.txt", "test12_dummy.txt", self.net_params)
+		self.minibatch_size = 12
+
+	def test_load_output_spikes(self):
+		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
+		output_spikes = self.reader.read_output_spikes("test12_output_spikes.csv")
+		self.assertEqual(output_spikes.shape, (NMNIST_NUM_CLASSES, self.minibatch_size * num_time_samples))
 
 if __name__ == '__main__':
 	unittest.main()

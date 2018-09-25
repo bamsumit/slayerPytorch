@@ -1,6 +1,7 @@
 import os
 import csv
 import numpy as np
+import yaml
 from collections import namedtuple
 
 np_event_type = [('x', np.uint16), ('y', np.uint16), ('p', np.uint8), ('ts', np.uint32)]
@@ -9,30 +10,21 @@ DataSample = namedtuple('DataSample', ['number', 'label'])
 # Consider dictionary for easier iteration and better scalability
 class SlayerParams(object):
 
-	def __init__(self):
-		self.t_start = None
-		self.t_end = None
-		self.t_res = None
-		self.time_unit = None
-		self.input_x = None
-		self.input_y = None
-		self.input_channels = None
+	def __init__(self, parameter_file_path):
+		with open(parameter_file_path, 'r') as param_file:
+			self.parameters = yaml.load(param_file)
 
-		self.positive_spikes = None
-		self.negative_spikes = None
+	# Allow dictionary like access
+	def __getitem__(self, key):
+		return self.parameters[key]
 
-	def is_valid(self):
-		# Could do more checks here (positive, t_res < t_end - t_start)
-		return (self.t_start != None and self.t_end != None and self.t_res != None and self.time_unit != None and
-			self.input_x != None and self.input_y != None and self.input_channels != None and self.positive_spikes != None and
-			self.negative_spikes != None)
+	def __setitem__(self, key, value):
+		self.parameters[key] = value
 
 class DataReader(object):
 
 	def __init__(self, dataset_folder, training_file, testing_file, net_params):
 		self.EVENT_BIN_SIZE = 5
-		if not net_params.is_valid():
-			raise ValueError("Network parameters are not valid")
 		self.net_params = net_params
 		# Get files in folder
 		self.dataset_path = dataset_folder
@@ -70,8 +62,8 @@ class DataReader(object):
 
 	# NOTE! Matlab version loads positive spikes first, Python version loads negative spikes first
 	def bin_spikes(self, raw_spike_array):
-		n_inputs = self.net_params.input_x * self.net_params.input_y * self.net_params.input_channels
-		n_timesteps = int((self.net_params.t_end - self.net_params.t_start) / self.net_params.t_res)
+		n_inputs = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
+		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
 		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.uint8)
 		# print(binned_array.shape)
 		# Now do the actual binning
@@ -81,9 +73,9 @@ class DataReader(object):
 			ev_y = ev[1]
 			ev_p = ev[2]
 			ev_ts = ev[3]
-			time_position = int(ev_ts / self.net_params.time_unit)
+			time_position = int(ev_ts / self.net_params['time_unit'])
 			# TODO do truncation if ts over t_end, checks on x and y
-			input_position = ev_p * (self.net_params.input_x * self.net_params.input_y) + (ev_y * self.net_params.input_x) + ev_x
+			input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
 			binned_array[input_position, time_position] = 1
 		return binned_array
 
@@ -99,3 +91,11 @@ class DataReader(object):
 			spike_arrays[i] = self.read_and_bin(self.training_samples[self.input_file_position])
 			self.input_file_position += 1
 		return np.concatenate(spike_arrays, axis=1)
+
+	# Unclear whether this will really be needed, read target spikes in csv format
+	def read_output_spikes(self, filename):
+		return np.genfromtxt(self.dataset_path + filename, delimiter=",")
+
+	# For now not doing much
+	def reset_epoch(self):
+		self.input_file_position = 0
