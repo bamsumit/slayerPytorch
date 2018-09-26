@@ -6,8 +6,8 @@ CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
+from testing_utilities import is_array_equal_to_file
 import csv
-import operator
 import unittest
 import numpy as np
 
@@ -15,30 +15,13 @@ NMNIST_SIZE = 1000
 NMNIST_NUM_CLASSES = 10
 SKIP_TIME_CONSUMING = True # Skip tests that take a long time
 
-def matlab_equal_to_python_event(matlab_event, python_event):
+def matlab_equal_to_python_event(matlab_event, python_event, params = {}):
 	# Cast to avoid type problems
 	matlab_event = [int(e) for e in matlab_event]
 	python_event = [int(e) for e in python_event]
 	# Matlab is 1 indexed, Python is 0 indexed
 	return ((matlab_event[0] == (python_event[0] + 1)) and (matlab_event[1] == (python_event[1] + 1)) and
 		(matlab_event[2] == (python_event[2] + 1)) and (matlab_event[3] == (python_event[3])))
- 
-def binned_file_comparator(matlab_bin_line, python_bin_line):
-	for (matlab_entry, python_entry) in zip(matlab_bin_line, python_bin_line):
-		if int(matlab_entry) != int(python_entry):
-			return False
-	return True
-
-# Utility function to compare ndarray to one contained in CSV file generated separately (i.e. MATLAB)
-def is_array_equal_to_file(array, filepath, has_header=False, compare_function=operator.eq):
-	with open(CURRENT_TEST_DIR + filepath, 'r') as csvfile:
-		reader = csv.reader(csvfile)
-		# Skip header
-		if has_header: next(reader, None)
-		for (g_truth, read_r) in zip(reader, array):
-			if not compare_function(g_truth, read_r):
-				return False
-	return True
 
 class TestSlayerParamsLoader(unittest.TestCase):
 
@@ -90,16 +73,16 @@ class TestDataReaderInputFile(unittest.TestCase):
 	# Check proper I/O
 	def test_read_input_file(self):
 		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
-		self.assertTrue(is_array_equal_to_file(ev_array, "/test_files/input_validate/1_raw_spikes.csv", has_header=True, compare_function=matlab_equal_to_python_event))
+		self.assertTrue(is_array_equal_to_file(ev_array, CURRENT_TEST_DIR + "/test_files/input_validate/1_raw_spikes.csv", has_header=True, compare_function=matlab_equal_to_python_event))
 
 	def test_spikes_binning(self):
 		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
 		binned_spikes = self.reader.bin_spikes(ev_array)
-		self.assertTrue(is_array_equal_to_file(binned_spikes, "/test_files/input_validate/1_binned_spikes.csv", compare_function=binned_file_comparator))
+		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_high_level_binning(self):
 		binned_spikes = self.reader.read_and_bin(self.reader.training_samples[0])
-		self.assertTrue(is_array_equal_to_file(binned_spikes, "/test_files/input_validate/1_binned_spikes.csv", compare_function=binned_file_comparator))
+		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_loaded_label_value(self):
 		self.assertEqual(self.reader.training_samples[0].label, 5)
