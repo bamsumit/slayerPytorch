@@ -7,3 +7,7 @@ input_y: 34
 input_channels: 2
 positive_spikes: 50
 negative_spikes: 10
+
+
+# Activation function parameters
+sr_params: {tau: 1, epsilon: 0.01}
