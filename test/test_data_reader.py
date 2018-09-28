@@ -6,7 +6,7 @@ CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
-from testing_utilities import is_array_equal_to_file
+from testing_utilities import is_array_equal_to_file, iterable_float_pair_comparator
 import csv
 import unittest
 import numpy as np
@@ -81,18 +81,24 @@ class TestDataReaderInputFile(unittest.TestCase):
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_high_level_binning(self):
-		binned_spikes = self.reader.read_and_bin(self.reader.training_samples[0])
+		binned_spikes = self.reader.read_and_bin_np(self.reader.training_samples[0])
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
+
+	def test_read_input_spikes_ts_normalization(self):
+		FLOAT_EPS_TOL = 1e-6
+		self.reader.net_params['t_s'] = 2
+		binned_spikes = self.reader.read_and_bin_np(self.reader.training_samples[0])
+		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes_ts2.csv", 
+			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : FLOAT_EPS_TOL}))
 
 	def test_loaded_label_value(self):
 		self.assertEqual(self.reader.training_samples[0].label, 5)
 
 	def test_minibatch_building(self):
-		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
-		input_minibatch = self.reader.get_minibatch(self.minibatch_size)
-		minibatch_input_size = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
-		minibatch_length = int(self.minibatch_size * num_time_samples)
-		self.assertEqual(input_minibatch.shape, (minibatch_input_size, minibatch_length))
+		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
+		extracted_minibatch = self.reader.get_minibatch(self.minibatch_size)
+		target_shape = (self.minibatch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], num_time_samples)
+		self.assertEqual(extracted_minibatch.shape, target_shape)
 
 	@unittest.skipIf(SKIP_TIME_CONSUMING == True, 'msg')
 	def test_minibatch_number(self):
@@ -109,9 +115,10 @@ class TestDataReaderOutputSpikes(unittest.TestCase):
 		self.minibatch_size = 12
 
 	def test_load_output_spikes(self):
-		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
+		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		output_spikes = self.reader.read_output_spikes("test12_output_spikes.csv")
 		self.assertEqual(output_spikes.shape, (NMNIST_NUM_CLASSES, self.minibatch_size * num_time_samples))
+
 
 if __name__ == '__main__':
 	unittest.main()

@@ -6,6 +6,8 @@ def iterable_int_pair_comparator(iter_int1, iter_int2, params = {}):
 		if int(int1) != int(int2):
 			return False
 	return True
+	# Would this work?
+	# return np.array_equal(iter_int1, iter_int2)
 
 def iterable_float_pair_comparator(iter_float1, iter_float2, params = {}):
 	for (float1, float2) in zip_longest(iter_float1, iter_float2):

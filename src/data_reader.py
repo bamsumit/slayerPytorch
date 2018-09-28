@@ -2,6 +2,7 @@ import os
 import csv
 import numpy as np
 import yaml
+import torch
 from collections import namedtuple
 
 np_event_type = [('x', np.uint16), ('y', np.uint16), ('p', np.uint8), ('ts', np.uint32)]
@@ -63,8 +64,8 @@ class DataReader(object):
 	# NOTE! Matlab version loads positive spikes first, Python version loads negative spikes first
 	def bin_spikes(self, raw_spike_array):
 		n_inputs = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
-		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_res'])
-		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.uint8)
+		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
+		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.float32)
 		# print(binned_array.shape)
 		# Now do the actual binning
 		for ev in raw_spike_array:
@@ -73,23 +74,27 @@ class DataReader(object):
 			ev_y = ev[1]
 			ev_p = ev[2]
 			ev_ts = ev[3]
-			time_position = int(ev_ts / self.net_params['time_unit'])
+			time_position = int(ev_ts / (self.net_params['time_unit'] * self.net_params['t_s']))
 			# TODO do truncation if ts over t_end, checks on x and y
 			input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
-			binned_array[input_position, time_position] = 1
+			binned_array[input_position, time_position] = 1.0 / self.net_params['t_s']
 		return binned_array
 
-	# Higher level function, read and bin spikes
-	def read_and_bin(self, file):
+	# Higher level function, read and bin spikes, numpy version
+	def read_and_bin_np(self, file):
 		return self.bin_spikes(self.read_input_file(file))
 
 	# Function that should be used by the user, returns a minibatch
 	# TODO optimise memory (use double than necessary here)
 	def get_minibatch(self, batch_size):
+		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		spike_arrays = batch_size * [None]
 		for i in range(batch_size):
-			spike_arrays[i] = self.read_and_bin(self.training_samples[self.input_file_position])
+			spike_arrays[i] = self.read_and_bin_np(self.training_samples[self.input_file_position])
 			self.input_file_position += 1
+		minibatch_tensor = torch.tensor(spike_arrays)
+		return minibatch_tensor.reshape((batch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps))
+		
 		return np.concatenate(spike_arrays, axis=1)
 
 	# Unclear whether this will really be needed, read target spikes in csv format
