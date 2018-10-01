@@ -42,5 +42,5 @@ class SlayerTrainer(object):
 		# Convert to pytorch tensor
 		
 	def apply_srm_kernel(self, input_spikes, srm):
-		out = F.conv3d(input_spikes, srm, padding=(0,0,int(srm.shape[4]/2)))
+		out = F.conv3d(input_spikes, srm, padding=(0,0,int(srm.shape[4]/2))) * self.net_params['t_s']
 		return out
