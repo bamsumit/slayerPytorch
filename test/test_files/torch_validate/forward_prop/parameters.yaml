@@ -1,10 +1,10 @@
 t_start: 0
-t_end: 350
-t_s: 1
+t_end: 50
+t_s: 0.1
 time_unit: 1000 # How many units in one t_res (i.e. 1000 if we sample in microseconds but simulate at millisecond steps)
-input_x: 34
-input_y: 34
-input_channels: 2
+input_x: 25
+input_y: 1
+input_channels: 1
 positive_spikes: 50
 negative_spikes: 10
 batch_size: 10
@@ -12,5 +12,9 @@ batch_size: 10
 
 # Spike response parameters
 sr_params: {mult: 1, tau: 1, epsilon: 0.01}
+# TODO refractory response parameters
+ref_params: {mult: -20, tau: 1, epsilon: -0.01} 
 # Activation function parameters
-af_params: {theta: [10, 10, 10, 10], sigma : [0, 0, 0, 0], wScale : [0.5, 1, 1, 0]}
+af_params: {theta: 10, sigma : [0.05, 0.05, 0.05], wScale : [4, 4]}
+
+# Network architecture, FORMAT TO CONFIRM

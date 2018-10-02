@@ -5,10 +5,12 @@ CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
-from testing_utilities import iterable_float_pair_comparator, is_array_equal_to_file
+from testing_utilities import iterable_float_pair_comparator, iterable_int_pair_comparator, is_array_equal_to_file
 from slayer_train import SlayerTrainer
 import unittest
+import os
 from itertools import zip_longest
+import operator
 import numpy as np
 import torch
 
@@ -70,6 +72,47 @@ class TestSlayerSRM(unittest.TestCase):
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,175)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal_ts2.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : self.FLOAT_EPS_TOL}))
 
+class TestForwardProp(unittest.TestCase):
+
+	def setUp(self):
+		self.FILES_DIR = CURRENT_TEST_DIR + "/test_files/torch_validate/forward_prop/"
+		self.net_params = SlayerParams(self.FILES_DIR + "parameters.yaml")
+		self.trainer = SlayerTrainer(self.net_params)
+		self.srm = self.trainer.calculate_srm_kernel()
+		self.ref = self.trainer.calculate_ref_kernel()
+		self.compare_params = {'FLOAT_EPS_TOL' : 5e-2}
+		self.gtruth = self.read_forwardprop_gtruth()
+
+	def read_forwardprop_gtruth(self):
+		gtruth = {}
+		for file in os.listdir(self.FILES_DIR):
+			if file.endswith('.csv'):
+				gtruth[file[0:-4]] = torch.from_numpy(np.genfromtxt(self.FILES_DIR + file, delimiter=",", dtype=np.float32))
+		return gtruth
+
+	def test_ref_kernel_generation(self):
+		self.assertEqual(len(self.ref), 110)
+		# Check values
+		ref_gtruth = np.genfromtxt(self.FILES_DIR + "../refractory_kernel.csv", delimiter=",", dtype=np.float32)
+		self.assertTrue(iterable_float_pair_comparator(self.ref, ref_gtruth, self.compare_params))
+
+	def test_forward_prop_single_sample(self):
+		# Apply SRM to input spikes
+		a1 = self.trainer.apply_srm_kernel(self.gtruth['s1'].reshape(1,1,1,250,501), self.srm)
+		# Check value
+		self.assertTrue(iterable_float_pair_comparator(a1.flatten(), self.gtruth['a1'].flatten(), self.compare_params))
+		# Calculate membrane potential and spikes
+		(u2, s2) = self.trainer.calculate_membrane_potentials(a1.reshape(250,501), self.gtruth['W12'].reshape(25,250), self.ref, 
+			self.net_params['af_params']['sigma'][1])
+		# Check values
+		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), self.gtruth['u2'].flatten(), self.compare_params))
+		self.assertTrue(iterable_int_pair_comparator(s2.flatten(), self.gtruth['s2'].flatten(), self.compare_params))
+		# Just for safety do next layer
+		a2 = self.trainer.apply_srm_kernel(s2.reshape(1,1,1,25,501), self.srm)
+		self.assertTrue(iterable_float_pair_comparator(a2.flatten(), self.gtruth['a2'].flatten(), self.compare_params))
+		(u3, s3) = self.trainer.calculate_membrane_potentials(a2.reshape(25,501), self.gtruth['W23'].reshape(1,25), self.ref, 
+			self.net_params['af_params']['sigma'][2])
+		self.assertTrue(iterable_int_pair_comparator(s3.flatten(), self.gtruth['s3'].flatten(), self.compare_params))
 
 
 if __name__ == '__main__':

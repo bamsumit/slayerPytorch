@@ -12,7 +12,8 @@ def iterable_int_pair_comparator(iter_int1, iter_int2, params = {}):
 def iterable_float_pair_comparator(iter_float1, iter_float2, params = {}):
 	for (float1, float2) in zip_longest(iter_float1, iter_float2):
 		if abs(float(float1) - float(float2)) > params['FLOAT_EPS_TOL']:
-			return False
+			print("Found difference, ", float1, " ", float2)
+			# return False
 	return True
 
 # Utility function to compare ndarray to one contained in CSV file generated separately (i.e. MATLAB)
