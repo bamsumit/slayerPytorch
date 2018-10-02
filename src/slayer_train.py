@@ -25,7 +25,7 @@ class SlayerTrainer(object):
 
 	def _calculate_srm_kernel(self, tau, epsilon, t_end, t_s):
 		srm_kernel = []
-		for t in range(0, t_end, t_s):
+		for t in np.arange(0, t_end, t_s):
 			srm_val = t / tau * math.exp(1 - t / tau)
 			# Make sure we break after the peak
 			if srm_val < epsilon and t > tau:
