@@ -85,3 +85,11 @@ class SlayerTrainer(object):
 					potentials[n_id, p:p+resp_length] += no_spike_response[0:resp_length]
 			# print(num_spikes)
 		return (potentials, spikes)
+
+	def calculate_error_spiketrain(self, a, des_a):
+		return a - des_a
+
+	def calculate_pdf(self, membrane_potentials):
+		pdf = self.net_params['pdf_params']['scale'] / self.net_params['pdf_params']['tau'] * \
+			torch.exp(-abs(membrane_potentials - self.net_params['af_params']['theta']) / self.net_params['pdf_params']['tau']) 
+		return pdf

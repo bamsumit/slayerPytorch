@@ -75,44 +75,61 @@ class TestSlayerSRM(unittest.TestCase):
 class TestForwardProp(unittest.TestCase):
 
 	def setUp(self):
-		self.FILES_DIR = CURRENT_TEST_DIR + "/test_files/torch_validate/forward_prop/"
+		self.FILES_DIR = CURRENT_TEST_DIR + "/test_files/torch_validate/"
 		self.net_params = SlayerParams(self.FILES_DIR + "parameters.yaml")
 		self.trainer = SlayerTrainer(self.net_params)
 		self.srm = self.trainer.calculate_srm_kernel()
 		self.ref = self.trainer.calculate_ref_kernel()
 		self.compare_params = {'FLOAT_EPS_TOL' : 5e-2}
-		self.gtruth = self.read_forwardprop_gtruth()
+		self.fprop_gtruth = self.read_gtruth_folder(self.FILES_DIR + "forward_prop/")
+		self.bprop_gtruth = self.read_gtruth_folder(self.FILES_DIR + "back_prop/")
 
-	def read_forwardprop_gtruth(self):
+	def read_gtruth_folder(self, folder):
 		gtruth = {}
-		for file in os.listdir(self.FILES_DIR):
+		for file in os.listdir(folder):
 			if file.endswith('.csv'):
-				gtruth[file[0:-4]] = torch.from_numpy(np.genfromtxt(self.FILES_DIR + file, delimiter=",", dtype=np.float32))
+				gtruth[file[0:-4]] = torch.from_numpy(np.genfromtxt(folder + file, delimiter=",", dtype=np.float32))
 		return gtruth
 
 	def test_ref_kernel_generation(self):
 		self.assertEqual(len(self.ref), 110)
 		# Check values
-		ref_gtruth = np.genfromtxt(self.FILES_DIR + "../refractory_kernel.csv", delimiter=",", dtype=np.float32)
+		ref_gtruth = np.genfromtxt(self.FILES_DIR + "refractory_kernel.csv", delimiter=",", dtype=np.float32)
 		self.assertTrue(iterable_float_pair_comparator(self.ref, ref_gtruth, self.compare_params))
 
 	def test_forward_prop_single_sample(self):
 		# Apply SRM to input spikes
-		a1 = self.trainer.apply_srm_kernel(self.gtruth['s1'].reshape(1,1,1,250,501), self.srm)
+		a1 = self.trainer.apply_srm_kernel(self.fprop_gtruth['s1'].reshape(1,1,1,250,501), self.srm)
 		# Check value
-		self.assertTrue(iterable_float_pair_comparator(a1.flatten(), self.gtruth['a1'].flatten(), self.compare_params))
+		self.assertTrue(iterable_float_pair_comparator(a1.flatten(), self.fprop_gtruth['a1'].flatten(), self.compare_params))
 		# Calculate membrane potential and spikes
-		(u2, s2) = self.trainer.calculate_membrane_potentials(a1.reshape(250,501), self.gtruth['W12'].reshape(25,250), self.ref, 
+		(u2, s2) = self.trainer.calculate_membrane_potentials(a1.reshape(250,501), self.fprop_gtruth['W12'].reshape(25,250), self.ref, 
 			self.net_params['af_params']['sigma'][1])
 		# Check values
-		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), self.gtruth['u2'].flatten(), self.compare_params))
-		self.assertTrue(iterable_int_pair_comparator(s2.flatten(), self.gtruth['s2'].flatten(), self.compare_params))
+		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), self.fprop_gtruth['u2'].flatten(), self.compare_params))
+		self.assertTrue(iterable_int_pair_comparator(s2.flatten(), self.fprop_gtruth['s2'].flatten(), self.compare_params))
 		# Just for safety do next layer
 		a2 = self.trainer.apply_srm_kernel(s2.reshape(1,1,1,25,501), self.srm)
-		self.assertTrue(iterable_float_pair_comparator(a2.flatten(), self.gtruth['a2'].flatten(), self.compare_params))
-		(u3, s3) = self.trainer.calculate_membrane_potentials(a2.reshape(25,501), self.gtruth['W23'].reshape(1,25), self.ref, 
+		self.assertTrue(iterable_float_pair_comparator(a2.flatten(), self.fprop_gtruth['a2'].flatten(), self.compare_params))
+		(u3, s3) = self.trainer.calculate_membrane_potentials(a2.reshape(25,501), self.fprop_gtruth['W23'].reshape(1,25), self.ref, 
 			self.net_params['af_params']['sigma'][2])
-		self.assertTrue(iterable_int_pair_comparator(s3.flatten(), self.gtruth['s3'].flatten(), self.compare_params))
+		self.assertTrue(iterable_int_pair_comparator(s3.flatten(), self.fprop_gtruth['s3'].flatten(), self.compare_params))
+		self.assertTrue(iterable_int_pair_comparator(u3.flatten(), self.fprop_gtruth['u3'].flatten(), self.compare_params))
+		# And final activations
+		a3 = self.trainer.apply_srm_kernel(s3.reshape(1,1,1,1,501), self.srm)
+		self.assertTrue(iterable_float_pair_comparator(a3.flatten(), self.fprop_gtruth['a3'].flatten(), self.compare_params))
+
+	def test_spiketrain_error_calculation(self):
+		# Error is difference of the activations in the last layer, calculate desired activations first
+		des_a = self.trainer.apply_srm_kernel(self.bprop_gtruth['des_s'].reshape(1,1,1,1,501), self.srm)
+		self.assertTrue(iterable_float_pair_comparator(des_a.flatten(), self.bprop_gtruth['des_a'].flatten(), self.compare_params))
+		error = self.trainer.calculate_error_spiketrain(self.fprop_gtruth['a3'], des_a)
+		self.assertTrue(iterable_float_pair_comparator(error.flatten(), self.bprop_gtruth['e3'].flatten(), self.compare_params))
+
+	def test_pdf_func(self):
+		pdf = self.trainer.calculate_pdf(self.fprop_gtruth['u3'])
+		self.assertTrue(iterable_float_pair_comparator(pdf.flatten(), self.bprop_gtruth['rho3'].flatten(), self.compare_params))
+
 
 
 if __name__ == '__main__':
