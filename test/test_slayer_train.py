@@ -134,9 +134,15 @@ class TestForwardProp(unittest.TestCase):
 		self.assertTrue(iterable_float_pair_comparator(error.flatten(), self.bprop_gtruth['e3'].flatten(), self.compare_params))
 
 	def test_pdf_func(self):
-		pdf = self.spike_func.calculate_pdf(self.fprop_gtruth['u3'], self.net_params)
+		pdf = self.spike_func.calculate_pdf(self.fprop_gtruth['u3'], self.net_params['af_params']['theta'],
+			self.net_params['pdf_params']['tau'], self.net_params['pdf_params']['scale'])
 		self.assertTrue(iterable_float_pair_comparator(pdf.flatten(), self.bprop_gtruth['rho3'].flatten(), self.compare_params))
 
+	def test_l2_loss(self):
+		l2loss = self.trainer.calculate_l2_loss(self.fprop_gtruth['a3'], self.bprop_gtruth['des_a'])
+		self.assertTrue(abs(l2loss - 7.81225) < self.compare_params['FLOAT_EPS_TOL'])
+
+# from torchviz import make_dot
 
 class TestSlayerNet(unittest.TestCase):
 
@@ -151,7 +157,7 @@ class TestSlayerNet(unittest.TestCase):
 		self.input_spikes = self.fprop_gtruth['s1'].reshape(1,1,1,250,501)
 		des_spikes = self.bprop_gtruth['des_s'].reshape(1,1,1,1,501)
 		self.des_activations = self.trainer.apply_srm_kernel(des_spikes, self.srm)
-		self.compare_params = {'FLOAT_EPS_TOL' : 1e-3}
+		self.compare_params = {'FLOAT_EPS_TOL' : 2e-3}
 
 	def test_forward_pass(self):
 		self.net.fc1.weight = torch.nn.Parameter(self.fprop_gtruth['W12'].reshape(25,1,1,250,1))
@@ -160,22 +166,35 @@ class TestSlayerNet(unittest.TestCase):
 		self.assertEqual(out_spikes.shape, (1,1,1,1,501))
 		self.assertTrue(iterable_float_pair_comparator(self.fprop_gtruth['s3'].flatten(), out_spikes.flatten(), self.compare_params))
 
-
-	# def test_gradients_calculation(self):
-	# 	# Assign weights manually
-	# 	self.net.fc1.weight = torch.nn.Parameter(self.fprop_gtruth['W12'].reshape(25,1,1,250,1))
-	# 	self.net.fc2.weight = torch.nn.Parameter(self.fprop_gtruth['W23'].reshape(1,1,1,25,1))
-	# 	# Forward prop
-	# 	output_spikes = self.net.forward(self.input_spikes)
-
-	# 	print(self.net.fc1.weight.grad)
-
-		
+	def test_gradients_calculation(self):
+		# Assign weights manually
+		self.net.fc1.weight = torch.nn.Parameter(self.fprop_gtruth['W12'].reshape(25,1,1,250,1))
+		self.net.fc2.weight = torch.nn.Parameter(self.fprop_gtruth['W23'].reshape(1,1,1,25,1))
+		# Forward prop
+		out_spikes = self.net.forward(self.input_spikes)
+		# Activations
+		output_activations = self.trainer.apply_srm_kernel(out_spikes, self.srm)
+		# Calculate l2 loss
+		l2loss = self.trainer.calculate_l2_loss(output_activations, self.des_activations)
+		l2loss.backward()
+		self.assertTrue(iterable_float_pair_comparator(self.net.fc2.weight.grad.flatten(), self.bprop_gtruth['Wgrad2'].flatten(), self.compare_params))
+		self.assertTrue(iterable_float_pair_comparator(self.net.fc1.weight.grad.flatten(), self.bprop_gtruth['Wgrad1'].flatten(), self.compare_params))
 
 	# def test_training(self):
-	# 	self.input_spikes = self.fprop_gtruth['s1'].reshape(1,1,1,250,501)
-	# 	criterion = torch.nn.MSELoss()
-	# 	optimizer = torch.optim()
+	# 	self.net.fc1.weight = torch.nn.Parameter(self.fprop_gtruth['W12'].reshape(25,1,1,250,1))
+	# 	self.net.fc2.weight = torch.nn.Parameter(self.fprop_gtruth['W23'].reshape(1,1,1,25,1))
+	# 	MAX_ITER = 20000
+	# 	optimizer = torch.optim.Adam(self.net.parameters(), lr=0.01)
+	# 	for i in range(MAX_ITER):
+	# 		optimizer.zero_grad()
+	# 		outputs = self.net(self.input_spikes)
+	# 		output_activations = self.trainer.apply_srm_kernel(outputs, self.srm)
+	# 		loss = self.trainer.calculate_l2_loss(output_activations, self.des_activations)
+	# 		print("iteration n.", i, "loss = ", float(loss.detach()))
+	# 		loss.backward()
+	# 		if loss == 0:
+	# 			break
+	# 		optimizer.step()
 
 
 if __name__ == '__main__':

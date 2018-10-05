@@ -22,8 +22,6 @@ class SlayerNet(nn.Module):
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
 
     def forward(self, x):
-        # x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        # x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
         # Apply srm to input spikes
         x = self.trainer.apply_srm_kernel(x, self.srm)
         # Linear + activation
@@ -33,26 +31,24 @@ class SlayerNet(nn.Module):
         # # Apply second layer
         x = SpikeFunc.apply(self.fc2(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
         return x
-        x = x.view(-1, 320)
-        x = F.relu(self.fc1(x))
-        x = F.dropout(x, training=self.training)
-        x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
 
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
 	def forward(ctx, multiplied_activations, net_params, ref, sigma):
 		# Calculate membrane potentials
-		# TODO reduce number of saved params 
 		(potentials, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, net_params, ref, sigma)
-		ctx.save_for_backward(potentials)
+		scale = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['scale']]), requires_grad=False)
+		tau = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['tau']]), requires_grad=False)
+		theta = torch.autograd.Variable(torch.Tensor([net_params['af_params']['theta']]), requires_grad=False)
+		ctx.save_for_backward(potentials, theta, tau, scale)
 		return spikes
 
 	@staticmethod
-	def backward(ctx, grad_output, net_params):
-		(membrane_potentials, net_params) = ctx.saved_tensors
-		return SpikeFunc.calculate_pdf(membrane_potentials)
+	def backward(ctx, grad_output):
+		(membrane_potentials, theta, tau, scale) = ctx.saved_tensors
+		# Don't return any gradient for parameters
+		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, theta, tau, scale), None, None, None)
 
 	@staticmethod
 	def apply_weights(activations, weights):
@@ -81,7 +77,6 @@ class SpikeFunc(torch.autograd.Function):
 				resp_length = min(potentials.shape[-1] - p, ref_length)
 				if spike_positions[:,n_id,0,0] > 0:
 					# Have spike here
-					# print("got spike")
 					potentials[:,n_id,0,0,p:p+resp_length] += have_spike_response[0:resp_length]
 				else:
 					# Didn't have a spike
@@ -90,9 +85,8 @@ class SpikeFunc(torch.autograd.Function):
 		return (potentials, spikes)
 
 	@staticmethod
-	def calculate_pdf(membrane_potentials, net_params):
-		pdf = net_params['pdf_params']['scale'] / net_params['pdf_params']['tau'] * \
-			torch.exp(-abs(membrane_potentials - net_params['af_params']['theta']) / net_params['pdf_params']['tau']) 
+	def calculate_pdf(membrane_potentials, theta, tau, scale):
+		pdf = scale / tau * torch.exp(-abs(membrane_potentials - theta) / tau)
 		return pdf
 
 class SlayerTrainer(object):
@@ -146,3 +140,6 @@ class SlayerTrainer(object):
 
 	def calculate_error_spiketrain(self, a, des_a):
 		return a - des_a
+
+	def calculate_l2_loss(self, a, des_a):
+		return torch.sum(self.calculate_error_spiketrain(a, des_a) ** 2) / 2 * self.net_params['t_s']
