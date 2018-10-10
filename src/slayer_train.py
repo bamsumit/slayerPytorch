@@ -4,6 +4,7 @@ from data_reader import SlayerParams
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import slayer_cuda
 
 
 class SlayerNet(nn.Module):
@@ -83,6 +84,11 @@ class SpikeFunc(torch.autograd.Function):
 					potentials[:,n_id,0,0,p:p+resp_length] += no_spike_response[0:resp_length]
 			# print(num_spikes)
 		return (potentials, spikes)
+
+	# Call the cuda wrapper, Note! sigma is not implemented
+	@staticmethod
+	def get_spikes_cuda(potentials, spikes, ref, theta, t_s):
+		return slayer_cuda.get_spikes_cuda(potentials, spikes, ref, theta, t_s)
 
 	@staticmethod
 	def calculate_pdf(membrane_potentials, theta, tau, scale):
