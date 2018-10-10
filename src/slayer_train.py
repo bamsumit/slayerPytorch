@@ -17,39 +17,41 @@ class SlayerNet(nn.Module):
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 250 -> 25
         self.fc1 = nn.Conv3d(1, 25, (1,250,1), bias=False)
+        self.rho2 = torch.tensor((1,1,1,250,501), dtype=torch.float32)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 25 -> 1
         self.fc2 = nn.Conv3d(1, 1, (1,25,1), bias=False)
+        self.rho3 = torch.tensor((1,1,1,25,501), dtype=torch.float32)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
 
     def forward(self, x):
         # Apply srm to input spikes
         x = self.trainer.apply_srm_kernel(x, self.srm)
         # Linear + activation
-        x = SpikeFunc.apply(self.fc1(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
+        x = SpikeFunc.apply(self.fc1(x), self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
         # Apply srm to middle layer spikes
         x = self.trainer.apply_srm_kernel(x.view(1,1,1,25,501), self.srm)
         # # Apply second layer
-        x = SpikeFunc.apply(self.fc2(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
+        x = SpikeFunc.apply(self.fc2(x), self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
         return x
 
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
-	def forward(ctx, multiplied_activations, net_params, ref, sigma):
+	def forward(ctx, multiplied_activations, rho, net_params, ref, sigma):
 		# Calculate membrane potentials
 		(potentials, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, net_params, ref, sigma)
 		scale = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['scale']]), requires_grad=False)
 		tau = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['tau']]), requires_grad=False)
 		theta = torch.autograd.Variable(torch.Tensor([net_params['af_params']['theta']]), requires_grad=False)
-		ctx.save_for_backward(potentials, theta, tau, scale)
+		ctx.save_for_backward(potentials, rho, theta, tau, scale)
 		return spikes
 
 	@staticmethod
 	def backward(ctx, grad_output):
-		(membrane_potentials, theta, tau, scale) = ctx.saved_tensors
+		(membrane_potentials, rho, theta, tau, scale) = ctx.saved_tensors
 		# Don't return any gradient for parameters
-		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, theta, tau, scale), None, None, None)
+		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, rho, theta, tau, scale), None, None, None, None)
 
 	@staticmethod
 	def apply_weights(activations, weights):
@@ -91,9 +93,9 @@ class SpikeFunc(torch.autograd.Function):
 		return slayer_cuda.get_spikes_cuda(potentials, spikes, ref, net_params['af_params']['theta'], net_params['t_s'])
 
 	@staticmethod
-	def calculate_pdf(membrane_potentials, theta, tau, scale):
-		pdf = scale / tau * torch.exp(-abs(membrane_potentials - theta) / tau)
-		return pdf
+	def calculate_pdf(membrane_potentials, rho, theta, tau, scale):
+		rho = scale / tau * torch.exp(-abs(membrane_potentials - theta) / tau)
+		return rho
 
 class SlayerTrainer(object):
 

@@ -134,7 +134,8 @@ class TestForwardProp(unittest.TestCase):
 		self.assertTrue(iterable_float_pair_comparator(error.flatten(), self.bprop_gtruth['e3'].flatten(), self.compare_params))
 
 	def test_pdf_func(self):
-		pdf = self.spike_func.calculate_pdf(self.fprop_gtruth['u3'], self.net_params['af_params']['theta'],
+		pdf = torch.zeros(self.fprop_gtruth['u3'].shape)
+		pdf = self.spike_func.calculate_pdf(self.fprop_gtruth['u3'], pdf, self.net_params['af_params']['theta'],
 			self.net_params['pdf_params']['tau'], self.net_params['pdf_params']['scale'])
 		self.assertTrue(iterable_float_pair_comparator(pdf.flatten(), self.bprop_gtruth['rho3'].flatten(), self.compare_params))
 
