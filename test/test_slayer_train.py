@@ -212,9 +212,7 @@ class TestCustomCudaKernel(unittest.TestCase):
 		pots_gtruth = self.fprop_gtruth['u2_sigma0'].reshape(1,25,1,1,501)
 		spikes_gtruth = self.fprop_gtruth['s2_sigma0'].reshape(1,1,1,25,501)
 		spikes_out = torch.zeros(spikes_gtruth.shape, dtype=torch.float32).to(self.cuda)
-		t_s = torch.FloatTensor([self.net_params['t_s']])
-		theta = torch.FloatTensor([self.net_params['af_params']['theta']])
-		(u2, s2) = SpikeFunc.get_spikes_cuda(input_pots, spikes_out, self.ref, theta, t_s)
+		(u2, s2) = SpikeFunc.get_spikes_cuda(input_pots, spikes_out, self.ref, self.net_params)
 		# Check for correctness
 		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), pots_gtruth.flatten(), self.compare_params))
 		self.assertTrue(iterable_float_pair_comparator(s2.flatten(), spikes_gtruth.flatten(), self.compare_params))

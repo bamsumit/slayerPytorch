@@ -10,17 +10,17 @@
 std::vector<at::Tensor> getSpikesCuda(
 	at::Tensor d_u,
 	at::Tensor d_s,
-	const at::Tensor d_nu,
-	at::Tensor theta,
-	at::Tensor Ts);
+	const at::Tensor& d_nu,
+	const float theta,
+	const float Ts);
 
 // C++ - Python interface
 std::vector<at::Tensor> get_spikes_cuda(
 	at::Tensor d_u,
 	at::Tensor d_s,
-	const at::Tensor d_nu,
-	at::Tensor theta,
-	at::Tensor Ts)
+	const at::Tensor& d_nu,
+	const float theta,
+	const float Ts)
 	{
 		CHECK_INPUT(d_u);
 		CHECK_INPUT(d_s);

@@ -11,7 +11,8 @@
 
 #include <torch/torch.h>
 
-__global__ void getSpikesKernel(float* d_s, float* d_u, const float* d_nu, unsigned nBatch, unsigned nNeurons, unsigned nuSize, unsigned batchStride, unsigned Ns, float theta, float Ts)
+__global__ void getSpikesKernel(float* __restrict__ d_s, float* __restrict__ d_u, const float* __restrict__ d_nu, unsigned nBatch, \
+								unsigned nNeurons, unsigned nuSize, unsigned batchStride, unsigned Ns, float theta, float Ts)
 {
 	unsigned batchID  = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned neuronID = blockIdx.y * blockDim.y + threadIdx.y;
@@ -64,14 +65,14 @@ __global__ void evalRhoKernel(float* d_rho, const float* d_u, float theta, float
 	d_rho[linearID] = 1/tau * exp(-fabs(theta - d_u[linearID])/tau);
 }
 
-std::vector<at::Tensor> getSpikesCuda(at::Tensor d_u, at::Tensor d_s, const at::Tensor d_nu, at::Tensor theta, at::Tensor Ts)
+std::vector<at::Tensor> getSpikesCuda(at::Tensor d_u, at::Tensor d_s, const at::Tensor& d_nu, const float theta, const float Ts)
 {
 	unsigned nuSize = d_nu.size(-1);
 	unsigned Ns = d_u.size(-1);
 	// Parallelization is done in neuron dimension, run multiple batches through neuron duplication
 	unsigned nNeurons = d_u.size(0) * d_u.size(1) * d_u.size(2) * d_u.size(3);
 	unsigned batchStride = Ns;
-	getSpikes(d_s.data<float>(), d_u.data<float>(), d_nu.data<float>(), nNeurons, nuSize, Ns, batchStride, *theta.data<float>(), *Ts.data<float>());
+	getSpikes(d_s.data<float>(), d_u.data<float>(), d_nu.data<float>(), nNeurons, nuSize, Ns, batchStride, theta, Ts);
 	return {d_u, d_s};
 }
 

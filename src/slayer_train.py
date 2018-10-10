@@ -87,8 +87,8 @@ class SpikeFunc(torch.autograd.Function):
 
 	# Call the cuda wrapper, Note! sigma is not implemented
 	@staticmethod
-	def get_spikes_cuda(potentials, spikes, ref, theta, t_s):
-		return slayer_cuda.get_spikes_cuda(potentials, spikes, ref, theta, t_s)
+	def get_spikes_cuda(potentials, spikes, ref, net_params):
+		return slayer_cuda.get_spikes_cuda(potentials, spikes, ref, net_params['af_params']['theta'], net_params['t_s'])
 
 	@staticmethod
 	def calculate_pdf(membrane_potentials, theta, tau, scale):
