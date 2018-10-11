@@ -100,7 +100,8 @@ class TestForwardProp(unittest.TestCase):
 
 	def test_membrane_potential_shape(self):
 		pots = self.spike_func.apply_weights(self.fprop_gtruth['a1'].reshape(1,250,1,1,501), self.fprop_gtruth['W12'].reshape(25,250,1,1,1))
-		(u2, s2) = self.spike_func.calculate_membrane_potentials(pots, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
+		s2 = torch.zeros(pots.shape, dtype=torch.float32)
+		(u2, s2) = self.spike_func.calculate_membrane_potentials(pots, s2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
 		self.assertEqual(u2.shape, (1,25,1,1,501))
 
 
@@ -111,7 +112,8 @@ class TestForwardProp(unittest.TestCase):
 		self.assertTrue(iterable_float_pair_comparator(a1.flatten(), self.fprop_gtruth['a1'].flatten(), self.compare_params))
 		# Calculate membrane potential and spikes
 		pots = self.spike_func.apply_weights(a1.reshape(1,250,1,1,501), self.fprop_gtruth['W12'].reshape(25,250,1,1,1))
-		(u2, s2) = self.spike_func.calculate_membrane_potentials(pots, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
+		s2 = torch.zeros(pots.shape, dtype=torch.float32)
+		(u2, s2) = self.spike_func.calculate_membrane_potentials(pots, s2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
 		# Check values
 		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), self.fprop_gtruth['u2'].flatten(), self.compare_params))
 		self.assertTrue(iterable_int_pair_comparator(s2.flatten(), self.fprop_gtruth['s2'].flatten(), self.compare_params))
@@ -119,7 +121,8 @@ class TestForwardProp(unittest.TestCase):
 		a2 = self.trainer.apply_srm_kernel(s2.reshape(1,1,1,25,501), self.srm)
 		self.assertTrue(iterable_float_pair_comparator(a2.flatten(), self.fprop_gtruth['a2'].flatten(), self.compare_params))
 		pots = self.spike_func.apply_weights(a2.reshape(1,25,1,1,501), self.fprop_gtruth['W23'].reshape(1,25,1,1,1))
-		(u3, s3) = self.spike_func.calculate_membrane_potentials(pots, self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
+		s3 = torch.zeros(pots.shape, dtype=torch.float32)
+		(u3, s3) = self.spike_func.calculate_membrane_potentials(pots, s3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
 		self.assertTrue(iterable_int_pair_comparator(s3.flatten(), self.fprop_gtruth['s3'].flatten(), self.compare_params))
 		self.assertTrue(iterable_int_pair_comparator(u3.flatten(), self.fprop_gtruth['u3'].flatten(), self.compare_params))
 		# And final activations
@@ -197,19 +200,21 @@ class TestSlayerNet(unittest.TestCase):
 	# 			break
 	# 		optimizer.step()
 
+
 class TestCustomCudaKernel(unittest.TestCase):
 
 	def setUp(self):
 		self.FILES_DIR = CURRENT_TEST_DIR + "/test_files/torch_validate/"
 		self.net_params = SlayerParams(self.FILES_DIR + "parameters.yaml")
 		self.fprop_gtruth = read_gtruth_folder(self.FILES_DIR + "forward_prop/")
-		self.trainer = SlayerTrainer(self.net_params)
-		self.compare_params = {'FLOAT_EPS_TOL' : 5e-2}
+		self.bprop_gtruth = read_gtruth_folder(self.FILES_DIR + "back_prop/")
 		self.cuda = torch.device('cuda')
-		self.ref = self.trainer.calculate_ref_kernel().to(self.cuda)
+		self.trainer = SlayerTrainer(self.net_params, self.cuda)
+		self.compare_params = {'FLOAT_EPS_TOL' : 5e-2}
+		self.ref = self.trainer.calculate_ref_kernel()
 
 	def test_cuda_spikefunction(self):
-		input_pots = SpikeFunc.apply_weights(self.fprop_gtruth['a1'].reshape(1,250,1,1,501), self.fprop_gtruth['W12'].reshape(25,250,1,1,1)).to(self.cuda)
+		input_pots = SpikeFunc.apply_weights(self.fprop_gtruth['a1'].reshape(1,1,1,250,501), self.fprop_gtruth['W12'].reshape(25,1,1,250,1)).to(self.cuda)
 		pots_gtruth = self.fprop_gtruth['u2_sigma0'].reshape(1,25,1,1,501)
 		spikes_gtruth = self.fprop_gtruth['s2_sigma0'].reshape(1,1,1,25,501)
 		spikes_out = torch.zeros(spikes_gtruth.shape, dtype=torch.float32).to(self.cuda)
@@ -217,6 +222,25 @@ class TestCustomCudaKernel(unittest.TestCase):
 		# Check for correctness
 		self.assertTrue(iterable_float_pair_comparator(u2.flatten(), pots_gtruth.flatten(), self.compare_params))
 		self.assertTrue(iterable_float_pair_comparator(s2.flatten(), spikes_gtruth.flatten(), self.compare_params))
+
+	# def test_training(self):
+	# 	net = SlayerNet(self.net_params, device=self.cuda)
+	# 	input_spikes = self.fprop_gtruth['s1'].reshape(1,1,1,250,501).to(self.cuda)
+	# 	des_spikes = self.bprop_gtruth['des_s'].reshape(1,1,1,1,501).to(self.cuda)
+	# 	srm = self.trainer.calculate_srm_kernel()
+	# 	des_activations = self.trainer.apply_srm_kernel(des_spikes, srm)
+	# 	MAX_ITER = 20000
+	# 	optimizer = torch.optim.Adam(net.parameters(), lr=0.01)
+	# 	for i in range(MAX_ITER):
+	# 		optimizer.zero_grad()
+	# 		outputs = net(input_spikes)
+	# 		output_activations = self.trainer.apply_srm_kernel(outputs, srm)
+	# 		loss = self.trainer.calculate_l2_loss(output_activations, des_activations)
+	# 		print("iteration n.", i, "loss = ", float(loss.detach()))
+	# 		loss.backward()
+	# 		if loss == 0:
+	# 			break
+	# 		optimizer.step()
 
 
 

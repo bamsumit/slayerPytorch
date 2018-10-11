@@ -9,49 +9,56 @@ import slayer_cuda
 
 class SlayerNet(nn.Module):
 
-    def __init__(self, net_params, weights_init = [4,4]):
+    def __init__(self, net_params, weights_init = [4,4], device=torch.device('cpu')):
         super(SlayerNet, self).__init__()
         self.net_params = net_params
-        self.trainer = SlayerTrainer(net_params)
+        self.trainer = SlayerTrainer(net_params, device)
         self.srm = self.trainer.calculate_srm_kernel()
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 250 -> 25
-        self.fc1 = nn.Conv3d(1, 25, (1,250,1), bias=False)
-        self.rho2 = torch.tensor((1,1,1,250,501), dtype=torch.float32)
+        self.fc1 = nn.Conv3d(1, 25, (1,250,1), bias=False).to(device)
+        self.rho2 = torch.zeros((1,25,1,1,501), dtype=torch.float32, device=device)
+        self.s2 = torch.zeros((1,25,1,1,501), dtype=torch.float32, device=device)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 25 -> 1
-        self.fc2 = nn.Conv3d(1, 1, (1,25,1), bias=False)
-        self.rho3 = torch.tensor((1,1,1,25,501), dtype=torch.float32)
+        self.fc2 = nn.Conv3d(1, 1, (1,25,1), bias=False).to(device)
+        self.rho3 = torch.zeros((1,1,1,1,501), dtype=torch.float32, device=device)
+        self.s3 = torch.zeros((1,1,1,1,501), dtype=torch.float32, device=device)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
+        self.device=device
 
     def forward(self, x):
         # Apply srm to input spikes
         x = self.trainer.apply_srm_kernel(x, self.srm)
         # Linear + activation
-        x = SpikeFunc.apply(self.fc1(x), self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
+        x = self.fc1(x)
+        x = SpikeFunc.apply(x, self.s2, self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
         # Apply srm to middle layer spikes
         x = self.trainer.apply_srm_kernel(x.view(1,1,1,25,501), self.srm)
         # # Apply second layer
-        x = SpikeFunc.apply(self.fc2(x), self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1])
+        x = SpikeFunc.apply(self.fc2(x), self.s3, self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
         return x
 
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
-	def forward(ctx, multiplied_activations, rho, net_params, ref, sigma):
+	def forward(ctx, multiplied_activations, spikes, rho, net_params, ref, sigma, device=torch.device('cpu')):
 		# Calculate membrane potentials
-		(potentials, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, net_params, ref, sigma)
-		scale = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['scale']]), requires_grad=False)
-		tau = torch.autograd.Variable(torch.Tensor([net_params['pdf_params']['tau']]), requires_grad=False)
-		theta = torch.autograd.Variable(torch.Tensor([net_params['af_params']['theta']]), requires_grad=False)
-		ctx.save_for_backward(potentials, rho, theta, tau, scale)
+		if (device == torch.device('cpu')):
+			(multiplied_activations, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, spikes, net_params, ref, sigma)
+		else:
+			(multiplied_activations, spikes) = SpikeFunc.get_spikes_cuda(multiplied_activations, spikes, ref, net_params)
+		scale = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['scale'], device=device, dtype=torch.float32), requires_grad=False)
+		tau = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['tau'], device=device, dtype=torch.float32), requires_grad=False)
+		theta = torch.autograd.Variable(torch.tensor(net_params['af_params']['theta'], device=device, dtype=torch.float32), requires_grad=False)
+		ctx.save_for_backward(multiplied_activations, rho, theta, tau, scale)
 		return spikes
 
 	@staticmethod
 	def backward(ctx, grad_output):
 		(membrane_potentials, rho, theta, tau, scale) = ctx.saved_tensors
 		# Don't return any gradient for parameters
-		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, rho, theta, tau, scale), None, None, None, None)
+		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, rho, theta, tau, scale), None, None, None, None, None, None)
 
 	@staticmethod
 	def apply_weights(activations, weights):
@@ -60,9 +67,8 @@ class SpikeFunc(torch.autograd.Function):
 
 	# Input is potentials after matrix multiplication
 	@staticmethod
-	def calculate_membrane_potentials(potentials, net_params, ref, sigma):
+	def calculate_membrane_potentials(potentials, spikes, net_params, ref, sigma):
 		# Need float32 to do convolution later
-		spikes = torch.zeros(potentials.shape, dtype=torch.float32)
 		ref_length = len(ref)
 		# Iterate over timestamps, NOTE, check if iterating in this dimension is a bottleneck
 		for p in range(potentials.shape[-1]):
@@ -99,16 +105,17 @@ class SpikeFunc(torch.autograd.Function):
 
 class SlayerTrainer(object):
 
-	def __init__(self, net_params):
+	def __init__(self, net_params, device=torch.device('cpu'), data_type=np.float32):
+		self.device = device
 		self.net_params = net_params
 		# Data type used for membrane potentials, weights
-		self.data_type = np.float32
+		self.data_type = data_type
 
 	def calculate_srm_kernel(self):
 		single_kernel = self._calculate_srm_kernel(self.net_params['sr_params']['mult'], self.net_params['sr_params']['tau'],
 			self.net_params['sr_params']['epsilon'], self.net_params['t_end'], self.net_params['t_s'])
 		concatenated_srm =  self._concatenate_srm_kernel(single_kernel, self.net_params['input_channels'])
-		return torch.from_numpy(concatenated_srm)
+		return torch.tensor(concatenated_srm, device=self.device)
 
 	# Generate kernels that will act on a single channel (0 outside of diagonals)
 	def _concatenate_srm_kernel(self, kernel, n_channels):
@@ -140,11 +147,10 @@ class SlayerTrainer(object):
 	def calculate_ref_kernel(self):
 		ref_kernel = self._calculate_eps_func(self.net_params['ref_params']['mult'], self.net_params['ref_params']['tau'],
 			self.net_params['ref_params']['epsilon'], self.net_params['t_end'], self.net_params['t_s'])
-		return torch.FloatTensor(ref_kernel)
-
+		return torch.tensor(ref_kernel, device=self.device)
+		
 	def apply_srm_kernel(self, input_spikes, srm):
-		out = F.conv3d(input_spikes, srm, padding=(0,0,int(srm.shape[4]/2))) * self.net_params['t_s']
-		return out
+		return F.conv3d(input_spikes, srm, padding=(0,0,int(srm.shape[4]/2))) * self.net_params['t_s']
 
 	def calculate_error_spiketrain(self, a, des_a):
 		return a - des_a
