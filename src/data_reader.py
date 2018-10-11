@@ -39,8 +39,11 @@ class DataReader(Dataset):
 	def __len__(self):
 		return len(self.training_samples)
 
+	# TODO refactor n_timesteps and remove repeated uses
 	def __getitem__(self, index):
-		return (self.read_and_bin_np(self.training_samples[index]), self.training_samples[index].label)
+		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
+		data = torch.tensor(self.read_and_bin_np(self.training_samples[index]), device=self.device).reshape(1, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
+		return (data, self.training_samples[index].label)
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples

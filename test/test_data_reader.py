@@ -132,7 +132,7 @@ class TestPytorchDataset(unittest.TestCase):
 
 	def test_getitem(self):
 		(binned_spikes, label) = self.reader[0]
-		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
+		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,350), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 		self.assertEqual(label, 5)
 
 
