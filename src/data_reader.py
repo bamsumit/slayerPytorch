@@ -5,6 +5,8 @@ import yaml
 import torch
 from collections import namedtuple
 
+from torch.utils.data import Dataset
+
 np_event_type = [('x', np.uint16), ('y', np.uint16), ('p', np.uint8), ('ts', np.uint32)]
 DataSample = namedtuple('DataSample', ['number', 'label'])
 
@@ -24,14 +26,13 @@ class SlayerParams(object):
 
 class DataReader(object):
 
-	def __init__(self, dataset_folder, training_file, testing_file, net_params, device=torch.device('cpu')):
+	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cpu')):
 		self.EVENT_BIN_SIZE = 5
 		self.net_params = net_params
 		# Get files in folder
 		self.dataset_path = dataset_folder
 		self.training_samples = self.read_labels_file(dataset_folder + training_file)
 		self.input_file_position = 0
-		self.testing_samples = self.read_labels_file(dataset_folder + testing_file)
 		self.device = device
 		
 	def read_labels_file(self, file):

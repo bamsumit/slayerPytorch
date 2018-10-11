@@ -39,25 +39,25 @@ class TestDataReaderFolders(unittest.TestCase):
 
 	def test_open_valid_folder(self):
 		try:
-			reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
+			reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", self.net_params)
 		except FileNotFoundError:
 			self.fail("Valid input folder not found")
 
 	def test_input_files_ordering(self):
 		file_folder = CURRENT_TEST_DIR + "/test_files/NMNISTsmall/"
-		reader = DataReader(file_folder, "train1K.txt", "test100.txt", self.net_params)
+		reader = DataReader(file_folder, "train1K.txt", self.net_params)
 		self.assertEqual(reader.dataset_path + str(reader.training_samples[0].number) + ".bs2", file_folder + '1.bs2')
 
 	# def test_init_invalid_network_params(self):
 	# 	invalid_params = SlayerParams()
-	# 	self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", invalid_params)
+	# 	self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", invalid_params)
 
 
 class TestDataReaderInputFile(unittest.TestCase):
 
 	def setUp(self):
 		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", self.net_params)
 		self.minibatch_size = self.net_params['batch_size']
 
 	def test_number_of_files_valid_folder(self):
@@ -113,7 +113,7 @@ class TestDataReaderOutputSpikes(unittest.TestCase):
 
 	def setUp(self):
 		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/training/", "train12.txt", "test12_dummy.txt", self.net_params)
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/training/", "train12.txt", self.net_params)
 		self.minibatch_size = 12
 
 	def test_load_output_spikes(self):
