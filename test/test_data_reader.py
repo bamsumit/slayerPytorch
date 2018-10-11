@@ -58,7 +58,7 @@ class TestDataReaderInputFile(unittest.TestCase):
 	def setUp(self):
 		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
 		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
-		self.minibatch_size = 12
+		self.minibatch_size = self.net_params['batch_size']
 
 	def test_number_of_files_valid_folder(self):
 		self.assertEqual(len(self.reader.training_samples), NMNIST_SIZE)
@@ -96,9 +96,11 @@ class TestDataReaderInputFile(unittest.TestCase):
 
 	def test_minibatch_building(self):
 		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
-		extracted_minibatch = self.reader.get_minibatch(self.minibatch_size)
+		(extracted_minibatch, labels) = self.reader.get_minibatch(self.minibatch_size)
 		target_shape = (self.minibatch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], num_time_samples)
 		self.assertEqual(extracted_minibatch.shape, target_shape)
+		# Check the correctness of the labels returned
+		self.assertEqual(labels, [5,0,4,1,9,2,1,3,1,4])
 
 	@unittest.skipIf(SKIP_TIME_CONSUMING == True, 'msg')
 	def test_minibatch_number(self):

@@ -90,11 +90,13 @@ class DataReader(object):
 	def get_minibatch(self, batch_size):
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		spike_arrays = batch_size * [None]
+		labels = batch_size * [None]
 		for i in range(batch_size):
 			spike_arrays[i] = self.read_and_bin_np(self.training_samples[self.input_file_position])
+			labels[i] = self.training_samples[i].label
 			self.input_file_position += 1
 		minibatch_tensor = torch.tensor(spike_arrays, device=self.device)
-		return minibatch_tensor.reshape((batch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps))
+		return (minibatch_tensor.reshape((batch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)), labels)
 
 	# Unclear whether this will really be needed, read target spikes in csv format
 	def read_output_spikes(self, filename):
