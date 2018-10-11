@@ -24,7 +24,7 @@ class SlayerParams(object):
 	def __setitem__(self, key, value):
 		self.parameters[key] = value
 
-class DataReader(object):
+class DataReader(Dataset):
 
 	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cpu')):
 		self.EVENT_BIN_SIZE = 5
@@ -34,6 +34,13 @@ class DataReader(object):
 		self.training_samples = self.read_labels_file(dataset_folder + training_file)
 		self.input_file_position = 0
 		self.device = device
+
+	# Pytorch Dataset functions
+	def __len__(self):
+		return len(self.training_samples)
+
+	def __getitem__(self, index):
+		return self.read_and_bin_np(self.training_samples[index])
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples

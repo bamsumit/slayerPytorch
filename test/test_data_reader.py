@@ -121,6 +121,19 @@ class TestDataReaderOutputSpikes(unittest.TestCase):
 		output_spikes = self.reader.read_output_spikes("test12_output_spikes.csv")
 		self.assertEqual(output_spikes.shape, (NMNIST_NUM_CLASSES, self.minibatch_size * num_time_samples))
 
+class TestPytorchDataset(unittest.TestCase):
+
+	def setUp(self):
+		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", self.net_params)
+
+	def test_len(self):
+		self.assertEqual(len(self.reader), 1000)
+
+	def test_getitem(self):
+		binned_spikes = self.reader[0]
+		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
+
 
 if __name__ == '__main__':
 	unittest.main()
