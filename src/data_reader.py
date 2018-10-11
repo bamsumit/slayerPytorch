@@ -40,7 +40,7 @@ class DataReader(Dataset):
 		return len(self.training_samples)
 
 	def __getitem__(self, index):
-		return self.read_and_bin_np(self.training_samples[index])
+		return (self.read_and_bin_np(self.training_samples[index]), self.training_samples[index].label)
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples
