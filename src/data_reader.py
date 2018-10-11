@@ -24,7 +24,7 @@ class SlayerParams(object):
 
 class DataReader(object):
 
-	def __init__(self, dataset_folder, training_file, testing_file, net_params):
+	def __init__(self, dataset_folder, training_file, testing_file, net_params, device=torch.device('cpu')):
 		self.EVENT_BIN_SIZE = 5
 		self.net_params = net_params
 		# Get files in folder
@@ -32,6 +32,7 @@ class DataReader(object):
 		self.training_samples = self.read_labels_file(dataset_folder + training_file)
 		self.input_file_position = 0
 		self.testing_samples = self.read_labels_file(dataset_folder + testing_file)
+		self.device = device
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples
@@ -92,10 +93,8 @@ class DataReader(object):
 		for i in range(batch_size):
 			spike_arrays[i] = self.read_and_bin_np(self.training_samples[self.input_file_position])
 			self.input_file_position += 1
-		minibatch_tensor = torch.tensor(spike_arrays)
+		minibatch_tensor = torch.tensor(spike_arrays, device=self.device)
 		return minibatch_tensor.reshape((batch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps))
-		
-		return np.concatenate(spike_arrays, axis=1)
 
 	# Unclear whether this will really be needed, read target spikes in csv format
 	def read_output_spikes(self, filename):
