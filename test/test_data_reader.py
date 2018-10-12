@@ -10,6 +10,8 @@ from testing_utilities import is_array_equal_to_file, iterable_float_pair_compar
 import csv
 import unittest
 import numpy as np
+import torch
+from torch.utils.data import DataLoader
 
 NMNIST_SIZE = 1000
 NMNIST_NUM_CLASSES = 10
@@ -68,24 +70,14 @@ class TestDataReaderInputFile(unittest.TestCase):
 		event = (19,17,2,893)
 		self.assertTrue(matlab_equal_to_python_event(event, self.reader.process_event(raw_bytes)))
 
-	# Check proper I/O
-	def test_read_input_file(self):
-		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
-		self.assertTrue(is_array_equal_to_file(ev_array, CURRENT_TEST_DIR + "/test_files/input_validate/1_raw_spikes.csv", has_header=True, compare_function=matlab_equal_to_python_event))
-
 	def test_spikes_binning(self):
-		ev_array = self.reader.read_input_file(self.reader.training_samples[0])
-		binned_spikes = self.reader.bin_spikes(ev_array)
-		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
-
-	def test_high_level_binning(self):
-		binned_spikes = self.reader.read_and_bin_np(self.reader.training_samples[0])
+		binned_spikes = self.reader.read_and_bin_input_file(self.reader.training_samples[0])
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_read_input_spikes_ts_normalization(self):
 		FLOAT_EPS_TOL = 1e-6
 		self.reader.net_params['t_s'] = 2
-		binned_spikes = self.reader.read_and_bin_np(self.reader.training_samples[0])
+		binned_spikes = self.reader.read_and_bin_input_file(self.reader.training_samples[0])
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes_ts2.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : FLOAT_EPS_TOL}))
 
@@ -116,7 +108,15 @@ class TestPytorchDataset(unittest.TestCase):
 	def test_getitem(self):
 		(binned_spikes, label) = self.reader[0]
 		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,350), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
+		# We need tensors for output labels as well
+		self.assertEqual(label.shape, (1,1,1,1))
 		self.assertEqual(label, 5)
+
+	def test_dataloader(self):
+		loader = DataLoader(dataset=self.reader, batch_size=self.net_params['batch_size'], shuffle=True, num_workers=2)
+		(inputs, labels) = next(iter(loader))
+		self.assertEqual(inputs.shape, (10,2,34,34,350))
+		self.assertEqual(labels.shape, (10,1,1,1,1))
 
 
 if __name__ == '__main__':

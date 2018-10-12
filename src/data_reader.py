@@ -42,8 +42,8 @@ class DataReader(Dataset):
 	def __getitem__(self, index):
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		data = torch.tensor(self.read_and_bin_input_file(self.training_samples[index]), device=self.device)
-		data = data.reshape(1, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
-		return (data, self.training_samples[index].label)
+		data = data.reshape(self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
+		return (data, torch.tensor(self.training_samples[index].label).reshape(1,1,1,1))
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples
