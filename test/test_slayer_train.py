@@ -65,7 +65,7 @@ class TestSlayerSRM(unittest.TestCase):
 
 	def test_convolution_with_srm_kernel(self):
 		input_spikes = self.reader[0][0]
-		srm_response = self.trainer.apply_srm_kernel(input_spikes, self.srm)
+		srm_response = self.trainer.apply_srm_kernel(input_spikes.reshape(1,2,34,34,350), self.srm)
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,350)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : self.FLOAT_EPS_TOL}))
 
@@ -75,7 +75,7 @@ class TestSlayerSRM(unittest.TestCase):
 		self.trainer.net_params['t_s'] = 2
 		srm_downsampled = self.trainer.calculate_srm_kernel()
 		input_spikes = self.reader[0][0]
-		srm_response = self.trainer.apply_srm_kernel(input_spikes, srm_downsampled)
+		srm_response = self.trainer.apply_srm_kernel(input_spikes.reshape(1,2,34,34,175), srm_downsampled)
 		# np.savetxt("debug_ts2.txt", srm_response.reshape((2312,175)).numpy())
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,175)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal_ts2.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : self.FLOAT_EPS_TOL}))

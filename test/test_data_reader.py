@@ -6,7 +6,7 @@ CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
-from testing_utilities import is_array_equal_to_file, iterable_float_pair_comparator
+from testing_utilities import is_array_equal_to_file, iterable_float_pair_comparator, iterable_int_pair_comparator
 import csv
 import unittest
 import numpy as np
@@ -44,16 +44,6 @@ class TestDataReaderFolders(unittest.TestCase):
 		except FileNotFoundError:
 			self.fail("Valid input folder not found")
 
-	def test_input_files_ordering(self):
-		file_folder = CURRENT_TEST_DIR + "/test_files/NMNISTsmall/"
-		reader = DataReader(file_folder, "train1K.txt", self.net_params)
-		self.assertEqual(reader.dataset_path + str(reader.training_samples[0].number) + ".bs2", file_folder + '1.bs2')
-
-	# def test_init_invalid_network_params(self):
-	# 	invalid_params = SlayerParams()
-	# 	self.assertRaises(ValueError, DataReader, CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", invalid_params)
-
-
 class TestDataReaderInputFile(unittest.TestCase):
 
 	def setUp(self):
@@ -61,7 +51,7 @@ class TestDataReaderInputFile(unittest.TestCase):
 		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", self.net_params)
 
 	def test_number_of_files_valid_folder(self):
-		self.assertEqual(len(self.reader.training_samples), NMNIST_SIZE)
+		self.assertEqual(self.reader.num_samples, NMNIST_SIZE)
 
 	def test_process_event(self):
 		# Actually first line of test file
@@ -71,18 +61,20 @@ class TestDataReaderInputFile(unittest.TestCase):
 		self.assertTrue(matlab_equal_to_python_event(event, self.reader.process_event(raw_bytes)))
 
 	def test_spikes_binning(self):
-		binned_spikes = self.reader.read_and_bin_input_file(self.reader.training_samples[0])
+		binned_spikes = self.reader.read_and_bin_input_file(1)
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_read_input_spikes_ts_normalization(self):
 		FLOAT_EPS_TOL = 1e-6
 		self.reader.net_params['t_s'] = 2
-		binned_spikes = self.reader.read_and_bin_input_file(self.reader.training_samples[0])
+		binned_spikes = self.reader.read_and_bin_input_file(1)
 		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes_ts2.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : FLOAT_EPS_TOL}))
 
 	def test_loaded_label_value(self):
-		self.assertEqual(self.reader.training_samples[0].label, 5)
+		# Correct class (5) should have 50 spikes, incorrect should have 10
+		self.assertEqual(self.reader.training_samples[0,5], 50)
+		self.assertEqual(self.reader.training_samples[0,0], 10)
 
 class TestDataReaderOutputSpikes(unittest.TestCase):
 
@@ -109,14 +101,23 @@ class TestPytorchDataset(unittest.TestCase):
 		(binned_spikes, label) = self.reader[0]
 		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,350), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 		# We need tensors for output labels as well
-		self.assertEqual(label.shape, (1,1,1,1))
-		self.assertEqual(label, 5)
+		self.assertEqual(label.shape, (10,1,1,1))
+		self.assertTrue(iterable_int_pair_comparator(label, [10, 10, 10, 10, 10, 50, 10, 10, 10, 10]))
 
 	def test_dataloader(self):
 		loader = DataLoader(dataset=self.reader, batch_size=self.net_params['batch_size'], shuffle=True, num_workers=2)
 		(inputs, labels) = next(iter(loader))
 		self.assertEqual(inputs.shape, (10,2,34,34,350))
-		self.assertEqual(labels.shape, (10,1,1,1,1))
+		self.assertEqual(labels.shape, (10,10,1,1,1))
+
+class TestReaderCuda(unittest.TestCase):
+
+	def test_tensors_in_cuda(self):
+		net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
+		reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", net_params, device=torch.device('cuda'))
+		spikes, labels = reader[0]
+		self.assertEqual(spikes.device.type, 'cuda')
+		self.assertEqual(labels.device.type, 'cuda')
 
 
 if __name__ == '__main__':
