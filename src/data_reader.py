@@ -41,7 +41,7 @@ class DataReader(Dataset):
 	# TODO refactor n_timesteps and remove repeated uses
 	def __getitem__(self, index):
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
-		data = torch.tensor(self.read_and_bin_np(self.training_samples[index]), device=self.device)
+		data = torch.tensor(self.read_and_bin_input_file(self.training_samples[index]), device=self.device)
 		data = data.reshape(1, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
 		return (data, self.training_samples[index].label)
 		
@@ -63,38 +63,20 @@ class DataReader(Dataset):
 
 	# TODO optimize, remove iteration
 	# TODO make generic to 1d and 2d spike files
-	def read_input_file(self, sample):
-		# Preallocate numpy array
+	def read_and_bin_input_file(self, sample):
 		file_name = self.dataset_path + str(sample.number) + ".bs2"
-		file_size = os.stat(file_name).st_size
-		events = np.ndarray((int(file_size / self.EVENT_BIN_SIZE)), dtype=np_event_type)
-		with open(file_name, 'rb') as input_file:
-			for (index, raw_spike) in enumerate(iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b'')):
-				events[index] = self.process_event(raw_spike)
-		return events
-
-	# NOTE! Matlab version loads positive spikes first, Python version loads negative spikes first
-	def bin_spikes(self, raw_spike_array):
 		n_inputs = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
+		# Preallocate numpy array
 		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.float32)
-		# print(binned_array.shape)
-		# Now do the actual binning
-		for ev in raw_spike_array:
-			# TODO cleanup, access by name (ts) not index
-			ev_x = ev[0]
-			ev_y = ev[1]
-			ev_p = ev[2]
-			ev_ts = ev[3]
-			time_position = int(ev_ts / (self.net_params['time_unit'] * self.net_params['t_s']))
-			# TODO do truncation if ts over t_end, checks on x and y
-			input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
-			binned_array[input_position, time_position] = 1.0 / self.net_params['t_s']
+		with open(file_name, 'rb') as input_file:
+			for (index, raw_spike) in enumerate(iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b'')):
+				(ev_x, ev_y, ev_p, ev_ts) = self.process_event(raw_spike)
+				time_position = int(ev_ts / (self.net_params['time_unit'] * self.net_params['t_s']))
+				# TODO do truncation if ts over t_end, checks on x and y
+				input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
+				binned_array[input_position, time_position] = 1.0 / self.net_params['t_s']
 		return binned_array
-
-	# Higher level function, read and bin spikes, numpy version
-	def read_and_bin_np(self, file):
-		return self.bin_spikes(self.read_input_file(file))
 
 	# Unclear whether this will really be needed, read target spikes in csv format
 	def read_output_spikes(self, filename):
