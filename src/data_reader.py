@@ -32,7 +32,6 @@ class DataReader(Dataset):
 		# Get files in folder
 		self.dataset_path = dataset_folder
 		self.training_samples = self.read_labels_file(dataset_folder + training_file)
-		self.input_file_position = 0
 		self.device = device
 
 	# Pytorch Dataset functions
@@ -42,7 +41,8 @@ class DataReader(Dataset):
 	# TODO refactor n_timesteps and remove repeated uses
 	def __getitem__(self, index):
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
-		data = torch.tensor(self.read_and_bin_np(self.training_samples[index]), device=self.device).reshape(1, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
+		data = torch.tensor(self.read_and_bin_np(self.training_samples[index]), device=self.device)
+		data = data.reshape(1, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
 		return (data, self.training_samples[index].label)
 		
 	def read_labels_file(self, file):
@@ -96,23 +96,6 @@ class DataReader(Dataset):
 	def read_and_bin_np(self, file):
 		return self.bin_spikes(self.read_input_file(file))
 
-	# Function that should be used by the user, returns a minibatch
-	# TODO optimise memory (use double than necessary here)
-	def get_minibatch(self, batch_size):
-		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
-		spike_arrays = batch_size * [None]
-		labels = batch_size * [None]
-		for i in range(batch_size):
-			spike_arrays[i] = self.read_and_bin_np(self.training_samples[self.input_file_position])
-			labels[i] = self.training_samples[i].label
-			self.input_file_position += 1
-		minibatch_tensor = torch.tensor(spike_arrays, device=self.device)
-		return (minibatch_tensor.reshape((batch_size, self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)), labels)
-
 	# Unclear whether this will really be needed, read target spikes in csv format
 	def read_output_spikes(self, filename):
 		return np.genfromtxt(self.dataset_path + filename, delimiter=",")
-
-	# For now not doing much
-	def reset_epoch(self):
-		self.input_file_position = 0
