@@ -155,5 +155,5 @@ class SlayerTrainer(object):
 	def calculate_error_spiketrain(self, a, des_a):
 		return a - des_a
 
-	def calculate_l2_loss(self, a, des_a):
+	def calculate_l2_loss_spiketrain(self, a, des_a):
 		return torch.sum(self.calculate_error_spiketrain(a, des_a) ** 2) / 2 * self.net_params['t_s']

@@ -6,13 +6,14 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
 from testing_utilities import iterable_float_pair_comparator, iterable_int_pair_comparator, is_array_equal_to_file
-from slayer_train import SlayerTrainer, SpikeFunc, SlayerNet
+from slayer_train import SlayerTrainer, SpikeFunc, SlayerNet, NMNISTNet
 import unittest
 import os
 from itertools import zip_longest
 import operator
 import numpy as np
 import torch
+from torch.utils.data import DataLoader
 
 def read_gtruth_folder(folder):
 		gtruth = {}
@@ -26,7 +27,7 @@ class TestSlayerSRM(unittest.TestCase):
 	def setUp(self):
 		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
 		self.trainer = SlayerTrainer(self.net_params)
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", "test100.txt", self.net_params)
+		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", self.net_params)
 		self.FLOAT_EPS_TOL = 1e-3 # Tolerance for floating point equality
 		self.srm = self.trainer.calculate_srm_kernel()
 
@@ -63,7 +64,7 @@ class TestSlayerSRM(unittest.TestCase):
 		# Full test is the one below
 
 	def test_convolution_with_srm_kernel(self):
-		input_spikes = self.reader.get_minibatch(1)
+		input_spikes = self.reader[0][0]
 		srm_response = self.trainer.apply_srm_kernel(input_spikes, self.srm)
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,350)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : self.FLOAT_EPS_TOL}))
@@ -73,7 +74,7 @@ class TestSlayerSRM(unittest.TestCase):
 		self.reader.net_params['t_s'] = 2
 		self.trainer.net_params['t_s'] = 2
 		srm_downsampled = self.trainer.calculate_srm_kernel()
-		input_spikes = self.reader.get_minibatch(1)
+		input_spikes = self.reader[0][0]
 		srm_response = self.trainer.apply_srm_kernel(input_spikes, srm_downsampled)
 		# np.savetxt("debug_ts2.txt", srm_response.reshape((2312,175)).numpy())
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,175)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal_ts2.csv", 
@@ -143,7 +144,7 @@ class TestForwardProp(unittest.TestCase):
 		self.assertTrue(iterable_float_pair_comparator(pdf.flatten(), self.bprop_gtruth['rho3'].flatten(), self.compare_params))
 
 	def test_l2_loss(self):
-		l2loss = self.trainer.calculate_l2_loss(self.fprop_gtruth['a3'], self.bprop_gtruth['des_a'])
+		l2loss = self.trainer.calculate_l2_loss_spiketrain(self.fprop_gtruth['a3'], self.bprop_gtruth['des_a'])
 		self.assertTrue(abs(l2loss - 7.81225) < self.compare_params['FLOAT_EPS_TOL'])
 
 # from torchviz import make_dot
@@ -179,7 +180,7 @@ class TestSlayerNet(unittest.TestCase):
 		# Activations
 		output_activations = self.trainer.apply_srm_kernel(out_spikes, self.srm)
 		# Calculate l2 loss
-		l2loss = self.trainer.calculate_l2_loss(output_activations, self.des_activations)
+		l2loss = self.trainer.calculate_l2_loss_spiketrain(output_activations, self.des_activations)
 		l2loss.backward()
 		self.assertTrue(iterable_float_pair_comparator(self.net.fc2.weight.grad.flatten(), self.bprop_gtruth['Wgrad2'].flatten(), self.compare_params))
 		self.assertTrue(iterable_float_pair_comparator(self.net.fc1.weight.grad.flatten(), self.bprop_gtruth['Wgrad1'].flatten(), self.compare_params))
@@ -193,7 +194,7 @@ class TestSlayerNet(unittest.TestCase):
 	# 		optimizer.zero_grad()
 	# 		outputs = self.net(self.input_spikes)
 	# 		output_activations = self.trainer.apply_srm_kernel(outputs, self.srm)
-	# 		loss = self.trainer.calculate_l2_loss(output_activations, self.des_activations)
+	# 		loss = self.trainer.calculate_l2_loss_spiketrain(output_activations, self.des_activations)
 	# 		print("iteration n.", i, "loss = ", float(loss.detach()))
 	# 		loss.backward()
 	# 		if loss == 0:
@@ -235,13 +236,12 @@ class TestCustomCudaKernel(unittest.TestCase):
 	# 		optimizer.zero_grad()
 	# 		outputs = net(input_spikes)
 	# 		output_activations = self.trainer.apply_srm_kernel(outputs, srm)
-	# 		loss = self.trainer.calculate_l2_loss(output_activations, des_activations)
+	# 		loss = self.trainer.calculate_l2_loss_spiketrain(output_activations, des_activations)
 	# 		print("iteration n.", i, "loss = ", float(loss.detach()))
 	# 		loss.backward()
 	# 		if loss == 0:
 	# 			break
 	# 		optimizer.step()
-
 
 
 if __name__ == '__main__':
