@@ -39,6 +39,52 @@ class SlayerNet(nn.Module):
         x = SpikeFunc.apply(self.fc2(x), self.s3, self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
         return x
 
+class NMNISTNet(nn.Module):
+
+    def __init__(self, net_params, weights_init = [0.5,1,1], device=torch.device('cpu')):
+        super(NMNISTNet, self).__init__()
+        self.net_params = net_params
+        self.trainer = SlayerTrainer(net_params, device)
+        self.srm = self.trainer.calculate_srm_kernel()
+        self.ref = self.trainer.calculate_ref_kernel()
+        # Emulate a fully connected 34x34x2 -> 500
+        self.fc1 = nn.Conv3d(1, 500, (1,2312,1), bias=False).to(device)
+        self.rho2 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
+        self.s2 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
+        nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
+        # Emulate a fully connected 500 -> 500
+        self.fc2 = nn.Conv3d(1, 500, (1,500,1), bias=False).to(device)
+        self.rho3 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
+        self.s3 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
+        nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
+        # Output layer
+        self.fc3 = nn.Conv3d(1, 10, (1,500,1), bias=False).to(device)
+        self.rho4 = torch.zeros((10,10,1,1,350), dtype=torch.float32, device=device)
+        self.s4 = torch.zeros((10,10,1,1,350), dtype=torch.float32, device=device)
+        nn.init.normal_(self.fc3.weight, mean=0, std=weights_init[2])
+        self.device=device
+
+    def forward(self, x):
+        # Apply srm to input spikes
+        x = self.trainer.apply_srm_kernel(x, self.srm)
+        # Flatten the array
+        x = x.reshape((10, 1, 1, 34*34*2, 350))
+        # Linear + activation
+        x = self.fc1(x)
+        x = SpikeFunc.apply(x, self.s2, self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
+        # Apply srm to middle layer spikes
+        # HACKY
+        x = self.trainer.apply_srm_kernel(x.view(10,2,1,250,350), self.srm)
+        x = x.reshape((10, 1, 1, 500, 350))
+        # # Apply second layer
+        x = SpikeFunc.apply(self.fc2(x), self.s3, self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
+        # Srm to second hidden layer
+        x = self.trainer.apply_srm_kernel(x.view(10,2,1,250,350), self.srm)
+        x = x.reshape((10, 1, 1, 500, 350))
+        # Output layer
+        x = SpikeFunc.apply(self.fc3(x), self.s4, self.rho4, self.net_params, self.ref, self.net_params['af_params']['sigma'][2], self.device)
+        return x
+
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
@@ -157,3 +203,12 @@ class SlayerTrainer(object):
 
 	def calculate_l2_loss_spiketrain(self, a, des_a):
 		return torch.sum(self.calculate_error_spiketrain(a, des_a) ** 2) / 2 * self.net_params['t_s']
+
+	def calculate_error_classification(self, spikes, des_spikes):
+		err = spikes.detach()
+		t_valid = self.net_params['t_valid']
+		err[:,:,:,:,0:t_valid] = (torch.sum(spikes[:,:,:,:,0:t_valid],4 , keepdim=True) - des_spikes) / (t_valid / self.net_params['t_s'])
+		return err
+		
+	def calculate_l2_loss_classification(self, spikes, des_spikes):
+		return torch.sum(self.calculate_error_classification(spikes, des_spikes) ** 2) / 2 * self.net_params['t_s']
