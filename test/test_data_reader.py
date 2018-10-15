@@ -98,26 +98,28 @@ class TestPytorchDataset(unittest.TestCase):
 		self.assertEqual(len(self.reader), 1000)
 
 	def test_getitem(self):
-		(binned_spikes, label) = self.reader[0]
+		(binned_spikes, des_spikes, label) = self.reader[0]
 		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,350), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 		# We need tensors for output labels as well
-		self.assertEqual(label.shape, (10,1,1,1))
-		self.assertTrue(iterable_int_pair_comparator(label, [10, 10, 10, 10, 10, 50, 10, 10, 10, 10]))
+		self.assertEqual(des_spikes.shape, (10,1,1,1))
+		self.assertTrue(iterable_int_pair_comparator(des_spikes, [10, 10, 10, 10, 10, 50, 10, 10, 10, 10]))
+		self.assertEqual(label, 5)
 
 	def test_dataloader(self):
 		loader = DataLoader(dataset=self.reader, batch_size=self.net_params['batch_size'], shuffle=True, num_workers=2)
-		(inputs, labels) = next(iter(loader))
+		(inputs, des_spikes, label) = next(iter(loader))
 		self.assertEqual(inputs.shape, (10,2,34,34,350))
-		self.assertEqual(labels.shape, (10,10,1,1,1))
+		self.assertEqual(des_spikes.shape, (10,10,1,1,1))
+		self.assertEqual(len(label), 10)
 
 class TestReaderCuda(unittest.TestCase):
 
 	def test_tensors_in_cuda(self):
 		net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
 		reader = DataReader(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/", "train1K.txt", net_params, device=torch.device('cuda'))
-		spikes, labels = reader[0]
+		spikes, des_spikes, labels = reader[0]
 		self.assertEqual(spikes.device.type, 'cuda')
-		self.assertEqual(labels.device.type, 'cuda')
+		self.assertEqual(des_spikes.device.type, 'cuda')
 
 
 if __name__ == '__main__':
