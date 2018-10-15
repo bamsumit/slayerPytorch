@@ -23,30 +23,33 @@ class SlayerParams(object):
 
 class DataReader(Dataset):
 
-	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cpu')):
+	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cpu'), file_offset=1):
 		self.EVENT_BIN_SIZE = 5
 		self.net_params = net_params
 		# Get files in folder
 		self.dataset_path = dataset_folder
-		training_samples, self.num_samples = self.read_labels_file(dataset_folder + training_file)
-		self.training_samples = torch.tensor(training_samples, device=device)
+		training_samples, self.num_samples, labels = self.read_labels_file(dataset_folder + training_file)
+		self.training_samples = torch.tensor(training_samples, device=device, dtype=torch.float32)
+		self.labels = torch.tensor(labels, device=device, dtype=torch.float32)
 		self.training_samples = self.training_samples.reshape(self.num_samples, net_params['num_classes'], 1, 1, 1)
 		self.device = device
+		self.file_offset = file_offset
 
 	# Pytorch Dataset functions
 	def __len__(self):
 		return self.num_samples
-
+ 
 	# TODO refactor n_timesteps and remove repeated uses
 	def __getitem__(self, index):
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		# HACK FOR 1 INDEXED DATASETS
-		data = torch.tensor(self.read_and_bin_input_file(index + 1), device=self.device)
+		data = torch.tensor(self.read_and_bin_input_file(index + self.file_offset), device=self.device)
 		data = data.reshape(self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
-		return (data, self.training_samples[index,:,:,:,:])
+		return (data, self.training_samples[index,:,:,:,:], self.labels[index])
 		
 	def read_labels_file(self, file):
 		# Open CSV file that describes our samples
+		des_spikes = []
 		labels = []
 		with open(file, 'r') as testing_file:
 			reader = csv.reader(testing_file, delimiter='\t')
@@ -57,8 +60,9 @@ class DataReader(Dataset):
 				ext_list = [self.net_params['negative_spikes']] * self.net_params['num_classes']
 				# Assign positive spikes to correct class
 				ext_list[int(line[1])] = self.net_params['positive_spikes']
-				labels.extend(ext_list)
-		return labels, int(len(labels) / self.net_params['num_classes'])
+				des_spikes.extend(ext_list)
+				labels.append(int(line[1]))
+		return des_spikes, int(len(des_spikes) / self.net_params['num_classes']), labels
 
 	def process_event(self, raw_bytes):
 		ts = int.from_bytes(raw_bytes[2:], byteorder='big') & 0x7FFFFF
