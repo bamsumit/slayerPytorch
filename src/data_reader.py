@@ -77,7 +77,7 @@ class DataReader(Dataset):
 		# Preallocate numpy array
 		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.float32)
 		with open(file_name, 'rb') as input_file:
-			for (index, raw_spike) in enumerate(iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b'')):
+			for raw_spike in iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b''):
 				(ev_x, ev_y, ev_p, ev_ts) = self.process_event(raw_spike)
 				time_position = int(ev_ts / (self.net_params['time_unit'] * self.net_params['t_s']))
 				# TODO do truncation if ts over t_end, checks on x and y
