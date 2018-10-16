@@ -72,6 +72,8 @@ class DataReader(Dataset):
 	# TODO make generic to 1d and 2d spike files
 	def read_and_bin_input_file(self, index):
 		file_name = self.dataset_path + str(index) + ".bs2"
+		spike = 1.0 / self.net_params['t_s']
+		time_scaling = 1.0 / (self.net_params['time_unit'] * self.net_params['t_s'])
 		n_inputs = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		# Preallocate numpy array
@@ -79,10 +81,10 @@ class DataReader(Dataset):
 		with open(file_name, 'rb') as input_file:
 			for raw_spike in iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b''):
 				(ev_x, ev_y, ev_p, ev_ts) = self.process_event(raw_spike)
-				time_position = int(ev_ts / (self.net_params['time_unit'] * self.net_params['t_s']))
+				time_position = int(ev_ts * time_scaling)
 				# TODO do truncation if ts over t_end, checks on x and y
 				input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
-				binned_array[input_position, time_position] = 1.0 / self.net_params['t_s']
+				binned_array[input_position, time_position] = spike
 		return binned_array
 
 	# Unclear whether this will really be needed, read target spikes in csv format
