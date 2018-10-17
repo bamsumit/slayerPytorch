@@ -1,6 +1,6 @@
 import os
 from data_reader import DataReader, SlayerParams
-from slayer_train import SlayerTrainer, SpikeFunc
+from slayer_train import SlayerTrainer, SpikeFunc, SpikeLinear
 import torch.nn as nn
 import torch
 import unittest
@@ -22,13 +22,13 @@ class NMNISTNet(nn.Module):
         self.srm = self.input_srm[0,0,:,:,:].reshape(1,1,1,1,self.input_srm.shape[-1])
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 34x34x2 -> 500
-        self.fc1 = nn.Conv3d(1, 500, (1, net_params['input_x']*net_params['input_y']*net_params['input_channels'], 1), bias=False).to(device)
+        self.fc1 = SpikeLinear(net_params['input_x']*net_params['input_y']*net_params['input_channels'], 500).to(device)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 500 -> 500
-        self.fc2 = nn.Conv3d(1, 500, (1,500,1), bias=False).to(device)
+        self.fc2 = SpikeLinear(500,500).to(device)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
         # Output layer
-        self.fc3 = nn.Conv3d(1, net_params['num_classes'], (1,500,1), bias=False).to(device)
+        self.fc3 = SpikeLinear(500, net_params['num_classes']).to(device)
         nn.init.normal_(self.fc3.weight, mean=0, std=weights_init[2])
         self.device=device
 

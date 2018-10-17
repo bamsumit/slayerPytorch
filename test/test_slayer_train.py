@@ -6,7 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 from data_reader import DataReader, SlayerParams
 from testing_utilities import iterable_float_pair_comparator, iterable_int_pair_comparator, is_array_equal_to_file
-from slayer_train import SlayerTrainer, SpikeFunc, SlayerNet
+from slayer_train import SlayerTrainer, SpikeFunc, SlayerNet, SpikeLinear
 import unittest
 import os
 from itertools import zip_longest
@@ -20,7 +20,7 @@ def read_gtruth_folder(folder):
 				gtruth[file[0:-4]] = torch.from_numpy(np.genfromtxt(folder + file, delimiter=",", dtype=np.float32))
 		return gtruth
 
-class TestSlayerSRM(unittest.TestCase):
+class TestSlayerTrainUtilityFunctions(unittest.TestCase):
 
 	def setUp(self):
 		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
@@ -269,6 +269,27 @@ class TestCustomCudaKernel(unittest.TestCase):
 	# 		if loss == 0:
 	# 			break
 	# 		optimizer.step()
+
+class TestCustomTorchModules(unittest.TestCase):
+
+	def setUp(self):
+		self.FILES_DIR = CURRENT_TEST_DIR + "/test_files/torch_validate/"
+		self.net_params = SlayerParams(self.FILES_DIR + "parameters.yaml")
+		self.fprop_gtruth = read_gtruth_folder(self.FILES_DIR + "forward_prop/")
+		self.bprop_gtruth = read_gtruth_folder(self.FILES_DIR + "back_prop/")
+		self.device = torch.device('cuda')
+
+	def test_fullyconnected_cudadevice(self):
+		fc = SpikeLinear(250, 25).to(self.device)
+		self.assertIsInstance(fc.weight, torch.cuda.FloatTensor)
+
+	# Failing for now
+	# def test_fullyconnected_shape(self):
+	# 	input_activations = self.fprop_gtruth['a1'].reshape(1,1,1,250,501)
+	# 	fc = SpikeLinear(250, 25)
+	# 	outputs = fc(input_activations)
+	# 	self.assertEqual(outputs.shape, (1,1,1,25,501))
+
 
 
 if __name__ == '__main__':

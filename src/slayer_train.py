@@ -16,10 +16,10 @@ class SlayerNet(nn.Module):
         self.srm = self.trainer.calculate_srm_kernel()
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 250 -> 25
-        self.fc1 = nn.Conv3d(1, 25, (1,250,1), bias=False).to(device)
+        self.fc1 = SpikeLinear(250, 25).to(device)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 25 -> 1
-        self.fc2 = nn.Conv3d(1, 1, (1,25,1), bias=False).to(device)
+        self.fc2 = SpikeLinear(1, 25).to(device)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
         self.device=device
 
@@ -98,6 +98,18 @@ class SpikeFunc(torch.autograd.Function):
 	@staticmethod
 	def calculate_pdf(membrane_potentials, theta, tau, scale):
 		return scale / tau * torch.exp(-torch.abs(membrane_potentials - theta) / tau)
+
+# Helper module to emulate fully connected layers in Spiking Networks
+class SpikeLinear(nn.Conv3d):
+
+	def __init__(self, in_features, out_features):
+		kernel = (1, in_features, 1)
+		super(SpikeLinear, self).__init__(1, out_features, kernel, bias=False)
+
+	def forward(self, input):
+		out = F.conv3d(input, self.weight, self.bias, self.stride, self.padding,
+					   self.dilation, self.groups)
+		return out
 
 class SlayerTrainer(object):
 
