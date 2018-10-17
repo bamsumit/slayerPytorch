@@ -17,6 +17,7 @@ __global__ void getSpikesKernel(float* __restrict__ d_s, float* __restrict__ d_u
 	unsigned batchID  = blockIdx.x * blockDim.x + threadIdx.x;
 	unsigned neuronID = blockIdx.y * blockDim.y + threadIdx.y;
 	unsigned startID  = batchID * batchStride;
+	const float spike = 1.0f/Ts;
 	
 	if(batchID  >= nBatch)				return;
 	if(neuronID >= nNeurons)	return;
@@ -29,7 +30,7 @@ __global__ void getSpikesKernel(float* __restrict__ d_s, float* __restrict__ d_u
 		unsigned linearID = startID + i + neuronID * Ns;
 		if(d_u[linearID] >= theta)
 		{
-			d_s[linearID] = 1.0f/Ts;
+			d_s[linearID] = spike;
 			// dynamic parallelism seems to be slower because of race condition!!!
 			// ahpKernel<<< block, thread >>>(d_u + linearID, d_nu, nuSize);
 			// cudaDeviceSynchronize();
