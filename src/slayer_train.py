@@ -17,13 +17,9 @@ class SlayerNet(nn.Module):
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 250 -> 25
         self.fc1 = nn.Conv3d(1, 25, (1,250,1), bias=False).to(device)
-        self.rho2 = torch.zeros((1,25,1,1,501), dtype=torch.float32, device=device)
-        self.s2 = torch.zeros((1,25,1,1,501), dtype=torch.float32, device=device)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 25 -> 1
         self.fc2 = nn.Conv3d(1, 1, (1,25,1), bias=False).to(device)
-        self.rho3 = torch.zeros((1,1,1,1,501), dtype=torch.float32, device=device)
-        self.s3 = torch.zeros((1,1,1,1,501), dtype=torch.float32, device=device)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
         self.device=device
 
@@ -32,79 +28,33 @@ class SlayerNet(nn.Module):
         x = self.trainer.apply_srm_kernel(x, self.srm)
         # Linear + activation
         x = self.fc1(x)
-        x = SpikeFunc.apply(x, self.s2, self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
+        x = SpikeFunc.apply(x, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
         # Apply srm to middle layer spikes
         x = self.trainer.apply_srm_kernel(x.view(1,1,1,25,501), self.srm)
         # # Apply second layer
-        x = SpikeFunc.apply(self.fc2(x), self.s3, self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
-        return x
-
-class NMNISTNet(nn.Module):
-
-    def __init__(self, net_params, weights_init = [0.5,1,1], device=torch.device('cpu')):
-        super(NMNISTNet, self).__init__()
-        self.net_params = net_params
-        self.trainer = SlayerTrainer(net_params, device)
-        self.srm = self.trainer.calculate_srm_kernel()
-        self.ref = self.trainer.calculate_ref_kernel()
-        # Emulate a fully connected 34x34x2 -> 500
-        self.fc1 = nn.Conv3d(1, 500, (1,2312,1), bias=False).to(device)
-        self.rho2 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
-        self.s2 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
-        nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
-        # Emulate a fully connected 500 -> 500
-        self.fc2 = nn.Conv3d(1, 500, (1,500,1), bias=False).to(device)
-        self.rho3 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
-        self.s3 = torch.zeros((10,500,1,1,350), dtype=torch.float32, device=device)
-        nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
-        # Output layer
-        self.fc3 = nn.Conv3d(1, 10, (1,500,1), bias=False).to(device)
-        self.rho4 = torch.zeros((10,10,1,1,350), dtype=torch.float32, device=device)
-        self.s4 = torch.zeros((10,10,1,1,350), dtype=torch.float32, device=device)
-        nn.init.normal_(self.fc3.weight, mean=0, std=weights_init[2])
-        self.device=device
-
-    def forward(self, x):
-        # Apply srm to input spikes
-        x = self.trainer.apply_srm_kernel(x, self.srm)
-        # Flatten the array
-        x = x.reshape((10, 1, 1, 34*34*2, 350))
-        # Linear + activation
-        x = self.fc1(x)
-        x = SpikeFunc.apply(x, self.s2, self.rho2, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
-        # Apply srm to middle layer spikes
-        # HACKY
-        x = self.trainer.apply_srm_kernel(x.view(10,2,1,250,350), self.srm)
-        x = x.reshape((10, 1, 1, 500, 350))
-        # # Apply second layer
-        x = SpikeFunc.apply(self.fc2(x), self.s3, self.rho3, self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
-        # Srm to second hidden layer
-        x = self.trainer.apply_srm_kernel(x.view(10,2,1,250,350), self.srm)
-        x = x.reshape((10, 1, 1, 500, 350))
-        # Output layer
-        x = SpikeFunc.apply(self.fc3(x), self.s4, self.rho4, self.net_params, self.ref, self.net_params['af_params']['sigma'][2], self.device)
+        x = SpikeFunc.apply(self.fc2(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
         return x
 
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
-	def forward(ctx, multiplied_activations, spikes, rho, net_params, ref, sigma, device=torch.device('cpu')):
+	def forward(ctx, multiplied_activations, net_params, ref, sigma, device=torch.device('cpu')):
 		# Calculate membrane potentials
 		if (device == torch.device('cpu')):
-			(multiplied_activations, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, spikes, net_params, ref, sigma)
+			(multiplied_activations, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, net_params, ref, sigma)
 		else:
-			(multiplied_activations, spikes) = SpikeFunc.get_spikes_cuda(multiplied_activations, spikes, ref, net_params)
+			(multiplied_activations, spikes) = SpikeFunc.get_spikes_cuda(multiplied_activations, ref, net_params)
 		scale = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['scale'], device=device, dtype=torch.float32), requires_grad=False)
 		tau = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['tau'], device=device, dtype=torch.float32), requires_grad=False)
 		theta = torch.autograd.Variable(torch.tensor(net_params['af_params']['theta'], device=device, dtype=torch.float32), requires_grad=False)
-		ctx.save_for_backward(multiplied_activations, rho, theta, tau, scale)
+		ctx.save_for_backward(multiplied_activations, theta, tau, scale)
 		return spikes
 
 	@staticmethod
 	def backward(ctx, grad_output):
-		(membrane_potentials, rho, theta, tau, scale) = ctx.saved_tensors
+		(membrane_potentials, theta, tau, scale) = ctx.saved_tensors
 		# Don't return any gradient for parameters
-		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, rho, theta, tau, scale), None, None, None, None, None, None)
+		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, theta, tau, scale), None, None, None, None)
 
 	@staticmethod
 	def apply_weights(activations, weights):
@@ -113,8 +63,9 @@ class SpikeFunc(torch.autograd.Function):
 
 	# Input is potentials after matrix multiplication
 	@staticmethod
-	def calculate_membrane_potentials(potentials, spikes, net_params, ref, sigma):
+	def calculate_membrane_potentials(potentials, net_params, ref, sigma):
 		# Need float32 to do convolution later
+		spikes = torch.empty_like(potentials)
 		ref_length = len(ref)
 		# Iterate over timestamps, NOTE, check if iterating in this dimension is a bottleneck
 		for p in range(potentials.shape[-1]):
@@ -141,13 +92,12 @@ class SpikeFunc(torch.autograd.Function):
 
 	# Call the cuda wrapper, Note! sigma is not implemented
 	@staticmethod
-	def get_spikes_cuda(potentials, spikes, ref, net_params):
-		return slayer_cuda.get_spikes_cuda(potentials, spikes, ref, net_params['af_params']['theta'], net_params['t_s'])
+	def get_spikes_cuda(potentials, ref, net_params):
+		return slayer_cuda.get_spikes_cuda(potentials, torch.empty_like(potentials), ref, net_params['af_params']['theta'], net_params['t_s'])
 
 	@staticmethod
-	def calculate_pdf(membrane_potentials, rho, theta, tau, scale):
-		rho = scale / tau * torch.exp(-abs(membrane_potentials - theta) / tau)
-		return rho
+	def calculate_pdf(membrane_potentials, theta, tau, scale):
+		return scale / tau * torch.exp(-torch.abs(membrane_potentials - theta) / tau)
 
 class SlayerTrainer(object):
 
@@ -212,3 +162,8 @@ class SlayerTrainer(object):
 		
 	def calculate_l2_loss_classification(self, spikes, des_spikes):
 		return torch.sum(self.calculate_error_classification(spikes, des_spikes) ** 2) / 2 * self.net_params['t_s']
+
+	def get_accurate_classifications(self, out_spikes, des_labels):
+		output_labels = torch.argmax(torch.sum(out_spikes, 4, keepdim=True), 1)
+		correct_labels = sum([1 for (classified, gtruth) in zip(output_labels.flatten(), des_labels.flatten()) if (classified == int(gtruth))])
+		return correct_labels
