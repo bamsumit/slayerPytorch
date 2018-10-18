@@ -19,7 +19,7 @@ class SlayerNet(nn.Module):
         self.fc1 = SpikeLinear(250, 25).to(device)
         nn.init.normal_(self.fc1.weight, mean=0, std=weights_init[0])
         # Emulate a fully connected 25 -> 1
-        self.fc2 = SpikeLinear(1, 25).to(device)
+        self.fc2 = SpikeLinear(25, 1).to(device)
         nn.init.normal_(self.fc2.weight, mean=0, std=weights_init[1])
         self.device=device
 
