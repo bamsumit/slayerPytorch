@@ -73,11 +73,10 @@ class TestNMNISTTraining(unittest.TestCase):
             correct_classifications = 0
             training_loss = 0
             epoch_t0 = datetime.now()
-            for i, data in enumerate(self.train_loader, 0):
+            for i, data in enumerate(self.train_loader, 1):
                 t0 = datetime.now()
                 self.optimizer.zero_grad()
                 minibatch, des_spikes, labels = data
-                minibatch = minibatch.reshape(self.net_params['batch_size'],2,1,34*34,350)
                 output = self.net(minibatch)
                 correct_classifications += self.trainer.get_accurate_classifications(output, labels)
                 loss = self.trainer.calculate_l2_loss_classification(output, des_spikes)
@@ -87,14 +86,12 @@ class TestNMNISTTraining(unittest.TestCase):
                 print(i, ":", (datetime.now() - t0).total_seconds())
             print("Epoch n.", epoch)
             print("Epoch time", (datetime.now() - epoch_t0).total_seconds())
-            epoch_t0 = datetime.now()
             print("Training accuracy: ", correct_classifications / (len(self.train_loader) * self.net_params['batch_size']))
             print("Training loss: ", training_loss.data / (len(self.train_loader) * self.net_params['batch_size']))
             correct_classifications = 0
             testing_loss = 0
-            for i, data in enumerate(self.test_loader, 0):
+            for i, data in enumerate(self.test_loader, 1):
                 minibatch, des_spikes, labels = data
-                minibatch = minibatch.reshape(self.net_params['batch_size'],2,1,34*34,350)
                 output = self.net(minibatch)
                 correct_classifications += self.trainer.get_accurate_classifications(output, labels)
                 testing_loss += self.trainer.calculate_l2_loss_classification(output, des_spikes).data
@@ -108,7 +105,6 @@ class TestNMNISTTraining(unittest.TestCase):
     #         t0 = datetime.now()
     #         self.optimizer.zero_grad()
     #         minibatch, des_spikes, labels = data
-    #         minibatch = minibatch.reshape(10,2,1,34*34,350)
     #         for i in range(10):
     #             output = self.net(minibatch)
     #             loss = self.trainer.calculate_l2_loss_classification(output, des_spikes)
