@@ -16,10 +16,9 @@ class NMNISTNet(nn.Module):
     def __init__(self, net_params, weights_init = [0.5,1,1], device=torch.device('cpu')):
         super(NMNISTNet, self).__init__()
         self.net_params = net_params
-        self.Ns = int((net_params['t_end'] - net_params['t_start']) / net_params['t_s'])
         self.trainer = SlayerTrainer(net_params, device)
         self.input_srm = self.trainer.calculate_srm_kernel()
-        self.srm = self.input_srm[0,0,:,:,:].reshape(1,1,1,1,self.input_srm.shape[-1])
+        self.srm = self.trainer.calculate_srm_kernel(1)
         self.ref = self.trainer.calculate_ref_kernel()
         # Emulate a fully connected 34x34x2 -> 500
         self.fc1 = SpikeLinear(net_params['input_x']*net_params['input_y']*net_params['input_channels'], 500).to(device)
@@ -36,18 +35,18 @@ class NMNISTNet(nn.Module):
         # Apply srm to input spikes
         x = self.trainer.apply_srm_kernel(x, self.input_srm)
         # Flatten the array
-        x = x.reshape((self.net_params['batch_size'], 1, 1, self.net_params['input_x']*self.net_params['input_y']*self.net_params['input_channels'], self.Ns))
+        x = x.reshape((self.net_params['batch_size'], 1, 1, self.net_params['input_x']*self.net_params['input_y']*self.net_params['input_channels'], -1))
         # Linear + activation
         x = self.fc1(x)
         x = SpikeFunc.apply(x, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
         # Apply srm to middle layer spikes
-        x = self.trainer.apply_srm_kernel(x.view(self.net_params['batch_size'],1,1,500,self.Ns), self.srm)
-        x = x.reshape((self.net_params['batch_size'], 1, 1, 500, self.Ns))
+        x = self.trainer.apply_srm_kernel(x.view(self.net_params['batch_size'],1,1,500,-1), self.srm)
+        x = x.reshape((self.net_params['batch_size'], 1, 1, 500, -1))
         # # Apply second layer
         x = SpikeFunc.apply(self.fc2(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
         # Srm to second hidden layer
-        x = self.trainer.apply_srm_kernel(x.view(self.net_params['batch_size'],1,1,500,self.Ns), self.srm)
-        x = x.reshape((self.net_params['batch_size'], 1, 1, 500, self.Ns))
+        x = self.trainer.apply_srm_kernel(x.view(self.net_params['batch_size'],1,1,500,-1), self.srm)
+        x = x.reshape((self.net_params['batch_size'], 1, 1, 500, -1))
         # Output layer
         x = SpikeFunc.apply(self.fc3(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][2], self.device)
         return x
@@ -99,8 +98,8 @@ class TestNMNISTTraining(unittest.TestCase):
                 output = self.net(minibatch)
                 correct_classifications += self.trainer.get_accurate_classifications(output, labels)
                 testing_loss += self.trainer.calculate_l2_loss_classification(output, des_spikes).data
-            print("Testing accuracy: ", correct_classifications / len(self.test_loader))
-            print("Testing loss: ", testing_loss.data / len(self.test_loader))
+            print("Testing accuracy: ", correct_classifications / (len(self.test_loader) * self.net_params['batch_size']))
+            print("Testing loss: ", testing_loss.data / (len(self.test_loader) * self.net_params['batch_size']))
 
     # def test_profile_nmnist(self):
     #     # Needed for CUDA allocation to work in DataLoader

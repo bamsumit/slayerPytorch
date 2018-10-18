@@ -30,7 +30,7 @@ class SlayerNet(nn.Module):
         x = self.fc1(x)
         x = SpikeFunc.apply(x, self.net_params, self.ref, self.net_params['af_params']['sigma'][0], self.device)
         # Apply srm to middle layer spikes
-        x = self.trainer.apply_srm_kernel(x.view(1,1,1,25,501), self.srm)
+        x = self.trainer.apply_srm_kernel(x.view(1,1,1,25,-1), self.srm)
         # # Apply second layer
         x = SpikeFunc.apply(self.fc2(x), self.net_params, self.ref, self.net_params['af_params']['sigma'][1], self.device)
         return x
@@ -119,10 +119,12 @@ class SlayerTrainer(object):
 		# Data type used for membrane potentials, weights
 		self.data_type = data_type
 
-	def calculate_srm_kernel(self):
+	def calculate_srm_kernel(self, num_channels = None):
+		if num_channels is None:
+			num_channels = self.net_params['input_channels']
 		single_kernel = self._calculate_srm_kernel(self.net_params['sr_params']['mult'], self.net_params['sr_params']['tau'],
 			self.net_params['sr_params']['epsilon'], self.net_params['t_end'], self.net_params['t_s'])
-		concatenated_srm =  self._concatenate_srm_kernel(single_kernel, self.net_params['input_channels'])
+		concatenated_srm =  self._concatenate_srm_kernel(single_kernel, num_channels)
 		return torch.tensor(concatenated_srm, device=self.device)
 
 	# Generate kernels that will act on a single channel (0 outside of diagonals)

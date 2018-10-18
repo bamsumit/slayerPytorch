@@ -78,6 +78,10 @@ class TestSlayerTrainUtilityFunctions(unittest.TestCase):
 		self.assertTrue(is_array_equal_to_file(srm_response.reshape((2312,175)), CURRENT_TEST_DIR + "/test_files/torch_validate/1_spike_response_signal_ts2.csv", 
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : self.FLOAT_EPS_TOL}))
 
+	def test_srm_custom_numchannels(self):
+		self.assertEqual(self.trainer.calculate_srm_kernel(1).shape, (1,1,1,1,17))
+		self.assertEqual(self.trainer.calculate_srm_kernel(5).shape, (5,5,1,1,17))
+
 	# Test not strictly related to SRM but needs NMNIST parameters initialised on setUp
 	def test_classification_error(self):
 		spike = 1.0 / self.net_params['t_s']
@@ -135,7 +139,6 @@ class TestForwardPropSpikeTrain(unittest.TestCase):
 		pots = self.spike_func.apply_weights(self.fprop_gtruth['a1'].reshape(1,250,1,1,501), self.fprop_gtruth['W12'].reshape(25,250,1,1,1))
 		(u2, s2) = self.spike_func.calculate_membrane_potentials(pots, self.net_params, self.ref, self.net_params['af_params']['sigma'][0])
 		self.assertEqual(u2.shape, (1,25,1,1,501))
-
 
 	def test_forward_prop_single_sample(self):
 		# Apply SRM to input spikes
