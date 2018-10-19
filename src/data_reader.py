@@ -39,12 +39,9 @@ class DataReader(Dataset):
 	def __len__(self):
 		return self.num_samples
  
-	# TODO refactor n_timesteps and remove repeated uses
 	def __getitem__(self, index):
-		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		# HACK FOR 1 INDEXED DATASETS
 		data = torch.tensor(self.read_and_bin_input_file(index + self.file_offset), device=self.device)
-		data = data.reshape(self.net_params['input_channels'], self.net_params['input_x'], self.net_params['input_y'], n_timesteps)
 		return (data, self.training_samples[index,:,:,:,:], self.labels[index])
 		
 	def read_labels_file(self, file):
@@ -74,17 +71,15 @@ class DataReader(Dataset):
 		file_name = self.dataset_path + str(index) + ".bs2"
 		spike = 1.0 / self.net_params['t_s']
 		time_scaling = 1.0 / (self.net_params['time_unit'] * self.net_params['t_s'])
-		n_inputs = self.net_params['input_x'] * self.net_params['input_y'] * self.net_params['input_channels']
 		n_timesteps = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
 		# Preallocate numpy array
-		binned_array = np.zeros((n_inputs, n_timesteps), dtype=np.float32)
+		binned_array = np.zeros((self.net_params['input_channels'], self.net_params['input_y'], self.net_params['input_x'], n_timesteps), dtype=np.float32)
 		with open(file_name, 'rb') as input_file:
 			for raw_spike in iter(lambda: input_file.read(self.EVENT_BIN_SIZE), b''):
 				(ev_x, ev_y, ev_p, ev_ts) = self.process_event(raw_spike)
 				time_position = int(ev_ts * time_scaling)
 				# TODO do truncation if ts over t_end, checks on x and y
-				input_position = ev_p * (self.net_params['input_x'] * self.net_params['input_y']) + (ev_y * self.net_params['input_x']) + ev_x
-				binned_array[input_position, time_position] = spike
+				binned_array[ev_p, ev_y, ev_x, time_position] = spike
 		return binned_array
 
 	# Unclear whether this will really be needed, read target spikes in csv format

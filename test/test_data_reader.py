@@ -62,14 +62,18 @@ class TestDataReaderInputFile(unittest.TestCase):
 
 	def test_spikes_binning(self):
 		binned_spikes = self.reader.read_and_bin_input_file(1)
-		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
+		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,350), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes.csv"))
 
 	def test_read_input_spikes_ts_normalization(self):
 		FLOAT_EPS_TOL = 1e-6
 		self.reader.net_params['t_s'] = 2
 		binned_spikes = self.reader.read_and_bin_input_file(1)
-		self.assertTrue(is_array_equal_to_file(binned_spikes, CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes_ts2.csv", 
+		self.assertTrue(is_array_equal_to_file(binned_spikes.reshape(2312,175), CURRENT_TEST_DIR + "/test_files/input_validate/1_binned_spikes_ts2.csv",
 			compare_function=iterable_float_pair_comparator, comp_params={"FLOAT_EPS_TOL" : FLOAT_EPS_TOL}))
+
+	def test_input_spikes_shape(self):
+		spikes = self.reader.read_and_bin_input_file(1)
+		self.assertEqual(spikes.shape, (2,34,34,350))
 
 	def test_loaded_label_value(self):
 		# Correct class (5) should have 50 spikes, incorrect should have 10
