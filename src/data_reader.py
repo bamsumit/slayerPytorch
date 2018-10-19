@@ -3,7 +3,6 @@ import csv
 import numpy as np
 import yaml
 import torch
-from collections import namedtuple
 
 from torch.utils.data import Dataset
 
@@ -62,7 +61,8 @@ class DataReader(Dataset):
 		return des_spikes, int(len(des_spikes) / self.net_params['num_classes']), labels
 
 	def process_event(self, raw_bytes):
-		ts = int.from_bytes(raw_bytes[2:], byteorder='big') & 0x7FFFFF
+		# Ts is the last 23 bits of the raw_bytes array
+		ts = ((raw_bytes[2] << 16) | (raw_bytes[3] << 8) | raw_bytes[4]) & 0x7FFFFF
 		return (raw_bytes[0], raw_bytes[1], raw_bytes[2] >> 7, ts)
 
 	# TODO optimize, remove iteration
