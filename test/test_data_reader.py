@@ -14,7 +14,6 @@ import torch
 from torch.utils.data import DataLoader
 
 NMNIST_SIZE = 1000
-NMNIST_NUM_CLASSES = 10
 
 def matlab_equal_to_python_event(matlab_event, python_event, params = {}):
 	# Cast to avoid type problems
@@ -80,18 +79,6 @@ class TestDataReaderInputFile(unittest.TestCase):
 		self.assertEqual(self.reader.training_samples[0,5], 50)
 		self.assertEqual(self.reader.training_samples[0,0], 10)
 
-class TestDataReaderOutputSpikes(unittest.TestCase):
-
-	def setUp(self):
-		self.net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/NMNISTsmall/" + "parameters.yaml")
-		self.reader = DataReader(CURRENT_TEST_DIR + "/test_files/training/", "train12.txt", self.net_params)
-
-	def test_load_output_spikes(self):
-		minibatch_size = 12
-		num_time_samples = int((self.net_params['t_end'] - self.net_params['t_start']) / self.net_params['t_s'])
-		output_spikes = self.reader.read_output_spikes("test12_output_spikes.csv")
-		self.assertEqual(output_spikes.shape, (NMNIST_NUM_CLASSES, minibatch_size * num_time_samples))
-
 class TestPytorchDataset(unittest.TestCase):
 
 	def setUp(self):
@@ -110,6 +97,7 @@ class TestPytorchDataset(unittest.TestCase):
 		self.assertEqual(label, 5)
 
 	def test_dataloader(self):
+		torch.multiprocessing.set_start_method("spawn")
 		loader = DataLoader(dataset=self.reader, batch_size=self.net_params['batch_size'], shuffle=True, num_workers=2)
 		(inputs, des_spikes, label) = next(iter(loader))
 		self.assertEqual(inputs.shape, (10,2,34,34,350))
@@ -124,7 +112,6 @@ class TestReaderCuda(unittest.TestCase):
 		spikes, des_spikes, labels = reader[0]
 		self.assertEqual(spikes.device.type, 'cuda')
 		self.assertEqual(des_spikes.device.type, 'cuda')
-
 
 if __name__ == '__main__':
 	unittest.main()

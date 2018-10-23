@@ -22,7 +22,7 @@ class SlayerParams(object):
 
 class DataReader(Dataset):
 
-	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cpu'), file_offset=1):
+	def __init__(self, dataset_folder, training_file, net_params, device=torch.device('cuda'), file_offset=1):
 		self.EVENT_BIN_SIZE = 5
 		self.net_params = net_params
 		# Get files in folder
@@ -81,7 +81,3 @@ class DataReader(Dataset):
 				# TODO do truncation if ts over t_end, checks on x and y
 				binned_array[ev_p, ev_y, ev_x, time_position] = spike
 		return binned_array
-
-	# Unclear whether this will really be needed, read target spikes in csv format
-	def read_output_spikes(self, filename):
-		return np.genfromtxt(self.dataset_path + filename, delimiter=",")

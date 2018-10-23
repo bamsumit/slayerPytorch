@@ -9,7 +9,7 @@ import slayer_cuda
 
 class SlayerNet(nn.Module):
 
-    def __init__(self, net_params, weights_init = [4,4], device=torch.device('cpu')):
+    def __init__(self, net_params, weights_init = [4,4], device=torch.device('cuda')):
         super(SlayerNet, self).__init__()
         self.net_params = net_params
         self.trainer = SlayerTrainer(net_params, device)
@@ -38,12 +38,9 @@ class SlayerNet(nn.Module):
 class SpikeFunc(torch.autograd.Function):
 
 	@staticmethod
-	def forward(ctx, multiplied_activations, net_params, ref, sigma, device=torch.device('cpu')):
+	def forward(ctx, multiplied_activations, net_params, ref, sigma, device=torch.device('cuda')):
 		# Calculate membrane potentials
-		if (device == torch.device('cpu')):
-			(multiplied_activations, spikes) = SpikeFunc.calculate_membrane_potentials(multiplied_activations, net_params, ref, sigma)
-		else:
-			(multiplied_activations, spikes) = SpikeFunc.get_spikes_cuda(multiplied_activations, ref, net_params)
+		(multiplied_activations, spikes) = SpikeFunc.get_spikes_cuda(multiplied_activations, ref, net_params)
 		scale = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['scale'], device=device, dtype=torch.float32), requires_grad=False)
 		tau = torch.autograd.Variable(torch.tensor(net_params['pdf_params']['tau'], device=device, dtype=torch.float32), requires_grad=False)
 		theta = torch.autograd.Variable(torch.tensor(net_params['af_params']['theta'], device=device, dtype=torch.float32), requires_grad=False)
@@ -55,40 +52,6 @@ class SpikeFunc(torch.autograd.Function):
 		(membrane_potentials, theta, tau, scale) = ctx.saved_tensors
 		# Don't return any gradient for parameters
 		return (grad_output * SpikeFunc.calculate_pdf(membrane_potentials, theta, tau, scale), None, None, None, None)
-
-	@staticmethod
-	def apply_weights(activations, weights):
-		applied = F.conv3d(activations, weights)
-		return applied
-
-	# Input is potentials after matrix multiplication
-	@staticmethod
-	def calculate_membrane_potentials(potentials, net_params, ref, sigma):
-		# Need float32 to do convolution later
-		spikes = torch.empty_like(potentials)
-		ref_length = len(ref)
-		# Iterate over timestamps, NOTE, check if iterating in this dimension is a bottleneck
-		for p in range(potentials.shape[-1]):
-			ts_pots = potentials[:,:,:,:,p]
-			spike_positions = (ts_pots > net_params['af_params']['theta']).to(dtype=torch.float32)
-			spike_values = spike_positions / net_params['t_s']
-			# Assign output spikes
-			spikes[:,:,:,:,p] = spike_values
-			num_spikes = torch.sum(spike_positions, dim=(1,2,3))
-			have_spike_response = ref * (1 + sigma * (num_spikes - 1))
-			no_spike_response = ref * (sigma * num_spikes)
-			# Now iterate over neurons, apply refractory response
-			for n_id in range(spikes.shape[1]):
-				# Make sure our refractory response doesn't overshoot the total time
-				resp_length = min(potentials.shape[-1] - p, ref_length)
-				if spike_positions[:,n_id,0,0] > 0:
-					# Have spike here
-					potentials[:,n_id,0,0,p:p+resp_length] += have_spike_response[0:resp_length]
-				else:
-					# Didn't have a spike
-					potentials[:,n_id,0,0,p:p+resp_length] += no_spike_response[0:resp_length]
-			# print(num_spikes)
-		return (potentials, spikes)
 
 	# Call the cuda wrapper, Note! sigma is not implemented
 	@staticmethod
@@ -113,7 +76,7 @@ class SpikeLinear(nn.Conv3d):
 
 class SlayerTrainer(object):
 
-	def __init__(self, net_params, device=torch.device('cpu'), data_type=np.float32):
+	def __init__(self, net_params, device=torch.device('cuda'), data_type=np.float32):
 		self.device = device
 		self.net_params = net_params
 		# Data type used for membrane potentials, weights

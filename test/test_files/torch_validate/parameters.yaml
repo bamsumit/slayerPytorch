@@ -16,7 +16,7 @@ sr_params: {mult: 1, tau: 1, epsilon: 0.01}
 # TODO refractory response parameters
 ref_params: {mult: -20, tau: 1, epsilon: -0.01} 
 # Activation function parameters
-af_params: {theta: 10, sigma : [0.05, 0.05, 0.05], wScale : [4, 4]}
+af_params: {theta: 10, sigma : [0.0, 0.0, 0.0], wScale : [4, 4]}
 # Spike probability density function parameters (here tau is theta / log10)
 pdf_params: {scale: 1, tau: 4.3429}
 # Network architecture, FORMAT TO CONFIRM
