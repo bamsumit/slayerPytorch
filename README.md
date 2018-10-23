@@ -1,12 +1,15 @@
 This package is a Pytorch port of the original Spike LAYer Error Reassignment framework for backpropagation based spiking neural networks (SNNs) learning.
 
 ## Requirements
+Python 3 with the following packages installed:
+
 * pytorch, tested with version 0.4.1
 * numpy
 * pyyaml
 * unittest
 
 A CUDA enabled GPU is required for training any model.
+The software has been tested with CUDA libraries version 9.2 and GCC 7.3.0 on Ubuntu 18.04
 
 ## Installation
 The repository includes C++ and Cuda code that has to be compiled and installed before it can be used from Python, download the repository and run the following command to do so:
