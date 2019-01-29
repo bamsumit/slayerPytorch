@@ -1,5 +1,7 @@
 This package is a Pytorch port of the original Spike LAYer Error Reassignment framework for backpropagation based spiking neural networks (SNNs) learning.
 
+This work builds on initial implementation by [Luca Della VEDOVA](mailto:lucadellavr@gmail.com).
+
 ## Requirements
 Python 3 with the following packages installed:
 
@@ -21,5 +23,8 @@ An example of how to train the network for classification purposes, on the NMNIS
 
 A .yaml file is used to load and customise most parameters (i.e. neuron thresholds), an example can be found under test/test_files/NMNISTsmall/parameters.yaml. This file will also be used for the NMNIST example code.
 
+## Contribution
+This work builds on initial implementation by [Luca Della VEDOVA](mailto:lucadellavr@gmail.com).
+
 ## Contact
-For queries contact Luca lucadellavr@gmail.com
+For queries contact [Sumit](mailto:bam_sumit@hotmail.com).
