@@ -1,0 +1,3 @@
+From Wayne[2019/01/30]:
+1. When I do inference, I find the spike matrix contains floating numbers. 
+2. When I use dataloader to read testing data, the first batch is not same as the test.txt file, but became the second batch in test.txt
