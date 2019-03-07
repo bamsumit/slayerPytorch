@@ -1,3 +1,10 @@
 From Wayne[2019/01/30]:
 1. When I do inference, I find the spike matrix contains floating numbers. 
 2. When I use dataloader to read testing data, the first batch is not same as the test.txt file, but became the second batch in test.txt
+
+From Xiurui[2019/03/07]:
+1. In calculate_error_classification()
+	err = spikes.detatch() # causes the error calculation chagne the value of spike
+2. In DataLoader()
+	num_workers = 1 # is causing first minibatch samples to be dropped during inference (test case)
+	The issue seems to be solved when using the default parameter of num_workers
