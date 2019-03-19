@@ -59,6 +59,6 @@ class spikeLayer:
 		pass
 
 class denseLayer(nn.Conv3d):
-	def __init__(self, inFeatures, outFeatures):
-		kernel = ()
+	# def __init__(self, inFeatures, outFeatures):
+	# 	kernel = ()
 	pass
