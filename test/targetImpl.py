@@ -1,7 +1,9 @@
 import slayer
-import spikeio as spike
+import spikeio as sIO
 from torch.autograd import Variable
 from torch.utils.data import Dataset, Dataloader
+
+torch.backends.cudnn.benchmark = True
 
 # Dataloader definition
 class nmnistDataset(Dataset):
@@ -12,8 +14,8 @@ class nmnistDataset(Dataset):
 		self.output = data[:, 1]
 		
 	def __getitem__(self, index)
-		spikeInput  = spike.read('.. Path to spike file ...' + str(self.input[index]) )
-		spikeOutput = spike.read('.. Path to spike file ...' + str(self.output[index]) )
+		spikeInput  = sIO.read('.. Path to spike file ...' + str(self.input[index]) )
+		spikeOutput = sIO.read('.. Path to spike file ...' + str(self.output[index]) )
 		return spikeInput, spikeOutput
 		
 	def __len__(self)
@@ -24,13 +26,20 @@ trainLoader = DataLoader(dataset = dataset, batch_size = 16, shuffle = True, num
 
 # Network definition
 class Network(torch.nn.Module):
-	def __init__(self):
+	def __init__(self, netParam, device=torch.device('cuda')):
 		# Constructor
 		super(Network, self).__init__() # call the constructor of parent class
-		self.spike  = slayer.spike()
+		
+		self.netParam = netParam
+		
+		self.spikeResponse = slayer.alphaKernel     (self.netParam['neuron']['tauSr'],  self.netParam['simulation']['Ts'])
+		self.refResponse   = slayer.refractoryKernel(self.netParam['neuron']['tauRef'], self.netParam['simulation']['Ts'])
+				
+		self.spike  = slayer.spike(self.refResponse)
 		self.layer1 = slayer.dense((34, 34, 2), 512)
 		self.layer2 = slayer.dense(512, 10)
 		# self. layer1 = slayer.conv((5, 5, 8))
+		# torch.nn.init.normal_(self.layer1.weight, mean=0, std=1)
 		
 	def forward(self, spikeInput):
 		spikeLayer1 = self.spike(self.layer1(spikeInput))
