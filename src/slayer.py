@@ -2,6 +2,7 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 def EPSILON():
 	return 0.01
@@ -46,8 +47,8 @@ class spikeLayer:
 									self.srmKernel.reshape((1, 1, 1, 1, len(self.srmKernel))),
 									padding = (0, 0, int( self.srmKernel.shape[0] / 2 ) ))
 	
-	def dense():
-		pass
+	def dense(self, inFeatures, outFeatures):
+		return denseLayer(inFeatures, outFeatures)
 		
 	def conv():
 		pass
@@ -55,10 +56,47 @@ class spikeLayer:
 	def pool():
 		pass
 		
-	def spike():
-		pass
+	def spike(self, membranePotential):
+		return spikeFunction(membranePotential)
 
 class denseLayer(nn.Conv3d):
-	# def __init__(self, inFeatures, outFeatures):
-	# 	kernel = ()
-	pass
+	def __init__(self, inFeatures, outFeatures):
+		# extract information for kernel and inChannels
+		if type(inFeatures) == int:
+			kernel = (1, 1, 1)
+			inChannels = inFeatures 
+		elif len(inFeatures) == 2:
+			kernel = (inFeatures[1], inFeatures[0], 1)
+			inChannels = 1
+		elif len(inFeatures) == 3:
+			kernel = (inFeatures[1], inFeatures[0], 1)
+			inChannels = inFeatures[2]
+		else:
+			raise Exception('inFeatures should not be more than 3 dimension. It was: {}'.format(inFeatures.shape))
+		print('Kernel Dimension:', kernel)
+		print('Input Channels  :', inChannels)
+		
+		if type(outFeatures) == int:
+			outChannels = outFeatures
+		else:
+			raise Exception('outFeatures should not be more than 1 dimesnion. It was: {}'.format(outFeatures.shape))
+		print('Output Channels :', outChannels)
+		
+		super(denseLayer, self).__init__(inChannels, outChannels, kernel, bias=False)
+	
+	def forward(self, input):
+		return F.conv3d(input, 
+						self.weight, self.bias, 
+						self.stride, self.padding, self.dilation, self.groups)
+						
+class spikeFunction(torch.autograd.Function):
+	def __init__(self, )
+		pass
+		
+	@staticmethod
+	def forward(ctx, membranePotential)
+		pass
+		
+	@staticmethod
+	def backward(ctx, gradOutput):
+		pass

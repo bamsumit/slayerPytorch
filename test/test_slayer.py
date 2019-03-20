@@ -32,6 +32,34 @@ print('spikeData  : ', spikeData.shape)
 print('spike      : ', spike.shape)
 print('psp        : ', a.shape)
 
+
+###############################################################################
+# testing dense layer #########################################################
+
+# fcLayer1 = slayer.dense(512, 10)
+# fcLayer2 = slayer.dense((34, 34), 10)
+# fcLayer3 = slayer.dense((34, 34, 2), 10)
+# print(fcLayer1.weight.shape)
+# print(fcLayer2.weight.shape)
+# print(fcLayer3.weight.shape)
+
+Nbin = 100
+Nin  = (34, 24, 2)
+Nout = 30
+NinProd = int(np.product(Nin))
+input   = np.random.normal(size = (NinProd, Nbin)) 
+fcLayer = slayer.dense(Nin, Nout)
+# basic groundtruth calculation
+weightMatrix = fcLayer.weight.cpu().data.numpy().reshape(Nout, NinProd)
+output = np.dot(weightMatrix, input)
+# pytorch calculation
+inputTorch = torch.from_numpy(input).reshape((1, Nin[2], Nin[1], Nin[0], Nbin)).float()
+outputTorch = fcLayer(inputTorch)
+error = np.linalg.norm(output - outputTorch.reshape((Nout, Nbin)).cpu().data.numpy())
+print('Error = ', error)
+
+
+
 plt.figure(1)
 plt.plot(np.arange(0, slayer.srmKernel.shape[0]) * slayer.simulation['Ts'], slayer.srmKernel.cpu().data.numpy(), label = 'srmKernel')
 plt.plot(np.arange(0, slayer.refKernel.shape[0]) * slayer.simulation['Ts'], slayer.refKernel.cpu().data.numpy(), label = 'refKernel')
