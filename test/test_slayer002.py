@@ -19,7 +19,8 @@ Nhid = int(net_params['layer'][1]['dim'])
 Nout = int(net_params['layer'][2]['dim'])
 
 # initialize slayer
-slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
+# slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
+slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True)
 
 # define network functions
 spike = slayer.spike()
@@ -136,6 +137,7 @@ plt.plot(uOut    .reshape((Nout, Ns)).cpu().data.numpy()[0].transpose() - dOut[:
 plt.plot(spikeOut.reshape((Nout, Ns)).cpu().data.numpy()[0].transpose() - dOut[:, 2], label = 'spike')
 plt.plot(uOutPre .reshape((Nout, Ns)).cpu().data.numpy()[0].transpose() - dOut[:, 0], label = 'u : before refractory')
 plt.title('Error: Output Layer')
+plt.xlabel('Time bins')
 plt.legend()
 # plt.axis((None, None, -0.1, 0.1))
 
@@ -157,12 +159,18 @@ for t in np.arange(Ns):
 
 plt.figure(100)
 plt.subplot(2, 1, 1)
-plt.plot(u, 'o')
+plt.plot(u, 'o', label = 'Calculated')
 # plt.plot(uHid.reshape((Nhid, Ns)).cpu().data.numpy()[4].transpose(), label = 'u : after refractory')
-plt.plot(data.transpose()[1], label = 'u : after refractory')
+plt.plot(data.transpose()[1], label = 'Ground Truth')
+plt.ylabel('u')
+plt.legend()
+
 plt.subplot(2, 1, 2)
-plt.plot(s, 'o')
+plt.plot(s, 'o', label = 'Calculated')
 # plt.plot(spikeHid.reshape((Nhid, Ns)).cpu().data.numpy()[4].transpose(), label = 'spike')
-plt.plot(data.transpose()[2], label = 'spike')
+plt.plot(data.transpose()[2], label = 'Ground Truth')
+plt.legend()
+plt.xlabel('Time bins')
+plt.ylabel('spike')
 			
 plt.show()

@@ -4,13 +4,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import slayer_cuda
+# import matplotlib.pyplot as plt
 
 class spikeLayer:
-	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32):
+	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
 		self.neuron = neuronDesc
 		self.simulation = simulationDesc
 		self.device = device
 		self.dtype = dtype
+		self.fullRefKernel = fullRefKernel
 		
 		self.srmKernel = self.calculateSrmKernel()
 		self.refKernel = self.calculateRefKernel()
@@ -22,10 +24,12 @@ class spikeLayer:
 		return torch.tensor( self._zeroPadAndFlip(srmKernel), device = self.device, dtype = self.dtype) # to be removed later when custom cuda code is implemented
 		
 	def calculateRefKernel(self):
-		refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'])
-		# refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'], EPSILON = 0.0001)
-		# This gives the exact precision as MATLAB implementation, however, it is expensive
-		#
+		if self.fullRefKernel:
+			refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'], EPSILON = 0.0001)
+			# This gives the high precision refractory kernel as MATLAB implementation, however, it is expensive
+		else:
+			refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'])
+		
 		# TODO implement for different types of kernels
 		return torch.tensor(refKernel, device = self.device, dtype = self.dtype)
 		
@@ -96,7 +100,7 @@ class denseLayer(nn.Conv3d):
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
 						
-class spikeFunction(torch.autograd.Function): # NOT TESTED YET
+class spikeFunction(torch.autograd.Function):
 	@staticmethod
 	def forward(ctx, membranePotential, refractoryResponse, neuron, Ts):
 		device = membranePotential.device
@@ -125,5 +129,13 @@ class spikeFunction(torch.autograd.Function): # NOT TESTED YET
 	def backward(ctx, gradOutput):
 		(membranePotential, threshold, pdfTimeConstant, pdfScale) = ctx.saved_tensors
 		spikePdf = pdfScale / pdfTimeConstant * torch.exp( -torch.abs(membranePotential - threshold) / pdfTimeConstant)
+
+		return gradOutput * spikePdf, None, None, None
+		# plt.figure()
+		# plt.plot(gradOutput[0,0,0,0,:].cpu().data.numpy())
+		# print   (gradOutput[0,0,0,0,:].cpu().data.numpy())
+		# plt.plot(membranePotential[0,0,0,0,:].cpu().data.numpy())
+		# plt.plot(spikePdf         [0,0,0,0,:].cpu().data.numpy())
+		# print   (spikePdf         [0,0,0,0,:].cpu().data.numpy())
+		# plt.show()
 		# return gradOutput * spikePdf, None, None, None
-		return gradOutput, None, None, None

@@ -6,6 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import numpy as np
 import matplotlib.pyplot as plt
 from slayer import spikeLayer
+from spikeLoss import spikeLoss
 from data_reader import SlayerParams
 import torch
 
@@ -22,7 +23,7 @@ class Network(torch.nn.Module):
 	def __init__(self, net_params, device=torch.device('cuda')):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True)
 		# define network functions
 		self.spike = slayer.spike()
 		self.psp   = slayer.psp()
@@ -62,24 +63,35 @@ for (tID, nID) in np.rint(spikeAER).astype(int):
 spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(torch.device('cuda'))
 
 # calculate loss
-error = snn.psp(spikeOut - spikeDes) 
-loss  = 1/2 * torch.sum(error**2) * net_params['simulation']['Ts']
+# error = snn.psp(spikeOut - spikeDes) 
+# loss  = 1/2 * torch.sum(error**2) * net_params['simulation']['Ts']
+error = spikeLoss(net_params['neuron'], net_params['simulation'])
+loss = error.spikeTime(spikeOut, spikeDes)
 print('loss :', loss)
 
 loss.backward()
 
-print(snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy())
+gradW1 = np.loadtxt('test_files/snnData/gradW1Initial.txt')
+gradW2 = np.loadtxt('test_files/snnData/gradW2Initial.txt')
+
+print('Layer2 gradient error :', np.linalg.norm(gradW2 - snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy()) / gradW2.size)
+print('Layer1 gradient error :', np.linalg.norm(gradW1 - snn.fc1.weight.grad.reshape((Nhid, Nin )).cpu().numpy()) / gradW1.size)
+
+# print(snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy())
+# print(snn.fc1.weight.grad.reshape((Nhid, Nin)).cpu().numpy()[0, :])
 
 # plotting
-spikeOutput = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
-outputAER   = np.argwhere(spikeOutput > 0)
+plt.figure(1)
+plt.subplot(2, 1, 1)
+plt.plot(gradW2 - snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy(), '.')
+plt.xlabel('Output neuron #')
+plt.ylabel('Gradient Error')
 
-# plt.figure(1)
-# plt.plot(outputAER[:, 1], outputAER[:, 0], '.', label = 'Actual spikes')
+plt.subplot(2, 1, 2)
+plt.plot(gradW1 - snn.fc1.weight.grad.reshape((Nhid, Nin )).cpu().numpy(), '.')
+plt.xlabel('Hidden neuron #')
+plt.ylabel('Gradient Error')
 
-# plt.figure(2)
-# plt.plot(error.reshape((Nout, Ns)).cpu().data.numpy().transpose())
-
-# plt.show()
+plt.show()
 
 
