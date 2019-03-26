@@ -4,12 +4,20 @@ import torch
 import torch.nn as nn
 from slayer import spikeLayer
 
-class spikeLoss:
-	def __init__(self, neuronDesc, simulationDesc):
-		self.neuron = neuronDesc
-		self.simulation = simulationDesc
-		slayer = spikeLayer(self.neuron, self.simulation)
+class spikeLoss:	
+	def __init__(self, slayer):
+		self.neuron = slayer.neuron
+		self.simulation = slayer.simulation
+		self.dtype = slayer.dtype
+		self.device = slayer.device
 		self.psp = slayer.psp()
+
+	# def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda')):
+	# 	self.neuron = neuronDesc
+	# 	self.simulation = simulationDesc
+	# 	self.device = device
+	# 	slayer = spikeLayer(self.neuron, self.simulation, device=self.device)
+	# 	self.psp = slayer.psp()
 		
 	def spikeTime(self, spikeOut, spikeDesired):
 		error = self.psp(spikeOut - spikeDesired) 

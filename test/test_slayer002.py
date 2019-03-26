@@ -18,9 +18,12 @@ Nin = int(net_params['layer'][0]['dim'])
 Nhid = int(net_params['layer'][1]['dim'])
 Nout = int(net_params['layer'][2]['dim'])
 
+# device = torch.device('cuda')
+device = torch.device('cuda:1')
+
 # initialize slayer
 # slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
-slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True)
+slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device = device, fullRefKernel = True)
 
 # define network functions
 spike = slayer.spike()
@@ -36,7 +39,7 @@ spikeAER[:,1] -= 1
 spikeData = np.zeros((Nin, Ns))
 for (tID, nID) in np.rint(spikeAER).astype(int):
 	if tID < Ns : spikeData[nID, tID] = 1/net_params['simulation']['Ts']
-spikeIn = torch.FloatTensor(spikeData.reshape((1, Nin, 1, 1, Ns))).to(torch.device('cuda'))
+spikeIn = torch.FloatTensor(spikeData.reshape((1, Nin, 1, 1, Ns))).to(device)
 
 spikeDataGT = np.loadtxt('test_files/snnData/spikeInMat.txt')[:,:-1]
 print('Spike Load Error:', np.linalg.norm(spikeDataGT - spikeData))
@@ -53,7 +56,7 @@ data = np.loadtxt('test_files/snnData/spikeFuncHid.txt')[0:-1]
 # data = np.loadtxt('test_files/snnData/spikeFuncHid04.txt')[0:-1]
 aIn      = psp(spikeIn)
 uHid     = fc1(aIn)
-uHidPre  = torch.tensor(uHid, requires_grad=False)
+uHidPre  = torch.tensor(uHid, device=device, requires_grad=False)
 
 spikeHid = spike(uHid)
 s2 = spikeHid.reshape((Nhid, Ns)).cpu().data.numpy()
@@ -65,7 +68,7 @@ s2GT[:,1] -= 1
 spikeHidData = np.zeros((Nhid, Ns))
 for (tID, nID) in np.rint(s2GT).astype(int):
 	if tID < Ns : spikeHidData[nID, tID] = 1/net_params['simulation']['Ts']
-spikeHidGT = torch.FloatTensor(spikeHidData.reshape((1, Nhid, 1, 1, Ns))).to(torch.device('cuda'))
+spikeHidGT = torch.FloatTensor(spikeHidData.reshape((1, Nhid, 1, 1, Ns))).to(device)
 
 # load hidden layer weight
 W2 = np.loadtxt('test_files/snnData/w2learned.txt')
@@ -73,7 +76,7 @@ fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 
 dOut = np.loadtxt('test_files/snnData/spikeFuncOut.txt')[0:-1]
 uOut = fc2(psp(spikeHid))
 # uOut = fc2(psp(spikeHidGT))
-uOutPre = torch.tensor(uOut, requires_grad=False)
+uOutPre = torch.tensor(uOut, requires_grad=False, device=device)
 spikeOut = spike(uOut)
 s3 = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 s3AER = np.argwhere(s3 > 0)

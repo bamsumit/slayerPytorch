@@ -19,11 +19,16 @@ Nin  = int(net_params['layer'][0]['dim'])
 Nhid = int(net_params['layer'][1]['dim'])
 Nout = int(net_params['layer'][2]['dim'])
 
+# device = torch.device('cuda')
+device = torch.device('cuda:2')
+
 class Network(torch.nn.Module):
-	def __init__(self, net_params, device=torch.device('cuda')):
+	def __init__(self, net_params, device=device):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True)
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device=device, fullRefKernel=True)
+
+		self.slayer = slayer
 		# define network functions
 		self.spike = slayer.spike()
 		self.psp   = slayer.psp()
@@ -49,7 +54,7 @@ spikeAER[:,1] -= 1
 spikeData = np.zeros((Nin, Ns))
 for (tID, nID) in np.rint(spikeAER).astype(int):
 	if tID < Ns : spikeData[nID, tID] = 1/net_params['simulation']['Ts']
-spikeIn = torch.FloatTensor(spikeData.reshape((1, Nin, 1, 1, Ns))).to(torch.device('cuda'))
+spikeIn = torch.FloatTensor(spikeData.reshape((1, Nin, 1, 1, Ns))).to(device)
 
 spikeOut = snn.forward(spikeIn)
 
@@ -60,14 +65,15 @@ spikeAER[:,1] -= 1
 spikeData = np.zeros((Nout, Ns))
 for (tID, nID) in np.rint(spikeAER).astype(int):
 	if tID < Ns : spikeData[nID, tID] = 1/net_params['simulation']['Ts']
-spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(torch.device('cuda'))
+spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(device)
 
 # calculate loss
 # error = snn.psp(spikeOut - spikeDes) 
 # loss  = 1/2 * torch.sum(error**2) * net_params['simulation']['Ts']
-error = spikeLoss(net_params['neuron'], net_params['simulation'])
+# error = spikeLoss(net_params['neuron'], net_params['simulation'], device = torch.device('cuda:3'))
+error = spikeLoss(snn.slayer)
 loss = error.spikeTime(spikeOut, spikeDes)
-print('loss :', loss)
+print('loss :', loss.cpu())
 
 loss.backward()
 

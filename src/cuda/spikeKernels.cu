@@ -68,6 +68,9 @@ __global__ void evalRhoKernel(float* d_rho, const float* d_u, float theta, float
 
 std::vector<at::Tensor> getSpikesCuda(at::Tensor d_u, at::Tensor d_s, const at::Tensor& d_nu, const float theta, const float Ts)
 {
+	// set the current cuda device to wherever the tensor d_u resides
+	// printf("Device: %d\n", d_u.device().index());
+	cudaSetDevice(d_u.device().index());
 	unsigned nuSize = d_nu.size(-1);
 	unsigned Ns = d_u.size(-1);
 	// Parallelization is done in neuron dimension, run multiple batches through neuron duplication

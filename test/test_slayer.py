@@ -36,12 +36,12 @@ print('psp        : ', a.shape)
 ###############################################################################
 # testing dense layer #########################################################
 
-# fcLayer1 = slayer.dense(512, 10)
-# fcLayer2 = slayer.dense((34, 34), 10)
-# fcLayer3 = slayer.dense((34, 34, 2), 10)
-# print(fcLayer1.weight.shape)
-# print(fcLayer2.weight.shape)
-# print(fcLayer3.weight.shape)
+fcLayer1 = slayer.dense(512, 10)
+fcLayer2 = slayer.dense((34, 34), 10)
+fcLayer3 = slayer.dense((34, 34, 2), 10)
+print(fcLayer1.weight.shape)
+print(fcLayer2.weight.shape)
+print(fcLayer3.weight.shape)
 
 Nbin = 100
 Nin  = (34, 24, 2)

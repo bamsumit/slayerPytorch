@@ -107,8 +107,15 @@ class spikeFunction(torch.autograd.Function):
 		dtype  = membranePotential.dtype
 		threshold      = neuron['theta']
 		oldDevice = torch.cuda.current_device()
-		
+
 		# if device != oldDevice: torch.cuda.set_device(device)
+		# torch.cuda.device(3)
+
+		# spikeTensor = torch.empty_like(membranePotential)
+
+		# print('membranePotential  :', membranePotential .device)
+		# print('spikeTensor        :', spikeTensor       .device)
+		# print('refractoryResponse :', refractoryResponse.device)
 			
 		(membranePotential, spikes) = slayer_cuda.get_spikes_cuda(membranePotential,
 																  torch.empty_like(membranePotential),	# tensor for spikes
@@ -120,8 +127,10 @@ class spikeFunction(torch.autograd.Function):
 		pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']  , device=device, dtype=dtype), requires_grad=False)
 		threshold       = torch.autograd.Variable(torch.tensor(neuron['theta']   , device=device, dtype=dtype), requires_grad=False)
 		ctx.save_for_backward(membranePotential, threshold, pdfTimeConstant, pdfScale)
+		torch.cuda.synchronize()
 		
 		# if device != oldDevice: torch.cuda.set_device(oldDevice)
+		# torch.cuda.device(oldDevice)
 		
 		return spikes
 		
