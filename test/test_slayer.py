@@ -53,12 +53,10 @@ fcLayer = slayer.dense(Nin, Nout)
 weightMatrix = fcLayer.weight.cpu().data.numpy().reshape(Nout, NinProd)
 output = np.dot(weightMatrix, input)
 # pytorch calculation
-inputTorch = torch.from_numpy(input).reshape((1, Nin[2], Nin[1], Nin[0], Nbin)).float()
+inputTorch = torch.from_numpy(input).reshape((1, Nin[2], Nin[1], Nin[0], Nbin)).float().to(torch.device('cuda'))
 outputTorch = fcLayer(inputTorch)
 error = np.linalg.norm(output - outputTorch.reshape((Nout, Nbin)).cpu().data.numpy())
 print('Error = ', error)
-
-
 
 plt.figure(1)
 plt.plot(np.arange(0, slayer.srmKernel.shape[0]) * slayer.simulation['Ts'], slayer.srmKernel.cpu().data.numpy(), label = 'srmKernel')

@@ -1,0 +1,7 @@
+Ts = 0.1;       		% sampling time
+t  = 0:Ts:50;   		% simulation time values
+theta = 10;     		% neuron threshold
+sigma = [0 0 0];		% lateral inhibitory factor
+nn_arch = [250 25 1];	% [input hidden out]
+tau_sr = 1;				% 1ms time constant for spike response kernel
+tau_ref = 1;			% 1ms time constant for refractory kernel

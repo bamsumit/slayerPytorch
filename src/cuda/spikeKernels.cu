@@ -1,4 +1,4 @@
-/*
+	/*
  * Author: Sumit Bam Shrestha
  * 12/03/2018 12:00 PM
  * Contains routines that converts membrane potential of neuron into spikes

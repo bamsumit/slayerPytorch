@@ -32,10 +32,12 @@ class Network(torch.nn.Module):
 		
 		self.netParam = netParam
 		
-		self.spikeResponse = slayer.alphaKernel     (self.netParam['neuron']['tauSr'],  self.netParam['simulation']['Ts'])
-		self.refResponse   = slayer.refractoryKernel(self.netParam['neuron']['tauRef'], self.netParam['simulation']['Ts'])
+		# self.spikeResponse = slayer.alphaKernel     (self.netParam['neuron']['tauSr'],  self.netParam['simulation']['Ts'])
+		# self.refResponse   = slayer.refractoryKernel(self.netParam['neuron']['tauRef'], self.netParam['simulation']['Ts'])
+		
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
 				
-		self.spike  = slayer.spike(self.refResponse)
+		self.spike  = slayer.spike()
 		self.layer1 = slayer.dense((34, 34, 2), 512)
 		self.layer2 = slayer.dense(512, 10)
 		# self. layer1 = slayer.conv((5, 5, 8))

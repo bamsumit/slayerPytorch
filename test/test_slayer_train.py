@@ -188,6 +188,7 @@ class TestSlayerNet(unittest.TestCase):
 		# Calculate l2 loss
 		l2loss = self.trainer.calculate_l2_loss_spiketrain(output_activations, self.des_activations)
 		l2loss.backward()
+		print(l2loss)
 		self.assertTrue(iterable_float_pair_comparator(self.net.fc2.weight.grad.flatten(), self.bprop_gtruth['Wgrad2'].flatten(), self.compare_params))
 		self.assertTrue(iterable_float_pair_comparator(self.net.fc1.weight.grad.flatten(), self.bprop_gtruth['Wgrad1'].flatten(), self.compare_params))
 
