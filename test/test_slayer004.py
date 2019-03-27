@@ -5,10 +5,11 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 
 import numpy as np
 import matplotlib.pyplot as plt
+import torch
+from data_reader import SlayerParams
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
-from data_reader import SlayerParams
-import torch
+from spikeClassifier import spikeClassifier as predict
 
 ###############################################################################
 # testing numSpikesError ######################################################
@@ -62,6 +63,9 @@ error = spikeLoss(snn.slayer, net_params['training']['error'])
 loss = error.numSpikes(spikeOut, desiredClass)
 
 loss.backward()
+
+# print('Output Class is :', predict.getClass(spikeOut.reshape((1, 1, 1, Nout, Ns))))
+print('Output Class is :', predict.getClass(spikeOut))
 
 # output  = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 # desired =     loss.reshape((Nout, Ns)).cpu().data.numpy()

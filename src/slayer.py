@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import slayer_cuda
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 class spikeLayer:
 	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
