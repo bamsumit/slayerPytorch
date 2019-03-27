@@ -17,7 +17,7 @@ layer:
     - {dim: 1}
 training:
     error:
-        type: NumSpikes #ProbSpikes #NumSpikes #SpikeTime
+        type: SpikeTime #ProbSpikes #NumSpikes #SpikeTime
         probSlidingWin: 20  # only valid for ProbSpikes
         tgtSpikeRegion: {start: 10, stop: 40}    # only valid for NumSpikes and ProbSpikes
         tgtSpikeCount:  {true: 60, false: 10}    # only valid for NumSpikes

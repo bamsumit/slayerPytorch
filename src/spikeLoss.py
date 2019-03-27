@@ -21,7 +21,7 @@ class spikeLoss:
 	
 	def numSpikes(self, spikeOut, desiredClass):
 		# Tested with autograd, it works
-		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not NumSpike"
+		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not NumSpikes"
 		# desiredClass should be one-hot tensor with 5th dimension 1
 		tgtSpikeRegion = self.errorDescriptor['tgtSpikeRegion']
 		tgtSpikeCount  = self.errorDescriptor['tgtSpikeCount']
@@ -41,5 +41,5 @@ class spikeLoss:
 		return 1/2 * torch.sum(error**2) * self.simulation['Ts']
 	
 	def probSpikes(spikeOut, spikeDesired, probSlidingWindow = 20):
-		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not ProbSpike"
+		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not ProbSpikes"
 		pass

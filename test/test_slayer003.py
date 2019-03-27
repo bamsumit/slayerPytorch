@@ -73,7 +73,7 @@ spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(device)
 # error = snn.psp(spikeOut - spikeDes) 
 # loss  = 1/2 * torch.sum(error**2) * net_params['simulation']['Ts']
 # error = spikeLoss(net_params['neuron'], net_params['simulation'], device = torch.device('cuda:3'))
-error = spikeLoss(snn.slayer)
+error = spikeLoss(snn.slayer, net_params['training']['error'])
 loss = error.spikeTime(spikeOut, spikeDes)
 print('loss :', loss.cpu())
 

@@ -17,6 +17,7 @@ net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/snnData/network.yaml")
 Ns   = int(net_params['simulation']['tSample'] / net_params['simulation']['Ts'])
 Nin  = int(net_params['layer'][0]['dim'])
 Nout = int(net_params['layer'][1]['dim'])
+net_params['training']['error']['type'] = 'NumSpikes'
 
 # device = torch.device('cuda')
 device = torch.device('cuda:3')
