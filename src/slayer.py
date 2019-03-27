@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import slayer_cuda
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 class spikeLayer:
 	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
@@ -141,7 +141,7 @@ class spikeFunction(torch.autograd.Function):
 
 		return gradOutput * spikePdf, None, None, None
 		# plt.figure()
-		# plt.plot(gradOutput[0,0,0,0,:].cpu().data.numpy())
+		# plt.plot(gradOutput[0,5,0,0,:].cpu().data.numpy())
 		# print   (gradOutput[0,0,0,0,:].cpu().data.numpy())
 		# plt.plot(membranePotential[0,0,0,0,:].cpu().data.numpy())
 		# plt.plot(spikePdf         [0,0,0,0,:].cpu().data.numpy())

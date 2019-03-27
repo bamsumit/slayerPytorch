@@ -24,6 +24,8 @@ training:
     error:
         type: NumSpikes #ProbSpikes #NumSpikes
         probSlidingWin: 20  # only valid for ProbSpikes
+        tgtSpikeRegion: {start: 0, end: 300}    # only valid for NumSpikes and ProbSpikes
+        tgtSpikeCount: {true: 60, false: 10}    # only valid for NumSpikes
     stopif:
         maxIter: 100000
         minCost: 0.0001

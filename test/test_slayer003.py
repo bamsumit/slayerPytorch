@@ -20,7 +20,7 @@ Nhid = int(net_params['layer'][1]['dim'])
 Nout = int(net_params['layer'][2]['dim'])
 
 # device = torch.device('cuda')
-device = torch.device('cuda:2')
+device = torch.device('cuda:3')
 
 class Network(torch.nn.Module):
 	def __init__(self, net_params, device=device):
@@ -36,6 +36,8 @@ class Network(torch.nn.Module):
 		self.fc2   = slayer.dense(Nhid, Nout)
 		W1 = np.loadtxt('test_files/snnData/w1Initial.txt')
 		W2 = np.loadtxt('test_files/snnData/w2Initial.txt')
+		# W1 = np.loadtxt('test_files/snnData/w1learned.txt')
+		# W2 = np.loadtxt('test_files/snnData/w2learned.txt')
 		self.fc1.weight = torch.nn.Parameter(torch.FloatTensor(W1.reshape((Nhid, Nin , 1, 1, 1))).to(self.fc1.weight.device), requires_grad = True)
 		self.fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 1))).to(self.fc2.weight.device), requires_grad = True)
 	
@@ -83,8 +85,8 @@ gradW2 = np.loadtxt('test_files/snnData/gradW2Initial.txt')
 print('Layer2 gradient error :', np.linalg.norm(gradW2 - snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy()) / gradW2.size)
 print('Layer1 gradient error :', np.linalg.norm(gradW1 - snn.fc1.weight.grad.reshape((Nhid, Nin )).cpu().numpy()) / gradW1.size)
 
-# print(snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy())
-# print(snn.fc1.weight.grad.reshape((Nhid, Nin)).cpu().numpy()[0, :])
+# print('Layer2 gradient :\n', snn.fc2.weight.grad.reshape((Nout, Nhid)).cpu().numpy())
+# print('Layer1 gradient :\n', snn.fc1.weight.grad.reshape((Nhid, Nin )).cpu().numpy()[0, :])
 
 # plotting
 plt.figure(1)
@@ -99,5 +101,10 @@ plt.xlabel('Hidden neuron #')
 plt.ylabel('Gradient Error')
 
 plt.show()
+
+print('Desired Spikes (true)  :', net_params['training']['error']['tgtSpikeCount'][True])
+print('Desired Spikes (false) :', net_params['training']['error']['tgtSpikeCount'][False])
+print('Desired Spikes (1) :', net_params['training']['error']['tgtSpikeCount'][1])
+print('Desired Spikes (0) :', net_params['training']['error']['tgtSpikeCount'][0])
 
 
