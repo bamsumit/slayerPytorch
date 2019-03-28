@@ -28,8 +28,10 @@ class spikeLoss:
 		startID = np.rint( tgtSpikeRegion['start'] / self.simulation['Ts'] ).astype(int)
 		stopID  = np.rint( tgtSpikeRegion['stop' ] / self.simulation['Ts'] ).astype(int)
 		
-		actualSpikes = torch.sum(spikeOut, 4, keepdim=True).cpu().detach().numpy()
+		actualSpikes = torch.sum(spikeOut, 4, keepdim=True).cpu().detach().numpy() * self.simulation['Ts']
 		desiredSpikes = np.where(desiredClass == True, tgtSpikeCount[True], tgtSpikeCount[False])
+		# print('actualSpikes :', actualSpikes.flatten())
+		# print('desiredSpikes:', desiredSpikes.flatten())
 		errorSpikeCount = (actualSpikes - desiredSpikes) / (stopID - startID)
 		targetRegion = np.zeros(spikeOut.shape)
 		targetRegion[:,:,:,:,startID:stopID] = 1;

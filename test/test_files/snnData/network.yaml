@@ -20,4 +20,4 @@ training:
         type: SpikeTime #ProbSpikes #NumSpikes #SpikeTime
         probSlidingWin: 20  # only valid for ProbSpikes
         tgtSpikeRegion: {start: 10, stop: 40}    # only valid for NumSpikes and ProbSpikes
-        tgtSpikeCount:  {true: 60, false: 10}    # only valid for NumSpikes
+        tgtSpikeCount:  {true: 10, false: 3}     # only valid for NumSpikes

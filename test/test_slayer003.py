@@ -19,6 +19,8 @@ Nin  = int(net_params['layer'][0]['dim'])
 Nhid = int(net_params['layer'][1]['dim'])
 Nout = int(net_params['layer'][2]['dim'])
 
+net_params['neuron']['tauRho'] = 0.1
+
 # device = torch.device('cuda')
 device = torch.device('cuda:3')
 

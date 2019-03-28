@@ -123,9 +123,10 @@ class spikeFunction(torch.autograd.Function):
 																  threshold,
 																  Ts)
 		# TODO change it to return spikes only. The membranePotential should be changed intrinsically
-		pdfScale        = torch.autograd.Variable(torch.tensor(neuron['scaleRho'], device=device, dtype=dtype), requires_grad=False)
-		pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']  , device=device, dtype=dtype), requires_grad=False)
-		threshold       = torch.autograd.Variable(torch.tensor(neuron['theta']   , device=device, dtype=dtype), requires_grad=False)
+		pdfScale        = torch.autograd.Variable(torch.tensor(neuron['scaleRho']                 , device=device, dtype=dtype), requires_grad=False)
+		# pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']                   , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
+		pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho'] * neuron['theta'] , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
+		threshold       = torch.autograd.Variable(torch.tensor(neuron['theta']                    , device=device, dtype=dtype), requires_grad=False)
 		ctx.save_for_backward(membranePotential, threshold, pdfTimeConstant, pdfScale)
 		torch.cuda.synchronize()
 		
@@ -139,6 +140,7 @@ class spikeFunction(torch.autograd.Function):
 		(membranePotential, threshold, pdfTimeConstant, pdfScale) = ctx.saved_tensors
 		spikePdf = pdfScale / pdfTimeConstant * torch.exp( -torch.abs(membranePotential - threshold) / pdfTimeConstant)
 
+		# return gradOutput, None, None, None # This seems to work better!
 		return gradOutput * spikePdf, None, None, None
 		# plt.figure()
 		# plt.plot(gradOutput[0,5,0,0,:].cpu().data.numpy())
