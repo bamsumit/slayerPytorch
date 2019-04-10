@@ -58,7 +58,7 @@ class Network(torch.nn.Module):
 		# define network functions
 		self.spike = slayer.spike()
 		self.psp   = slayer.psp()
-		self.fc1   = slayer.dense((34, 34, 2), 512)
+		# self.fc1   = slayer.dense((34, 34, 2), 512)
 		self.fc1   = slayer.dense((34*34*2), 512)
 		self.fc2   = slayer.dense(512, 10)
 
@@ -77,13 +77,13 @@ trainingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'],
 						    sampleFile=netParams['training']['path']['train'],
 						    samplingTime=netParams['simulation']['Ts'],
 						    sampleLength=netParams['simulation']['tSample'])
-trainLoader = DataLoader(dataset=trainingSet, batch_size=8, shuffle=False, num_workers=2)
+trainLoader = DataLoader(dataset=trainingSet, batch_size=8, shuffle=False, num_workers=4)
 
 testingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
 						    sampleFile=netParams['training']['path']['test'],
 						    samplingTime=netParams['simulation']['Ts'],
 						    sampleLength=netParams['simulation']['tSample'])
-testLoader = DataLoader(dataset=testingSet, batch_size=8, shuffle=False, num_workers=2)
+testLoader = DataLoader(dataset=testingSet, batch_size=8, shuffle=False, num_workers=4)
 
 # cost function
 error = snn.loss(net.slayer, netParams['training']['error'])
@@ -96,6 +96,12 @@ printEpoch         = lambda epoch, timeElapsed: print('Epoch: {:4d} \t ({} sec e
 printTrainingStats = lambda cost, accuracy: print('Training: loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
 printTestingStats  = lambda cost, accuracy: print('Testing : loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
 
+# visualize the input spikes (First five samples)
+for i in range(5):
+	input, target, label = trainingSet[i]
+	snn.io.showTD(snn.io.numpyToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
+	# snn.io.numpyToEvent converts input numpy array to TD event
+	# snn.io.numpyToEvent expects input numpy array as a 4d tensor (p, y, x, t)
 
 # training loop
 for epoch in range(20):
