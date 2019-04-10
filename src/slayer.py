@@ -3,8 +3,22 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import yaml
 import slayer_cuda
 # import matplotlib.pyplot as plt
+
+# Consider dictionary for easier iteration and better scalability
+class yamlParams(object):
+	def __init__(self, parameter_file_path):
+		with open(parameter_file_path, 'r') as param_file:
+			self.parameters = yaml.load(param_file)
+
+	# Allow dictionary like access
+	def __getitem__(self, key):
+		return self.parameters[key]
+
+	def __setitem__(self, key, value):
+		self.parameters[key] = value
 
 class spikeLayer:
 	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
@@ -61,11 +75,11 @@ class spikeLayer:
 	def dense(self, inFeatures, outFeatures):
 		return denseLayer(inFeatures, outFeatures).to(self.device)
 		
-	def conv():
-		pass
+	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
+		return convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device)
 		
-	def pool():
-		pass
+	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
+		return poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device)
 		
 	def spike(self):
 		return lambda membranePotential : spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
@@ -99,6 +113,116 @@ class denseLayer(nn.Conv3d):
 		return F.conv3d(input, 
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
+
+class convLayer(nn.Conv3d):
+	def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1):
+		inChannels = inFeatures
+		outChannels = outFeatures
+		
+		# kernel
+		if type(kernelSize) == int:
+			kernel = (kernelSize, kernelSize, 1)
+		elif len(kernelSize) == 2:
+			kernel = (kernelSize[0], kernelSize[1], 1)
+		else:
+			raise Exception('kernelSize can only be of 1 or 2 dimension. It was: {}'.format(kernelSize.shape))
+
+		# stride
+		if type(stride) == int:
+			stride = (stride, stride, 1)
+		elif len(stride) == 2:
+			stride = (stride[0], stride[1], 1)
+		else:
+			raise Exception('stride can be either int or tuple of size 2. It was: {}'.format(stride.shape))
+
+		# padding
+		if type(padding) == int:
+			padding = (padding, padding, 0)
+		elif len(padding) == 2:
+			padding = (padding[0], padding[1], 0)
+		else:
+			raise Exception('padding can be either int or tuple of size 2. It was: {}'.format(padding.shape))
+
+		# dilation
+		if type(dilation) == int:
+			dilation = (dilation, dilation, 1)
+		elif len(dilation) == 2:
+			dilation = (dilation[0], dilation[1], 1)
+		else:
+			raise Exception('dilation can be either int or tuple of size 2. It was: {}'.format(dilation.shape))
+
+		# groups
+		# no need to check for groups. It can only be int
+
+		# print('inChannels :', inChannels)
+		# print('outChannels:', outChannels)
+		# print('kernel     :', kernel, kernelSize)
+		# print('stride     :', stride)
+		# print('padding    :', padding)
+		# print('dilation   :', dilation)
+		# print('groups     :', groups)
+
+		super(convLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, dilation, groups, bias=False)
+
+	def foward(self, input):
+		return F.conv3d(input, 
+						self.weight, self.bias, 
+						self.stride, self.padding, self.dilation, self.groups)
+
+class poolLayer(nn.Conv3d):
+	def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1):
+		# kernel
+		if type(kernelSize) == int:
+			kernel = (kernelSize, kernelSize, 1)
+		elif len(kernelSize) == 2:
+			kernel = (kernelSize[0], kernelSize[1], 1)
+		else:
+			raise Exception('kernelSize can only be of 1 or 2 dimension. It was: {}'.format(kernelSize.shape))
+		
+		# stride
+		if stride is None:
+			stride = kernel
+		elif type(stride) == int:
+			stride = (stride, stride, 1)
+		elif len(stride) == 2:
+			stride = (stride[0], stride[1], 1)
+		else:
+			raise Exception('stride can be either int or tuple of size 2. It was: {}'.format(stride.shape))
+
+		# padding
+		print(padding)
+		if type(padding) == int:
+			padding = (padding, padding, 0)
+		elif len(padding) == 2:
+			padding = (padding[0], padding[1], 0)
+		else:
+			raise Exception('padding can be either int or tuple of size 2. It was: {}'.format(padding.shape))
+
+		# dilation
+		if type(dilation) == int:
+			dilation = (dilation, dilation, 1)
+		elif len(dilation) == 2:
+			dilation = (dilation[0], dilation[1], 1)
+		else:
+			raise Exception('dilation can be either int or tuple of size 2. It was: {}'.format(dilation.shape))
+
+		# print('theta      :', theta)
+		# print('kernel     :', kernel, kernelSize)
+		# print('stride     :', stride)
+		# print('padding    :', padding)
+		# print('dilation   :', dilation)
+		
+		super(poolLayer, self).__init__(1, 1, kernel, stride, padding, dilation, bias=False)	
+
+		# set the weights to 1.1*theta and requires_grad = False
+		self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad = False)
+
+	def forward(self, input):
+		dataShape = input.shape
+		result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
+						  self.weight, self.bias, 
+						  self.stride, self.padding, self.dilation)
+		return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
 						
 class spikeFunction(torch.autograd.Function):
 	@staticmethod
@@ -122,7 +246,7 @@ class spikeFunction(torch.autograd.Function):
 																  refractoryResponse,
 																  threshold,
 																  Ts)
-		# TODO change it to return spikes only. The membranePotential should be changed intrinsically
+		
 		pdfScale        = torch.autograd.Variable(torch.tensor(neuron['scaleRho']                 , device=device, dtype=dtype), requires_grad=False)
 		# pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']                   , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
 		pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho'] * neuron['theta'] , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
@@ -150,3 +274,4 @@ class spikeFunction(torch.autograd.Function):
 		# print   (spikePdf         [0,0,0,0,:].cpu().data.numpy())
 		# plt.show()
 		# return gradOutput * spikePdf, None, None, None
+

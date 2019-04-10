@@ -1,0 +1,46 @@
+simulation:
+    Ts: 1.0
+    tSample: 300
+    nSample: 12
+neuron:
+    type:     SRMALPHA
+    theta:    10
+    tauSr:    10.0
+    tauRef:   1.0
+    scaleRef: 2     # relative to theta
+    tauRho:   1     # relative to theta #0.43429448190325176
+    scaleRho: 1
+layer:
+    # wScale = 1 and sigma = 0 by default
+    - {dim: 34x34x2}
+    - {dim: 512}
+    - {dim: 10}
+training:
+    learning:
+        etaW: 0.1
+        # etaD: 0.01
+        lambda: 0
+    testing: true
+    error:
+        type: NumSpikes #ProbSpikes #NumSpikes
+        probSlidingWin: 20  # only valid for ProbSpikes
+        tgtSpikeRegion: {start: 0, stop: 300}    # only valid for NumSpikes and ProbSpikes
+        tgtSpikeCount: {true: 60, false: 10}    # only valid for NumSpikes
+    stopif:
+        maxIter: 100000
+        minCost: 0.0001
+    path:
+        out:     OutFiles/
+        in:      test_files/NMNISTsmall/
+        desired: test_files/NMNISTsmall/Desired_1_6_900/
+        train:   test_files/NMNISTsmall/train1K.txt
+        test:    test_files/NMNISTsmall/test100.txt
+    # optimizer: 
+    #     name:    NADAM  #GradientDescent
+    #     beta1:   0.9    # only valid for ADAM and NADAM. default value of 0.9  
+    #     beta2:   0.999  # only valid for ADAM and NADAM. default value of 0.999
+    #     epsilon: 1e-8   # only valid for ADAM and NADAM. default value of 1e-8 
+    # gradAlgo:  SLAYER   #SLAYER_REFRACTORY  #SLAYER_ZERO  #SLAYER
+preferredGPU: 1
+# seed: 200
+profile: true

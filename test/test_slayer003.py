@@ -44,8 +44,10 @@ class Network(torch.nn.Module):
 		self.fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 1))).to(self.fc2.weight.device), requires_grad = True)
 	
 	def forward(self, spikeInput):
-		spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
-		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		# spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
+		# spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		spikeLayer1 = self.spike(self.psp(self.fc1(spikeInput)))
+		spikeLayer2 = self.spike(self.psp(self.fc2(spikeLayer1)))
 		return spikeLayer2
 		
 snn = Network(net_params)

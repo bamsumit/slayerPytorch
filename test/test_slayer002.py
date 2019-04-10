@@ -74,7 +74,8 @@ spikeHidGT = torch.FloatTensor(spikeHidData.reshape((1, Nhid, 1, 1, Ns))).to(dev
 W2 = np.loadtxt('test_files/snnData/w2learned.txt')
 fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 1))).to(fc2.weight.device), requires_grad = True)
 dOut = np.loadtxt('test_files/snnData/spikeFuncOut.txt')[0:-1]
-uOut = fc2(psp(spikeHid))
+# uOut = fc2(psp(spikeHid))
+uOut = psp(fc2(spikeHid))
 # uOut = fc2(psp(spikeHidGT))
 uOutPre = torch.tensor(uOut, requires_grad=False, device=device)
 spikeOut = spike(uOut)
