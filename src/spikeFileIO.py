@@ -165,12 +165,12 @@ def showTD(TD, frameRate = 24):
 	def animate(i):
 		tStart = i * interval
 		tEnd   = (i+1) * interval
-		frame  = np.zeros((int(max(TD.y)+1), int(max(TD.x)+1), 3))
+		frame  = np.zeros((int(TD.y.max()+1), int(TD.x.max()+1), 3))
 		# for ind in ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) ).nonzero(): frame[TD.y[ind], TD.x[ind], 0] = 1
 		# for ind in ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero(): frame[TD.y[ind], TD.x[ind], 2] = 1
-		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) ).nonzero()
-		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero()
-		colInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 2) ).nonzero()
+		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) )
+		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) )
+		colInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 2) )
 		frame[TD.y[posInd], TD.x[posInd], 0] = 1
 		frame[TD.y[negInd], TD.x[negInd], 2] = 1
 		frame[TD.y[colInd], TD.x[colInd], 1] = 1
