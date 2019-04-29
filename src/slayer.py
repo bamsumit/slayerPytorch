@@ -73,13 +73,13 @@ class spikeLayer:
 		return lambda spike : self.applySrmKernel(spike)
 	
 	def dense(self, inFeatures, outFeatures):
-		return denseLayer(inFeatures, outFeatures).to(self.device)
+		return denseLayer(inFeatures, outFeatures).to(self.device).type(self.dtype)
 		
 	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
-		return convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device)
+		return convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device).type(self.dtype)
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
-		return poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device)
+		return poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device).type(self.dtype)
 		
 	def spike(self):
 		return lambda membranePotential : spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
@@ -190,7 +190,6 @@ class poolLayer(nn.Conv3d):
 			raise Exception('stride can be either int or tuple of size 2. It was: {}'.format(stride.shape))
 
 		# padding
-		print(padding)
 		if type(padding) == int:
 			padding = (padding, padding, 0)
 		elif len(padding) == 2:

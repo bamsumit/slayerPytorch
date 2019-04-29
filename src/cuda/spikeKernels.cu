@@ -9,7 +9,8 @@
 #ifndef SPIKEKERNELS_H_INCLUDED
 #define SPIKEKERNELS_H_INCLUDED
 
-#include <torch/torch.h>
+// #include <torch/torch.h>
+#include <torch/extension.h>
 
 __global__ void getSpikesKernel(float* __restrict__ d_s, float* __restrict__ d_u, const float* __restrict__ d_nu, unsigned nBatch, \
 								unsigned nNeurons, unsigned nuSize, unsigned batchStride, unsigned Ns, float theta, float Ts)

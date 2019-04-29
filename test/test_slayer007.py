@@ -63,13 +63,17 @@ class Network(torch.nn.Module):
 		self.fc2   = slayer.dense(512, 10)
 
 	def forward(self, spikeInput):
-		spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
-		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		# spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
+		# spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+
+		spikeLayer1 = self.spike(self.psp(self.fc1(spikeInput)))
+		spikeLayer2 = self.spike(self.psp(self.fc2(spikeLayer1)))		
 		
 		return spikeLayer2
 		# return spikeInput, spikeLayer1, spikeLayer2
 
 # network
+# net = torch.nn.DataParallel(Network(netParams), device_ids=[1, 2, 3])
 net = Network(netParams)
 
 # dataLoader
@@ -104,7 +108,7 @@ for i in range(5):
 	# snn.io.numpyToEvent expects input numpy array as a 4d tensor (p, y, x, t)
 
 # training loop
-for epoch in range(20):
+for epoch in range(100):
 	epochLoss = 0
 	correctSamples = 0
 	numSamples = 0

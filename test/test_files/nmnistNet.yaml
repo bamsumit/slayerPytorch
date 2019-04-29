@@ -35,6 +35,10 @@ training:
         desired: test_files/NMNISTsmall/Desired_1_6_900/
         train:   test_files/NMNISTsmall/train1K.txt
         test:    test_files/NMNISTsmall/test100.txt
+        # in:      /fast/sumit/NMNIST_34/
+        # desired: /fast/sumit/NMNIST_34/Desired_1_6_900/
+        # train:   /fast/sumit/NMNIST_34/train.txt
+        # test:    /fast/sumit/NMNIST_34/test.txt
     # optimizer: 
     #     name:    NADAM  #GradientDescent
     #     beta1:   0.9    # only valid for ADAM and NADAM. default value of 0.9  
