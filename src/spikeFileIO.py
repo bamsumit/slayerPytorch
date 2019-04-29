@@ -118,6 +118,16 @@ def encode2Dspikes(filename, TD):
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
+def read3Dspikes(filename):
+	with open(filename, 'rb') as inputFile:
+		inputByteArray = inputFile.read()
+	inputAsInt = np.asarray([x for x in inputByteArray])
+	xEvent =  (inputAsInt[0::7] << 4 ) | (inputAsInt[1::7] >> 4 )
+	yEvent =  (inputAsInt[2::7] ) | ( (inputAsInt[1::7] & 0x0F) << 8 )
+	pEvent =   inputAsInt[3::7]
+	tEvent =( (inputAsInt[4::7] << 16) | (inputAsInt[5::7] << 8) | (inputAsInt[6::7]) )
+	return event(xEvent, yEvent, pEvent, tEvent/1000)	# convert spike times to ms
+
 def read1DnumSpikes(filename):
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
@@ -160,8 +170,10 @@ def showTD(TD, frameRate = 24):
 		# for ind in ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero(): frame[TD.y[ind], TD.x[ind], 2] = 1
 		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) ).nonzero()
 		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero()
+		colInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 2) ).nonzero()
 		frame[TD.y[posInd], TD.x[posInd], 0] = 1
 		frame[TD.y[negInd], TD.x[negInd], 2] = 1
+		frame[TD.y[colInd], TD.x[colInd], 1] = 1
 		plot = plt.imshow(frame)
 		return plot
 
