@@ -7,7 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
-from data_reader import SlayerParams
+from slayer import yamlParams as SlayerParams
 import torch
 
 ###############################################################################
@@ -106,9 +106,9 @@ plt.ylabel('Gradient Error')
 
 plt.show()
 
-print('Desired Spikes (true)  :', net_params['training']['error']['tgtSpikeCount'][True])
-print('Desired Spikes (false) :', net_params['training']['error']['tgtSpikeCount'][False])
-print('Desired Spikes (1) :', net_params['training']['error']['tgtSpikeCount'][1])
-print('Desired Spikes (0) :', net_params['training']['error']['tgtSpikeCount'][0])
+# print('Desired Spikes (true)  :', net_params['training']['error']['tgtSpikeCount'][True])
+# print('Desired Spikes (false) :', net_params['training']['error']['tgtSpikeCount'][False])
+# print('Desired Spikes (1) :', net_params['training']['error']['tgtSpikeCount'][1])
+# print('Desired Spikes (0) :', net_params['training']['error']['tgtSpikeCount'][0])
 
 

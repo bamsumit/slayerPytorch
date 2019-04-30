@@ -6,7 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from data_reader import SlayerParams
+from slayer import yamlParams as SlayerParams
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
 

@@ -6,7 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import numpy as np
 import matplotlib.pyplot as plt
 from slayer import spikeLayer
-from data_reader import SlayerParams
+from slayer import yamlParams as SlayerParams
 import torch
 
 ###############################################################################
@@ -56,7 +56,7 @@ data = np.loadtxt('test_files/snnData/spikeFuncHid.txt')[0:-1]
 # data = np.loadtxt('test_files/snnData/spikeFuncHid04.txt')[0:-1]
 aIn      = psp(spikeIn)
 uHid     = fc1(aIn)
-uHidPre  = torch.tensor(uHid, device=device, requires_grad=False)
+uHidPre  = uHid.clone().detach()
 
 spikeHid = spike(uHid)
 s2 = spikeHid.reshape((Nhid, Ns)).cpu().data.numpy()
@@ -77,7 +77,7 @@ dOut = np.loadtxt('test_files/snnData/spikeFuncOut.txt')[0:-1]
 # uOut = fc2(psp(spikeHid))
 uOut = psp(fc2(spikeHid))
 # uOut = fc2(psp(spikeHidGT))
-uOutPre = torch.tensor(uOut, requires_grad=False, device=device)
+uOutPre = uOut.clone().detach()
 spikeOut = spike(uOut)
 s3 = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 s3AER = np.argwhere(s3 > 0)

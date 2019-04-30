@@ -6,7 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from data_reader import SlayerParams
+from slayer import yamlParams as SlayerParams
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
 from spikeClassifier import spikeClassifier as predict
@@ -66,6 +66,7 @@ loss.backward()
 
 # print('Output Class is :', predict.getClass(spikeOut.reshape((1, 1, 1, Nout, Ns))))
 print('Output Class is :', predict.getClass(spikeOut))
+print('Correct Class is:', 21)
 
 # output  = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 # desired =     loss.reshape((Nout, Ns)).cpu().data.numpy()

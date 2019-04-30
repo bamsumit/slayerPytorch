@@ -6,7 +6,7 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from data_reader import SlayerParams
+from slayer import yamlParams as SlayerParams
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
 
@@ -68,9 +68,9 @@ spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(device)
 error = spikeLoss(snn.slayer, net_params['training']['error'])
 
 # define optimizer module
-optimizer = torch.optim.SGD(snn.parameters(), lr = 0.01)
+# optimizer = torch.optim.SGD(snn.parameters(), lr = 0.01)
 # optimizer = torch.optim.RMSprop(snn.parameters(), lr = 0.01)
-# optimizer = torch.optim.Adam(snn.parameters(), lr = 0.01, amsgrad = True)
+optimizer = torch.optim.Adam(snn.parameters(), lr = 0.01, amsgrad = True)
 
 
 losslog = list()
