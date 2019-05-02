@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib import animation
+from matplotlib import cm
 
 class event():
 	def __init__(self, xEvent, yEvent, pEvent, tEvent):
@@ -123,7 +124,7 @@ def read3Dspikes(filename):
 		inputByteArray = inputFile.read()
 	inputAsInt = np.asarray([x for x in inputByteArray])
 	xEvent =  (inputAsInt[0::7] << 4 ) | (inputAsInt[1::7] >> 4 )
-	yEvent =  (inputAsInt[2::7] ) | ( (inputAsInt[1::7] & 0x0F) << 8 )
+	yEvent =  (inputAsInt[2::7] )    | ( (inputAsInt[1::7] & 0x0F) << 8 )
 	pEvent =   inputAsInt[3::7]
 	tEvent =( (inputAsInt[4::7] << 16) | (inputAsInt[5::7] << 8) | (inputAsInt[6::7]) )
 	return event(xEvent, yEvent, pEvent, tEvent/1000)	# convert spike times to ms
@@ -136,12 +137,12 @@ def encode3Dspikes(filename, TD):
 	tEvent = np.round(TD.t * 1000).astype(int)	# encode spike time in us
 	outputByteArray = bytearray(len(tEvent) * 7)
 	outputByteArray[0::7] = np.uint8(xEvent >> 4).tobytes()
-	outputByteArray[1::7] = np.uint8( ((xEvent << 4) & 0xFF) | (yEvent >> 8) ).tobytes()
+	outputByteArray[1::7] = np.uint8( ((xEvent << 4) & 0xFF) | (yEvent >> 8) & 0xFF00 ).tobytes()
 	outputByteArray[2::7] = np.uint8(	yEvent & 0xFF ).tobytes()
-	outputByteArray[3::7] = np.uint8(pEvent).tobytes()
+	outputByteArray[3::7] = np.uint8(   pEvent ).tobytes()
 	outputByteArray[4::7] = np.uint8(  (tEvent >> 16 ) & 0xFF ).tobytes()
 	outputByteArray[5::7] = np.uint8(  (tEvent >> 8 ) & 0xFF ).tobytes()
-	outputByteArray[6::7] = np.uint8(  tEvent & 0xFF ).tobytes()
+	outputByteArray[6::7] = np.uint8(   tEvent & 0xFF ).tobytes()
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
@@ -174,27 +175,80 @@ def encode1DnumSpikes(filename, nID, tSt, tEn, nSp):
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
-def showTD(TD, frameRate = 24):
+def _showTD1D(TD, frameRate=24, preComputeFrames=True, repeat=False):
+	if TD.dim !=1:	raise Exception('Expected Td dimension to be 1. It was: {}'.format(TD.dim))
+	fig = plt.figure()
+	interval = 1e3 / frameRate					# in ms
+	xDim = TD.x.max()+1
+	tMax = TD.t.max()
+	pMax = TD.p.max()+1
+	maxFrame = int(np.ceil(tMax / interval )) + 1
+
+	# ignore preComputeFrames
+
+	def animate(i):
+		fig.clear()
+		tEnd = (i+1) * interval
+		ind  = (TD.t < tEnd)
+		# plot raster
+		plt.plot(TD.t[ind], TD.x[ind], '.')
+		# plt.plot(TD.t[ind], TD.x[ind], '.', c=cm.hot(TD.p[ind]))
+		# plot raster scan line
+		plt.plot([tEnd + interval, tEnd + interval], [0, xDim])
+		plt.axis((-0.1*tMax, 1.1*tMax, -0.1*xDim, 1.1*xDim))
+		plt.draw()
+
+
+	anim = animation.FuncAnimation(fig, animate, frames=maxFrame, interval=42, repeat=repeat) # 42 means playback at 23.809 fps
+
+	plt.show()
+
+def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 	if TD.dim != 2: 	raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
 	fig = plt.figure()
 	interval = 1e3 / frameRate					# in ms
+	xDim = TD.x.max()+1
+	yDim = TD.y.max()+1
 	
-	# TODO: copy from spikeRepr DVS Gesture script, get computation done first before animating it
+	if preComputeFrames is True:
+		maxFrame = int(np.ceil(TD.t.max() / interval ))
+		image    = plt.imshow(np.zeros((yDim, xDim, 3)))
+		frames   = np.zeros( (maxFrame, yDim, xDim, 3))
 
-	def animate(i):
-		tStart = i * interval
-		tEnd   = (i+1) * interval
-		frame  = np.zeros((int(TD.y.max()+1), int(TD.x.max()+1), 3))
-		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) )
-		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) )
-		colInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 2) )
-		frame[TD.y[posInd], TD.x[posInd], 0] = 1
-		frame[TD.y[negInd], TD.x[negInd], 2] = 1
-		frame[TD.y[colInd], TD.x[colInd], 1] = 1
-		plot = plt.imshow(frame)
-		return plot
+		# precompute frames
+		for i in range(len(frames)):
+			tStart = i * interval
+			tEnd = (i + 1) * interval
+			timeMask = (TD.t >= tStart) & (TD.t < tEnd)
+			rInd = (timeMask & (TD.p == 1))
+			gInd = (timeMask & (TD.p == 2))
+			bInd = (timeMask & (TD.p == 0))
+			frames[i, TD.y[rInd], TD.x[rInd], 0] = 1
+			frames[i, TD.y[gInd], TD.x[gInd], 1] = 1
+			frames[i, TD.y[bInd], TD.x[bInd], 2] = 1
 
-	anim = animation.FuncAnimation(fig, animate, interval=42) # 42 means playback at 23.809 fps
+		def animate(frame):
+			image.set_data(frame)
+			return image
+
+		anim = animation.FuncAnimation(fig, animate, frames=frames, interval=42, repeat=repeat)
+
+	else:
+		def animate(i):
+			tStart = i * interval
+			tEnd   = (i+1) * interval
+			frame  = np.zeros((yDim, xDim, 3))
+			timeMask = (TD.t >= tStart) & (TD.t < tEnd)
+			rInd = (timeMask & (TD.p == 1))
+			gInd = (timeMask & (TD.p == 2))
+			bInd = (timeMask & (TD.p == 0))
+			frame[TD.y[rInd], TD.x[rInd], 0] = 1
+			frame[TD.y[gInd], TD.x[gInd], 1] = 1
+			frame[TD.y[bInd], TD.x[bInd], 2] = 1
+			plot = plt.imshow(frame)
+			return plot
+
+		anim = animation.FuncAnimation(fig, animate, interval=42, repeat=repeat) # 42 means playback at 23.809 fps
 
 	# # save the animation as an mp4.  This requires ffmpeg or mencoder to be
 	# # installed.  The extra_args ensure that the x264 codec is used, so that
@@ -205,40 +259,11 @@ def showTD(TD, frameRate = 24):
 
 	plt.show()
 
-
-def showTDupdated(TD, frameRate=24):
-	if TD.dim != 2:
-		raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
-
-	xdim, ydim = TD.x.max()+1, TD.y.max()+1
-	interval = 1e3 / frameRate
-
-	fig, ax = plt.subplots()
-	im = ax.imshow(np.zeros((xdim, ydim, 3)))
-
-	max_frame = int(np.ceil(TD.t.max() / interval ))
-
-	frame = np.zeros((max_frame,xdim, ydim, 3))
-
-	# compute frames first as it might be intensive
-	for i in range(len(frame)):
-		tStart = i * interval
-		tEnd = (i + 1) * interval
-		timeMask = (TD.t >= tStart) & (TD.t < tEnd)
-		posInd = (timeMask & (TD.p == 1))
-		negInd = (timeMask & (TD.p == 0))
-		colInd = (timeMask & (TD.p == 2))
-		frame[i, TD.y[posInd], TD.x[posInd], 0] = 1
-		frame[i, TD.y[negInd], TD.x[negInd], 2] = 1
-		frame[i, TD.y[colInd], TD.x[colInd], 1] = 1
-
-	def animate(fr):
-		im.set_data(fr)
-		return im
-
-	anim = animation.FuncAnimation(fig, animate, frames=frame, interval=42)
-
-	plt.show()
+def showTD(TD, frameRate=24, preComputeFrames=True, repeat=False):
+	if TD.dim == 1:
+		_showTD1D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)		
+	else:
+		_showTD2D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)
 
 
 def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms
