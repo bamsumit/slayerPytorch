@@ -118,6 +118,33 @@ def encode2Dspikes(filename, TD):
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
+def read3Dspikes(filename):
+	with open(filename, 'rb') as inputFile:
+		inputByteArray = inputFile.read()
+	inputAsInt = np.asarray([x for x in inputByteArray])
+	xEvent =  (inputAsInt[0::7] << 4 ) | (inputAsInt[1::7] >> 4 )
+	yEvent =  (inputAsInt[2::7] ) | ( (inputAsInt[1::7] & 0x0F) << 8 )
+	pEvent =   inputAsInt[3::7]
+	tEvent =( (inputAsInt[4::7] << 16) | (inputAsInt[5::7] << 8) | (inputAsInt[6::7]) )
+	return event(xEvent, yEvent, pEvent, tEvent/1000)	# convert spike times to ms
+
+def encode3Dspikes(filename, TD):
+	if TD.dim != 2: 	raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
+	xEvent = np.round(TD.x).astype(int)
+	yEvent = np.round(TD.y).astype(int)
+	pEvent = np.round(TD.p).astype(int)
+	tEvent = np.round(TD.t * 1000).astype(int)	# encode spike time in us
+	outputByteArray = bytearray(len(tEvent) * 7)
+	outputByteArray[0::7] = np.uint8(xEvent >> 4).tobytes()
+	outputByteArray[1::7] = np.uint8( ((xEvent << 4) & 0xFF) | (yEvent >> 8) ).tobytes()
+	outputByteArray[2::7] = np.uint8(	yEvent & 0xFF ).tobytes()
+	outputByteArray[3::7] = np.uint8(pEvent).tobytes()
+	outputByteArray[4::7] = np.uint8(  (tEvent >> 16 ) & 0xFF ).tobytes()
+	outputByteArray[5::7] = np.uint8(  (tEvent >> 8 ) & 0xFF ).tobytes()
+	outputByteArray[6::7] = np.uint8(  tEvent & 0xFF ).tobytes()
+	with open(filename, 'wb') as outputFile:
+		outputFile.write(outputByteArray)
+
 def read1DnumSpikes(filename):
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
@@ -152,16 +179,18 @@ def showTD(TD, frameRate = 24):
 	fig = plt.figure()
 	interval = 1e3 / frameRate					# in ms
 	
+	# TODO: copy from spikeRepr DVS Gesture script, get computation done first before animating it
+
 	def animate(i):
 		tStart = i * interval
 		tEnd   = (i+1) * interval
-		frame  = np.zeros((int(max(TD.y)+1), int(max(TD.x)+1), 3))
-		# for ind in ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) ).nonzero(): frame[TD.y[ind], TD.x[ind], 0] = 1
-		# for ind in ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero(): frame[TD.y[ind], TD.x[ind], 2] = 1
-		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) ).nonzero()
-		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) ).nonzero()
+		frame  = np.zeros((int(TD.y.max()+1), int(TD.x.max()+1), 3))
+		posInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 1) )
+		negInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 0) )
+		colInd = ( (TD.t >= tStart) & (TD.t < tEnd) & (TD.p == 2) )
 		frame[TD.y[posInd], TD.x[posInd], 0] = 1
 		frame[TD.y[negInd], TD.x[negInd], 2] = 1
+		frame[TD.y[colInd], TD.x[colInd], 1] = 1
 		plot = plt.imshow(frame)
 		return plot
 
@@ -175,6 +204,42 @@ def showTD(TD, frameRate = 24):
 	# if saveAnimation: anim.save('showTD_animation.mp4', fps=30)
 
 	plt.show()
+
+
+def showTDupdated(TD, frameRate=24):
+	if TD.dim != 2:
+		raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
+
+	xdim, ydim = TD.x.max()+1, TD.y.max()+1
+	interval = 1e3 / frameRate
+
+	fig, ax = plt.subplots()
+	im = ax.imshow(np.zeros((xdim, ydim, 3)))
+
+	max_frame = int(np.ceil(TD.t.max() / interval ))
+
+	frame = np.zeros((max_frame,xdim, ydim, 3))
+
+	# compute frames first as it might be intensive
+	for i in range(len(frame)):
+		tStart = i * interval
+		tEnd = (i + 1) * interval
+		timeMask = (TD.t >= tStart) & (TD.t < tEnd)
+		posInd = (timeMask & (TD.p == 1))
+		negInd = (timeMask & (TD.p == 0))
+		colInd = (timeMask & (TD.p == 2))
+		frame[i, TD.y[posInd], TD.x[posInd], 0] = 1
+		frame[i, TD.y[negInd], TD.x[negInd], 2] = 1
+		frame[i, TD.y[colInd], TD.x[colInd], 1] = 1
+
+	def animate(fr):
+		im.set_data(fr)
+		return im
+
+	anim = animation.FuncAnimation(fig, animate, frames=frame, interval=42)
+
+	plt.show()
+
 
 def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms
 	addressEvent = np.argwhere(spikeMat > 0)
