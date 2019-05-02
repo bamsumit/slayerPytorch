@@ -32,28 +32,28 @@ class spikeLayer:
 		self.refKernel = self.calculateRefKernel()
 		
 	def calculateSrmKernel(self):
-		srmKernel = self._calculateAlphaKernel()
+		srmKernel = self._calculateAlphaKernel(self.neuron['tauSr'])
 		# TODO implement for different types of kernels
 		# return torch.tensor(srmKernel, device = self.device)
 		return torch.tensor( self._zeroPadAndFlip(srmKernel), device = self.device, dtype = self.dtype) # to be removed later when custom cuda code is implemented
 		
 	def calculateRefKernel(self):
 		if self.fullRefKernel:
-			refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'], EPSILON = 0.0001)
+			refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -2 * self.neuron['theta'], EPSILON = 0.0001)
 			# This gives the high precision refractory kernel as MATLAB implementation, however, it is expensive
 		else:
-			refKernel = self._calculateAlphaKernel(mult = -2 * self.neuron['theta'])
+			refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -2 * self.neuron['theta'])
 		
 		# TODO implement for different types of kernels
 		return torch.tensor(refKernel, device = self.device, dtype = self.dtype)
 		
-	def _calculateAlphaKernel(self, mult = 1, EPSILON = 0.01):
+	def _calculateAlphaKernel(self, tau, mult = 1, EPSILON = 0.01):
 		# could be made faster... NOT A PRIORITY NOW
 		eps = []
-		tauSr = self.neuron['tauSr']
+		# tauSr = self.neuron['tauSr']
 		for t in np.arange(0, self.simulation['tSample'], self.simulation['Ts']):
-			epsVal = mult * t / tauSr * math.exp(1 - t / tauSr)
-			if abs(epsVal) < EPSILON and t > tauSr:
+			epsVal = mult * t / tau * math.exp(1 - t / tau)
+			if abs(epsVal) < EPSILON and t > tau:
 				break
 			eps.append(epsVal)
 		return eps
