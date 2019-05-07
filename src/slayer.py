@@ -9,6 +9,20 @@ import slayer_cuda
 
 # Consider dictionary for easier iteration and better scalability
 class yamlParams(object):
+	'''
+	This class reads yaml parameter file and allows dictionary like access to the members.
+
+	.. code-block:: python
+		
+		import slayerSNN as snn
+		netParams = snn.params('path_to_yaml_file')	# OR
+		netParams = slayer.yamlParams('path_to_yaml_file')
+
+		netParams['training']['learning']['etaW'] = 0.01
+		print('Simulation step size        ', netParams['simulation']['Ts'])
+		print('Spiking neuron time constant', netParams['neuron']['tauSr'])
+		print('Spiking neuron threshold    ', netParams['neuron']['theta'])
+	'''
 	def __init__(self, parameter_file_path):
 		with open(parameter_file_path, 'r') as param_file:
 			self.parameters = yaml.load(param_file)
@@ -21,6 +35,43 @@ class yamlParams(object):
 		self.parameters[key] = value
 
 class spikeLayer:
+	'''
+	This class defines the main engine of SLAYER.
+	It provides necessary funcitons for describing a SNN layer.
+	The input to output connection can be fully-connected, convolutional, or aggregation (pool)
+	It also defines the psp operation and spiking mechanism of a spiking neuron in the layer.
+
+	**Important:** It assumes all the tensors that are being processed are 5 dimensional. 
+	(Batch, Channels, Height, Width, Time) or ``NCHWT`` format.
+	The user must make sure that an input of correct dimension is supplied.
+
+	*If the layer does not have spatial dimension, the neurons can be distributed along either
+	Channel, Height or Width dimension where Channel * Height * Width is equal to number of neurons.
+	It is recommended (for speed reasons) to define the neuons in Channels dimension and make Height and Width
+	dimension one.*
+
+	Arguments:
+		* ``neuronDesc`` (``slayer.yamlParams``): spiking neuron descriptor.
+			.. code-block:: python
+
+				neuron:
+				    type:     SRMALPHA	# neuron type
+				    theta:    10	# neuron threshold
+				    tauSr:    10.0	# neuron time constant
+				    tauRef:   1.0	# neuron refractory time constant
+				    scaleRef: 2		# neuron refractory response scaling (relative to theta)
+				    tauRho:   1		# spike function derivative time constant (relative to theta)
+				    scaleRho: 1		# spike function derivative scale factor
+		* ``simulationDesc`` (``slayer.yamlParams``): simulation descriptor
+			.. code-block:: python
+
+				simulation:
+				    Ts: 1.0
+				    tSample: 300
+				    nSample: 12		
+		* ``device`` (``int, torch.device``, optional): device where the objects live (likely to be removed)
+		* ``fullRefKernel`` (``bool``, optional): high resolution refractory kernel (the user shall not use it in practice)  
+	'''
 	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
 		self.neuron = neuronDesc
 		self.simulation = simulationDesc
@@ -70,22 +121,76 @@ class spikeLayer:
 									padding = (0, 0, int( self.srmKernel.shape[0] / 2 ) )).reshape(spikeShape) * self.simulation['Ts']
 
 	def psp(self):
+		'''
+		Returns a function that can be called later to apply psp to spikes.
+		The output tensor dimension is same as input.
+		'''
 		return lambda spike : self.applySrmKernel(spike)
 	
 	def dense(self, inFeatures, outFeatures):
+		'''
+		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
+		It behaves similar to ``torch.nn.Linear`` applied for each time instance.
+
+		Arguments:
+			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): 
+				dimension of input featres (Width, Height, Channel) that represents the number of input neurons.
+			* ``outFeatures`` (``int``): number of output neurons.
+		'''
 		return denseLayer(inFeatures, outFeatures).to(self.device).type(self.dtype)
 		
 	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
+		'''
+		Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
+		It behaves same as ``torch.nn.conv2d`` applied for each time instance.
+
+		Arguments:
+			* ``inChannels`` (``int``): number of channels in input
+			* ``outChannels`` (``int``): number of channls produced by convoluion
+			* ``kernelSize`` (``int`` or tuple of two ints): size of the convolving kernel
+			* ``stride`` (``int`` or tuple of two ints): stride of the convolution. Default: 1
+			* ``padding`` (``int`` or tuple of two ints):	zero-padding added to both sides of the input. Default: 0
+			* ``dilation`` (``int`` or tuple of two ints): spacing between kernel elements. Default: 1
+			* ``groups`` (``int`` or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1
+
+		The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:
+
+		- a single ``int`` -- in which case the same value is used for the height and width dimension
+		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
+		  and the second `int` for the width dimension
+		'''
 		return convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device).type(self.dtype)
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
+		'''
+		Returns a function that can be called to apply pool layer mapping to input tensor per time instance.
+		It behaves same as ``torch.nn.``:sum pooling applied for each time instance.
+
+		Arguments:
+			* ``kernelSize`` (``int`` or tuple of two ints): the size of the window to pool over
+			* ``stride`` (``int`` or tuple of two ints): stride of the window. Default: `kernelSize`
+			* ``padding`` (``int`` or tuple of two ints): implicit zero padding to be added on both sides. Default: 0
+			* ``dilation`` (``int`` or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1
+			
+		The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:
+
+		- a single ``int`` -- in which case the same value is used for the height and width dimension
+		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
+		  and the second `int` for the width dimension
+		'''
 		return poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device).type(self.dtype)
 		
 	def spike(self):
+		'''
+		Returns a function that can be called to apply spike function and refractory response.
+		The output tensor dimension is same as input.
+		'''
 		return lambda membranePotential : spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
 class denseLayer(nn.Conv3d):
 	def __init__(self, inFeatures, outFeatures):
+		'''
+		'''
 		# extract information for kernel and inChannels
 		if type(inFeatures) == int:
 			kernel = (1, 1, 1)
@@ -110,11 +215,15 @@ class denseLayer(nn.Conv3d):
 		super(denseLayer, self).__init__(inChannels, outChannels, kernel, bias=False)
 	
 	def forward(self, input):
+		'''
+		'''
 		return F.conv3d(input, 
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
 
 class convLayer(nn.Conv3d):
+	'''
+	'''
 	def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1):
 		inChannels = inFeatures
 		outChannels = outFeatures
@@ -165,11 +274,15 @@ class convLayer(nn.Conv3d):
 		super(convLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, dilation, groups, bias=False)
 
 	def foward(self, input):
+		'''
+		'''
 		return F.conv3d(input, 
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
 
 class poolLayer(nn.Conv3d):
+	'''
+	'''
 	def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1):
 		# kernel
 		if type(kernelSize) == int:
@@ -217,6 +330,8 @@ class poolLayer(nn.Conv3d):
 		self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad = False)
 
 	def forward(self, input):
+		'''
+		'''
 		dataShape = input.shape
 		result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
 						  self.weight, self.bias, 
@@ -224,8 +339,12 @@ class poolLayer(nn.Conv3d):
 		return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
 						
 class spikeFunction(torch.autograd.Function):
+	'''
+	'''
 	@staticmethod
 	def forward(ctx, membranePotential, refractoryResponse, neuron, Ts):
+		'''
+		'''
 		device = membranePotential.device
 		dtype  = membranePotential.dtype
 		threshold      = neuron['theta']
@@ -260,6 +379,8 @@ class spikeFunction(torch.autograd.Function):
 		
 	@staticmethod
 	def backward(ctx, gradOutput):
+		'''
+		'''
 		(membranePotential, threshold, pdfTimeConstant, pdfScale) = ctx.saved_tensors
 		spikePdf = pdfScale / pdfTimeConstant * torch.exp( -torch.abs(membranePotential - threshold) / pdfTimeConstant)
 
