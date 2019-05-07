@@ -19,7 +19,7 @@ class spikeLoss:
 		error = self.psp(spikeOut - spikeDesired) 
 		return 1/2 * torch.sum(error**2) * self.simulation['Ts']
 	
-	def numSpikes(self, spikeOut, desiredClass):
+	def numSpikes(self, spikeOut, desiredClass, numSpikesScale=1):
 		# Tested with autograd, it works
 		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not NumSpikes"
 		# desiredClass should be one-hot tensor with 5th dimension 1
@@ -32,7 +32,7 @@ class spikeLoss:
 		desiredSpikes = np.where(desiredClass.cpu() == True, tgtSpikeCount[True], tgtSpikeCount[False])
 		# print('actualSpikes :', actualSpikes.flatten())
 		# print('desiredSpikes:', desiredSpikes.flatten())
-		errorSpikeCount = (actualSpikes - desiredSpikes) / (stopID - startID)
+		errorSpikeCount = (actualSpikes - desiredSpikes) / (stopID - startID) * numSpikesScale
 		targetRegion = np.zeros(spikeOut.shape)
 		targetRegion[:,:,:,:,startID:stopID] = 1;
 		spikeDesired = torch.FloatTensor(targetRegion * spikeOut.cpu().data.numpy()).to(spikeOut.device)

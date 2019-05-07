@@ -211,14 +211,15 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 	yDim = TD.y.max()+1
 	
 	if preComputeFrames is True:
+		minFrame = int(np.floor(TD.t.min() / interval))
 		maxFrame = int(np.ceil(TD.t.max() / interval ))
 		image    = plt.imshow(np.zeros((yDim, xDim, 3)))
-		frames   = np.zeros( (maxFrame, yDim, xDim, 3))
+		frames   = np.zeros( (maxFrame-minFrame, yDim, xDim, 3))
 
 		# precompute frames
 		for i in range(len(frames)):
-			tStart = i * interval
-			tEnd = (i + 1) * interval
+			tStart = (i + minFrame) * interval
+			tEnd = (i + minFrame + 1) * interval
 			timeMask = (TD.t >= tStart) & (TD.t < tEnd)
 			rInd = (timeMask & (TD.p == 1))
 			gInd = (timeMask & (TD.p == 2))
@@ -234,9 +235,10 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 		anim = animation.FuncAnimation(fig, animate, frames=frames, interval=42, repeat=repeat)
 
 	else:
+		minFrame = int(np.floor(TD.t.min() / interval))
 		def animate(i):
-			tStart = i * interval
-			tEnd   = (i+1) * interval
+			tStart = (i + minFrame) * interval
+			tEnd = (i + minFrame + 1) * interval
 			frame  = np.zeros((yDim, xDim, 3))
 			timeMask = (TD.t >= tStart) & (TD.t < tEnd)
 			rInd = (timeMask & (TD.p == 1))
