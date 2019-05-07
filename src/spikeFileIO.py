@@ -181,21 +181,23 @@ def _showTD1D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 	interval = 1e3 / frameRate					# in ms
 	xDim = TD.x.max()+1
 	tMax = TD.t.max()
+	tMin = TD.t.min()
 	pMax = TD.p.max()+1
+	minFrame = int(np.floor(tMin / interval))
 	maxFrame = int(np.ceil(tMax / interval )) + 1
 
 	# ignore preComputeFrames
 
 	def animate(i):
 		fig.clear()
-		tEnd = (i+1) * interval
+		tEnd = (i + minFrame + 1) * interval
 		ind  = (TD.t < tEnd)
 		# plot raster
 		plt.plot(TD.t[ind], TD.x[ind], '.')
 		# plt.plot(TD.t[ind], TD.x[ind], '.', c=cm.hot(TD.p[ind]))
 		# plot raster scan line
 		plt.plot([tEnd + interval, tEnd + interval], [0, xDim])
-		plt.axis((-0.1*tMax, 1.1*tMax, -0.1*xDim, 1.1*xDim))
+		plt.axis((tMin -0.1*tMax, 1.1*tMax, -0.1*xDim, 1.1*xDim))
 		plt.draw()
 
 

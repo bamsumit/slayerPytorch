@@ -80,4 +80,5 @@ plt.plot(TDcopy.t,
 plt.show()
 
 
+TD.t += 10000	# this should not effect showTD
 showTD(TD, 120)
