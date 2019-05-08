@@ -70,9 +70,9 @@ class Network(torch.nn.Module):
 		self.fc1   = slayer.dense((8, 8, 64), 10)
 		# self.fcl   = slayer.dense((32,32,16), 10)
 
-		self.conv1.weight = torch.nn.Parameter(100 * self.conv1.weight)
-		self.conv2.weight = torch.nn.Parameter(100 * self.conv2.weight)
-		self.conv3.weight = torch.nn.Parameter(100 * self.conv3.weight)
+		# self.conv1.weight = torch.nn.Parameter(100 * self.conv1.weight)
+		# self.conv2.weight = torch.nn.Parameter(100 * self.conv2.weight)
+		# self.conv3.weight = torch.nn.Parameter(100 * self.conv3.weight)
 
 	def forward(self, spikeInput):
 		# spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))

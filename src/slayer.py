@@ -137,7 +137,7 @@ class spikeLayer:
 				dimension of input featres (Width, Height, Channel) that represents the number of input neurons.
 			* ``outFeatures`` (``int``): number of output neurons.
 		'''
-		return _denseLayer(inFeatures, outFeatures).to(self.device).type(self.dtype)
+		return _denseLayer(inFeatures, outFeatures, self.neuron['theta']).to(self.device).type(self.dtype)
 		
 	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
 		'''
@@ -159,7 +159,7 @@ class spikeLayer:
 		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
 		  and the second `int` for the width dimension
 		'''
-		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device).type(self.dtype)
+		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale=self.neuron['theta']**2).to(self.device).type(self.dtype)
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
 		'''
@@ -188,7 +188,7 @@ class spikeLayer:
 		return lambda membranePotential : _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
 class _denseLayer(nn.Conv3d):
-	def __init__(self, inFeatures, outFeatures):
+	def __init__(self, inFeatures, outFeatures, weightScale=1):
 		'''
 		'''
 		# extract information for kernel and inChannels
@@ -213,6 +213,10 @@ class _denseLayer(nn.Conv3d):
 		# print('Output Channels :', outChannels)
 		
 		super(_denseLayer, self).__init__(inChannels, outChannels, kernel, bias=False)
+
+		if weightScale != 1:	
+			self.weight = torch.nn.Parameter(weightScale * self.weight)	# scale the weight if needed
+
 	
 	def forward(self, input):
 		'''
@@ -224,7 +228,7 @@ class _denseLayer(nn.Conv3d):
 class _convLayer(nn.Conv3d):
 	'''
 	'''
-	def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1):
+	def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1):
 		inChannels = inFeatures
 		outChannels = outFeatures
 		
@@ -272,6 +276,9 @@ class _convLayer(nn.Conv3d):
 		# print('groups     :', groups)
 
 		super(_convLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, dilation, groups, bias=False)
+
+		if weightScale != 1:	
+			self.weight = torch.nn.Parameter(weightScale * self.weight)	# scale the weight if needed
 
 	def foward(self, input):
 		'''
