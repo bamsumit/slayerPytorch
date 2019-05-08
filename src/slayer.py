@@ -137,7 +137,7 @@ class spikeLayer:
 				dimension of input featres (Width, Height, Channel) that represents the number of input neurons.
 			* ``outFeatures`` (``int``): number of output neurons.
 		'''
-		return denseLayer(inFeatures, outFeatures).to(self.device).type(self.dtype)
+		return _denseLayer(inFeatures, outFeatures).to(self.device).type(self.dtype)
 		
 	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
 		'''
@@ -159,7 +159,7 @@ class spikeLayer:
 		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
 		  and the second `int` for the width dimension
 		'''
-		return convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device).type(self.dtype)
+		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups).to(self.device).type(self.dtype)
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
 		'''
@@ -178,16 +178,16 @@ class spikeLayer:
 		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
 		  and the second `int` for the width dimension
 		'''
-		return poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device).type(self.dtype)
+		return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device).type(self.dtype)
 		
 	def spike(self):
 		'''
 		Returns a function that can be called to apply spike function and refractory response.
 		The output tensor dimension is same as input.
 		'''
-		return lambda membranePotential : spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
+		return lambda membranePotential : _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
-class denseLayer(nn.Conv3d):
+class _denseLayer(nn.Conv3d):
 	def __init__(self, inFeatures, outFeatures):
 		'''
 		'''
@@ -212,7 +212,7 @@ class denseLayer(nn.Conv3d):
 			raise Exception('outFeatures should not be more than 1 dimesnion. It was: {}'.format(outFeatures.shape))
 		# print('Output Channels :', outChannels)
 		
-		super(denseLayer, self).__init__(inChannels, outChannels, kernel, bias=False)
+		super(_denseLayer, self).__init__(inChannels, outChannels, kernel, bias=False)
 	
 	def forward(self, input):
 		'''
@@ -221,7 +221,7 @@ class denseLayer(nn.Conv3d):
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
 
-class convLayer(nn.Conv3d):
+class _convLayer(nn.Conv3d):
 	'''
 	'''
 	def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1):
@@ -271,7 +271,7 @@ class convLayer(nn.Conv3d):
 		# print('dilation   :', dilation)
 		# print('groups     :', groups)
 
-		super(convLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, dilation, groups, bias=False)
+		super(_convLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, dilation, groups, bias=False)
 
 	def foward(self, input):
 		'''
@@ -280,7 +280,7 @@ class convLayer(nn.Conv3d):
 						self.weight, self.bias, 
 						self.stride, self.padding, self.dilation, self.groups)
 
-class poolLayer(nn.Conv3d):
+class _poolLayer(nn.Conv3d):
 	'''
 	'''
 	def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1):
@@ -324,7 +324,7 @@ class poolLayer(nn.Conv3d):
 		# print('padding    :', padding)
 		# print('dilation   :', dilation)
 		
-		super(poolLayer, self).__init__(1, 1, kernel, stride, padding, dilation, bias=False)	
+		super(_poolLayer, self).__init__(1, 1, kernel, stride, padding, dilation, bias=False)	
 
 		# set the weights to 1.1*theta and requires_grad = False
 		self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad = False)
@@ -338,7 +338,7 @@ class poolLayer(nn.Conv3d):
 						  self.stride, self.padding, self.dilation)
 		return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
 						
-class spikeFunction(torch.autograd.Function):
+class _spikeFunction(torch.autograd.Function):
 	'''
 	'''
 	@staticmethod
