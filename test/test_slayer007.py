@@ -49,10 +49,10 @@ class nmnistDataset(Dataset):
 
 # Network definition
 class Network(torch.nn.Module):
-	def __init__(self, netParams, device=device):
+	def __init__(self, netParams):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = snn.layer(netParams['neuron'], netParams['simulation'], device=device)
+		slayer = snn.layer(netParams['neuron'], netParams['simulation'])
 		
 		self.slayer = slayer
 		# define network functions
@@ -74,7 +74,7 @@ class Network(torch.nn.Module):
 
 # network
 # net = torch.nn.DataParallel(Network(netParams), device_ids=[1, 2, 3])
-net = Network(netParams)
+net = Network(netParams).to(device)
 
 # dataLoader
 trainingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
@@ -90,7 +90,8 @@ testingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'],
 testLoader = DataLoader(dataset=testingSet, batch_size=8, shuffle=False, num_workers=4)
 
 # cost function
-error = snn.loss(net.slayer, netParams['training']['error'])
+# error = snn.loss(net.slayer, netParams['training']['error']).to(device)
+error = snn.loss(netParams).to(device)
 
 # Optimizer
 optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
@@ -103,7 +104,7 @@ printTestingStats  = lambda cost, accuracy: print('Testing : loss = %-12.5g  acc
 # visualize the input spikes (First five samples)
 for i in range(5):
 	input, target, label = trainingSet[i]
-	snn.io.showTD(snn.io.numpyToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
+	snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
 	# snn.io.numpyToEvent converts input numpy array to TD event
 	# snn.io.numpyToEvent expects input numpy array as a 4d tensor (p, y, x, t)
 

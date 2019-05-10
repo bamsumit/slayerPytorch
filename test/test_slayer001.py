@@ -9,6 +9,8 @@ from slayer import spikeLayer
 from slayer import yamlParams as SlayerParams
 import torch
 
+device = torch.device('cuda')
+
 net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/parameters.yaml")
 
 Ns = int(net_params['simulation']['tSample'] / net_params['simulation']['Ts'])
@@ -19,15 +21,14 @@ spikeData[0, 870] = 1/net_params['simulation']['Ts']
 spikeData[1, 153] = 1/net_params['simulation']['Ts']
 spikeData[1, 680] = 1/net_params['simulation']['Ts']
 
-spike = torch.FloatTensor(spikeData.reshape((1, 1, 1, 2, Ns))).to(torch.device('cuda'))
+spike = torch.FloatTensor(spikeData.reshape((1, 1, 1, 2, Ns))).to(device)
 
-slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
+slayer = spikeLayer(net_params['neuron'], net_params['simulation']).to(device)
 
 a = slayer.applySrmKernel(spike)
 
 print('neuron type: ', slayer.neuron['type'])
 print('Ts         : ', slayer.simulation['Ts'])
-print('Device     : ', slayer.device)
 print('spikeData  : ', spikeData.shape)
 print('spike      : ', spike.shape)
 print('psp        : ', a.shape)
@@ -48,7 +49,7 @@ Nin  = (34, 24, 2)
 Nout = 30
 NinProd = int(np.product(Nin))
 input   = np.random.normal(size = (NinProd, Nbin)) 
-fcLayer = slayer.dense(Nin, Nout)
+fcLayer = slayer.dense(Nin, Nout).to(device)
 # basic groundtruth calculation
 weightMatrix = fcLayer.weight.cpu().data.numpy().reshape(Nout, NinProd)
 output = np.dot(weightMatrix, input)

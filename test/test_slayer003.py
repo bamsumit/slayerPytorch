@@ -25,10 +25,10 @@ net_params['neuron']['tauRho'] = 0.1
 device = torch.device('cuda:3')
 
 class Network(torch.nn.Module):
-	def __init__(self, net_params, device=device):
+	def __init__(self, net_params):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device=device, fullRefKernel=True)
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel=True)
 
 		self.slayer = slayer
 		# define network functions
@@ -50,7 +50,7 @@ class Network(torch.nn.Module):
 		spikeLayer2 = self.spike(self.psp(self.fc2(spikeLayer1)))
 		return spikeLayer2
 		
-snn = Network(net_params)
+snn = Network(net_params).to(device)
 
 # load input spikes
 spikeAER = np.loadtxt('test_files/snnData/spikeIn.txt')
@@ -77,7 +77,8 @@ spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(device)
 # error = snn.psp(spikeOut - spikeDes) 
 # loss  = 1/2 * torch.sum(error**2) * net_params['simulation']['Ts']
 # error = spikeLoss(net_params['neuron'], net_params['simulation'], device = torch.device('cuda:3'))
-error = spikeLoss(snn.slayer, net_params['training']['error'])
+# error = spikeLoss(net_params['training']['error'], net_params['neuron'], net_params['simulation']).to(device)
+error = spikeLoss(net_params).to(device)
 loss = error.spikeTime(spikeOut, spikeDes)
 print('loss :', loss.cpu())
 

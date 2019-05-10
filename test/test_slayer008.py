@@ -16,14 +16,14 @@ device = torch.device('cuda')
 
 netParams = snn.params('test_files/nmnistNet.yaml')
 
-slayer = snn.layer(netParams['neuron'], netParams['simulation'], device=device)
+slayer = snn.layer(netParams['neuron'], netParams['simulation']).to(device)
 
 # conv operation test
 # (N, C, H, W, D) = (1, 1, 8, 8, 1)
 (N, C, H, W, D) = (4, 8, 100, 100, 500)
 K = 5
 
-conv = slayer.conv(C, 1, K)
+conv = slayer.conv(C, 1, K).to(device)
 inTensor = torch.randn((N, C, H, W, D)).to(device)
 
 outGT = torch.zeros((N, 1, H-K+1, W-K+1, D)).to(device)
@@ -48,7 +48,7 @@ print('Conv Error :', error)
 # print(outGt.cpu().data)
 
 # pooling operation
-pool = slayer.pool(2)
+pool = slayer.pool(2).to(device)
 inTensor = torch.randn((4, 8, 100, 100, 500)).to(device)
 
 outGT = ( inTensor[:, :, 0::2, 0::2, :] + \

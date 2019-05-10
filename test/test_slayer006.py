@@ -24,10 +24,10 @@ net_params['training']['error']['type'] = 'NumSpikes'
 device = torch.device('cuda')
 
 class Network(torch.nn.Module):
-	def __init__(self, net_params, device=device):
+	def __init__(self, net_params):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device=device)
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
 
 		self.slayer = slayer
 		# define network functions
@@ -41,7 +41,7 @@ class Network(torch.nn.Module):
 		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
 		return spikeLayer2
 		
-snn = Network(net_params)
+snn = Network(net_params).to(device)
 
 # load input spikes
 spikeAER = np.loadtxt('test_files/snnData/spikeIn.txt')
@@ -57,7 +57,8 @@ desiredClass = torch.zeros((1, Nout, 1, 1, 1)).to('cpu')
 # desiredClass[0,0,0,0,0] = 1 # commenting this will make the network spike 3 times
 
 # define error module
-error = spikeLoss(snn.slayer, net_params['training']['error'])
+# error = spikeLoss(snn.slayer, net_params['training']['error']).to(device)
+error = spikeLoss(net_params).to(device)
 
 # define optimizer module
 optimizer = torch.optim.Adam(snn.parameters(), lr = 0.01, amsgrad = True)

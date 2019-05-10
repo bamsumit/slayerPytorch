@@ -23,10 +23,10 @@ Nout = int(net_params['layer'][2]['dim'])
 device = torch.device('cuda')
 
 class Network(torch.nn.Module):
-	def __init__(self, net_params, device=device):
+	def __init__(self, net_params):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device=device)
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
 
 		self.slayer = slayer
 		# define network functions
@@ -44,7 +44,7 @@ class Network(torch.nn.Module):
 		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
 		return spikeLayer2
 		
-snn = Network(net_params)
+snn = Network(net_params).to(device)
 
 # load input spikes
 spikeAER = np.loadtxt('test_files/snnData/spikeIn.txt')
@@ -65,7 +65,8 @@ for (tID, nID) in np.rint(spikeAER).astype(int):
 spikeDes = torch.FloatTensor(spikeData.reshape((1, Nout, 1, 1, Ns))).to(device)
 
 # define error module
-error = spikeLoss(snn.slayer, net_params['training']['error'])
+# error = spikeLoss(snn.slayer, net_params['training']['error']).to(device)
+error = spikeLoss(net_params).to(device)
 
 # define optimizer module
 # optimizer = torch.optim.SGD(snn.parameters(), lr = 0.01)

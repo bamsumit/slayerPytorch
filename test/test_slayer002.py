@@ -23,13 +23,13 @@ device = torch.device('cuda:1')
 
 # initialize slayer
 # slayer = spikeLayer(net_params['neuron'], net_params['simulation'])
-slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device = device, fullRefKernel = True)
+slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True).to(device)
 
 # define network functions
 spike = slayer.spike()
 psp   = slayer.psp()
-fc1   = slayer.dense(Nin, Nhid)
-fc2   = slayer.dense(Nhid, Nout)
+fc1   = slayer.dense(Nin, Nhid).to(device)
+fc2   = slayer.dense(Nhid, Nout).to(device)
 
 # load input spikes
 spikeAER = np.loadtxt('test_files/snnData/spikeIn.txt')

@@ -24,10 +24,10 @@ net_params['training']['error']['type'] = 'NumSpikes'
 device = torch.device('cuda:3')
 
 class Network(torch.nn.Module):
-	def __init__(self, net_params, device=device):
+	def __init__(self, net_params):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], device=device, fullRefKernel=True)
+		slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel=True)
 
 		self.slayer = slayer
 		# define network functions
@@ -40,7 +40,7 @@ class Network(torch.nn.Module):
 	def forward(self, spikeInput):
 		return self.spike(self.fc1(self.psp(spikeInput)))
 		
-snn = Network(net_params)
+snn = Network(net_params).to(device)
 
 # load input spikes
 spikeAER = np.loadtxt('test_files/snnData/spikeIn.txt')
@@ -59,7 +59,8 @@ spikeOut = snn.forward(spikeIn)
 desiredClass = torch.zeros((1, Nout, 1, 1, 1)).to('cpu')
 desiredClass[0,4,0,0,0] = 1 # assuming true class is class 5
 
-error = spikeLoss(snn.slayer, net_params['training']['error'])
+# error = spikeLoss(snn.slayer, net_params['training']['error']).to(device)
+error = spikeLoss(net_params).to(device)
 loss = error.numSpikes(spikeOut, desiredClass)
 
 loss.backward()

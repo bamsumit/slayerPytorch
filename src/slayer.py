@@ -4,13 +4,16 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import yaml
-import slayer_cuda
+# import slayer_cuda
+import slayerCuda
 # import matplotlib.pyplot as plt
 
 # Consider dictionary for easier iteration and better scalability
 class yamlParams(object):
 	'''
 	This class reads yaml parameter file and allows dictionary like access to the members.
+
+	Usage:
 
 	.. code-block:: python
 		
@@ -34,7 +37,8 @@ class yamlParams(object):
 	def __setitem__(self, key, value):
 		self.parameters[key] = value
 
-class spikeLayer:
+# class spikeLayer():
+class spikeLayer(torch.nn.Module):
 	'''
 	This class defines the main engine of SLAYER.
 	It provides necessary funcitons for describing a SNN layer.
@@ -69,24 +73,28 @@ class spikeLayer:
 				    Ts: 1.0
 				    tSample: 300
 				    nSample: 12		
-		* ``device`` (``int, torch.device``, optional): device where the objects live (likely to be removed)
 		* ``fullRefKernel`` (``bool``, optional): high resolution refractory kernel (the user shall not use it in practice)  
+	
+	Usage:
+
+	>>> snnLayer = slayer.spikeLayer(neuronDesc, simulationDesc)
 	'''
-	def __init__(self, neuronDesc, simulationDesc, device=torch.device('cuda'), dtype=torch.float32, fullRefKernel = False):
+	def __init__(self, neuronDesc, simulationDesc, fullRefKernel = False):
+		super(spikeLayer, self).__init__()
 		self.neuron = neuronDesc
 		self.simulation = simulationDesc
-		self.device = device
-		self.dtype = dtype
 		self.fullRefKernel = fullRefKernel
 		
-		self.srmKernel = self.calculateSrmKernel()
-		self.refKernel = self.calculateRefKernel()
+		# self.srmKernel = self.calculateSrmKernel()
+		# self.refKernel = self.calculateRefKernel()
+		self.register_buffer('srmKernel', self.calculateSrmKernel())
+		self.register_buffer('refKernel', self.calculateRefKernel())
 		
 	def calculateSrmKernel(self):
 		srmKernel = self._calculateAlphaKernel(self.neuron['tauSr'])
 		# TODO implement for different types of kernels
-		# return torch.tensor(srmKernel, device = self.device)
-		return torch.tensor( self._zeroPadAndFlip(srmKernel), device = self.device, dtype = self.dtype) # to be removed later when custom cuda code is implemented
+		return torch.tensor(srmKernel)
+		# return torch.tensor( self._zeroPadAndFlip(srmKernel)) # to be removed later when custom cuda code is implemented
 		
 	def calculateRefKernel(self):
 		if self.fullRefKernel:
@@ -96,7 +104,7 @@ class spikeLayer:
 			refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -2 * self.neuron['theta'])
 		
 		# TODO implement for different types of kernels
-		return torch.tensor(refKernel, device = self.device, dtype = self.dtype)
+		return torch.tensor(refKernel)
 		
 	def _calculateAlphaKernel(self, tau, mult = 1, EPSILON = 0.01):
 		# could be made faster... NOT A PRIORITY NOW
@@ -115,15 +123,21 @@ class spikeLayer:
 		return np.flip( np.concatenate( (prependedZeros, kernel) ) ).tolist()
 		
 	def applySrmKernel(self, spike):
-		spikeShape = spike.shape
-		return nn.functional.conv3d(spike.reshape( (spikeShape[0], 1, spikeShape[1] * spikeShape[2], spikeShape[3], spikeShape[4]) ), 
-									self.srmKernel.reshape((1, 1, 1, 1, len(self.srmKernel))),
-									padding = (0, 0, int( self.srmKernel.shape[0] / 2 ) )).reshape(spikeShape) * self.simulation['Ts']
+		# spikeShape = spike.shape
+		# return nn.functional.conv3d(spike.reshape( (spikeShape[0], 1, spikeShape[1] * spikeShape[2], spikeShape[3], spikeShape[4]) ), 
+		# 							self.srmKernel.reshape((1, 1, 1, 1, len(self.srmKernel))),
+		# 							padding = (0, 0, int( self.srmKernel.shape[0] / 2 ) )).reshape(spikeShape) * self.simulation['Ts']
+		return _pspFunction.apply(spike, self.srmKernel, self.simulation['Ts'])
 
 	def psp(self):
 		'''
 		Returns a function that can be called later to apply psp to spikes.
 		The output tensor dimension is same as input.
+
+		Usage:
+
+		>>> psp = snnLayer.psp()
+		>>> filteredSpike = psp(spike)
 		'''
 		return lambda spike : self.applySrmKernel(spike)
 	
@@ -136,8 +150,14 @@ class spikeLayer:
 			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): 
 				dimension of input featres (Width, Height, Channel) that represents the number of input neurons.
 			* ``outFeatures`` (``int``): number of output neurons.
+
+		Usage:
+		
+		>>> fcl = snnLayer.dense(2048, 512)          # takes (N, 2048, 1, 1, T) tensor
+		>>> fcl = snnLayer.dense((128, 128, 2), 512) # takes (N, 2, 128, 128, T) tensor
+		>>> output = fcl(input)                      # output will be (N, 512, 1, 1, T) tensor
 		'''
-		return _denseLayer(inFeatures, outFeatures, self.neuron['theta']).to(self.device).type(self.dtype)
+		return _denseLayer(inFeatures, outFeatures, weightScale=self.neuron['theta'])
 		
 	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
 		'''
@@ -158,8 +178,13 @@ class spikeLayer:
 		- a single ``int`` -- in which case the same value is used for the height and width dimension
 		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
 		  and the second `int` for the width dimension
+
+		Usage:
+
+		>>> conv = snnLayer.conv(2, 32, 5) # 32C5 flter
+		>>> output = conv(input)           # must have 2 channels
 		'''
-		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale=self.neuron['theta']**2).to(self.device).type(self.dtype)
+		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale=self.neuron['theta']**2)
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
 		'''
@@ -177,13 +202,23 @@ class spikeLayer:
 		- a single ``int`` -- in which case the same value is used for the height and width dimension
 		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
 		  and the second `int` for the width dimension
+
+		Usage:
+
+		>>> pool = snnLayer.pool(4) # 4x4 pooling
+		>>> output = pool(input)
 		'''
-		return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation).to(self.device).type(self.dtype)
+		return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation)
 		
 	def spike(self):
 		'''
 		Returns a function that can be called to apply spike function and refractory response.
 		The output tensor dimension is same as input.
+
+		Usage:
+
+		>>> spike = snnLayer.spike()
+		>>> outSpike = spike(membranePotential) #membranePotential will reflect spike and refractory behaviour
 		'''
 		return lambda membranePotential : _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
@@ -366,18 +401,19 @@ class _spikeFunction(torch.autograd.Function):
 		# print('spikeTensor        :', spikeTensor       .device)
 		# print('refractoryResponse :', refractoryResponse.device)
 			
-		(membranePotential, spikes) = slayer_cuda.get_spikes_cuda(membranePotential,
-																  torch.empty_like(membranePotential),	# tensor for spikes
-																  refractoryResponse,
-																  threshold,
-																  Ts)
+		# (membranePotential, spikes) = slayer_cuda.get_spikes_cuda(membranePotential,
+		# 														  torch.empty_like(membranePotential),	# tensor for spikes
+		# 														  refractoryResponse,
+		# 														  threshold,
+		# 														  Ts)
+		spikes = slayerCuda.getSpikes(membranePotential, refractoryResponse, threshold, Ts)
 		
 		pdfScale        = torch.autograd.Variable(torch.tensor(neuron['scaleRho']                 , device=device, dtype=dtype), requires_grad=False)
 		# pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']                   , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
 		pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho'] * neuron['theta'] , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
 		threshold       = torch.autograd.Variable(torch.tensor(neuron['theta']                    , device=device, dtype=dtype), requires_grad=False)
 		ctx.save_for_backward(membranePotential, threshold, pdfTimeConstant, pdfScale)
-		torch.cuda.synchronize()
+		# torch.cuda.synchronize()
 		
 		# if device != oldDevice: torch.cuda.set_device(oldDevice)
 		# torch.cuda.device(oldDevice)
@@ -402,3 +438,21 @@ class _spikeFunction(torch.autograd.Function):
 		# plt.show()
 		# return gradOutput * spikePdf, None, None, None
 
+class _pspFunction(torch.autograd.Function):
+	'''
+	'''
+	@staticmethod
+	def forward(ctx, spike, filter, Ts):
+		device = spike.device
+		dtype  = spike.dtype
+		psp = slayerCuda.conv(spike, filter, Ts)
+		Ts = torch.autograd.Variable(torch.tensor(Ts, device=device, dtype=dtype), requires_grad=False)
+		ctx.save_for_backward(filter, Ts)
+		return psp
+
+	@staticmethod
+	def backward(ctx, gradOutput):
+		'''
+		'''
+		(filter, Ts) = ctx.saved_tensors
+		return slayerCuda.corr(gradOutput, filter, Ts), None, None

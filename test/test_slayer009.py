@@ -19,7 +19,7 @@ from torch.utils.data import Dataset, DataLoader
 
 import slayerSNN as snn
 
-device = torch.device('cuda:3')
+device = torch.device('cuda:2')
 netParams = snn.params('test_files/nmnistNet.yaml')
 
 # Dataloader definition
@@ -50,29 +50,21 @@ class nmnistDataset(Dataset):
 class Network(torch.nn.Module):
 	# timelog = []
 
-	def __init__(self, netParams, device=device):
+	def __init__(self, netParams):
 		super(Network, self).__init__()
 		# initialize slayer
-		slayer = snn.layer(netParams['neuron'], netParams['simulation'], device=device)
+		slayer = snn.layer(netParams['neuron'], netParams['simulation'])
 		
 		self.slayer = slayer
 		# define network functions
 		self.spike = slayer.spike()
 		self.psp   = slayer.psp()
-		# self.fc1   = slayer.dense((34, 34, 2), 512)
-		# self.fc1   = slayer.dense((34*34*2), 512)
-		# self.fc2   = slayer.dense(512, 10)
 		self.conv1 = slayer.conv(2, 16, 5, padding=1)
 		self.conv2 = slayer.conv(16, 32, 3, padding=1)
 		self.conv3 = slayer.conv(32, 64, 3, padding=1)
 		self.pool1 = slayer.pool(2)
 		self.pool2 = slayer.pool(2)
 		self.fc1   = slayer.dense((8, 8, 64), 10)
-		# self.fcl   = slayer.dense((32,32,16), 10)
-
-		# self.conv1.weight = torch.nn.Parameter(100 * self.conv1.weight)
-		# self.conv2.weight = torch.nn.Parameter(100 * self.conv2.weight)
-		# self.conv3.weight = torch.nn.Parameter(100 * self.conv3.weight)
 
 	def forward(self, spikeInput):
 		# spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
@@ -100,25 +92,39 @@ class Network(torch.nn.Module):
 		# Network.timelog = [(timelog[i+1] - timelog[i]).total_seconds() for i in range(len(timelog)-1)]
 		# # print(timelog)
 
-		spikeLayer1 = self.spike(self.conv1(spikeInput))  # 32, 32, 16
-		spikeLayer2 = self.spike(self.pool1(spikeLayer1)) # 16, 16, 16
-		spikeLayer3 = self.spike(self.conv2(spikeLayer2)) # 16, 16, 32
-		spikeLayer4 = self.spike(self.pool2(spikeLayer3)) #  8,  8, 32
-		spikeLayer5 = self.spike(self.conv3(spikeLayer4)) #  8,  8, 64
-		spikeOut    = self.spike(self.fc1  (spikeLayer5)) #  10
+		# spikeLayer1 = self.spike(self.conv1(spikeInput))  # 32, 32, 16
+		# spikeLayer2 = self.spike(self.pool1(spikeLayer1)) # 16, 16, 16
+		# spikeLayer3 = self.spike(self.conv2(spikeLayer2)) # 16, 16, 32
+		# spikeLayer4 = self.spike(self.pool2(spikeLayer3)) #  8,  8, 32
+		# spikeLayer5 = self.spike(self.conv3(spikeLayer4)) #  8,  8, 64
+		# spikeOut    = self.spike(self.fc1  (spikeLayer5)) #  10
+
+		spikeLayer1 = self.spike(self.conv1(self.psp(spikeInput ))) # 32, 32, 16
+		spikeLayer2 = self.spike(self.pool1(self.psp(spikeLayer1))) # 16, 16, 16
+		spikeLayer3 = self.spike(self.conv2(self.psp(spikeLayer2))) # 16, 16, 32
+		spikeLayer4 = self.spike(self.pool2(self.psp(spikeLayer3))) #  8,  8, 32
+		spikeLayer5 = self.spike(self.conv3(self.psp(spikeLayer4))) #  8,  8, 64
+		spikeOut    = self.spike(self.fc1  (self.psp(spikeLayer5))) #  10
+
+		# print("\tIn Model: ", spikeInput.device,
+		# 	  spikeInput.size(), 
+		# 	  spikeOut.size())
 
 		return spikeOut
 		# return spikeInput, spikeLayer1, spikeLayer2
 
 # network
-net = Network(netParams)
+net = Network(netParams).to(device)
+# net = torch.nn.DataParallel(Network(netParams), device_ids=[2, 3]).to(device)
+
+# print(net.device_ids)
 
 # dataLoader
 trainingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
 						    sampleFile=netParams['training']['path']['train'],
 						    samplingTime=netParams['simulation']['Ts'],
 						    sampleLength=netParams['simulation']['tSample'])
-trainLoader = DataLoader(dataset=trainingSet, batch_size=1, shuffle=False, num_workers=4)
+trainLoader = DataLoader(dataset=trainingSet, batch_size=12, shuffle=False, num_workers=4)
 
 testingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
 						    sampleFile=netParams['training']['path']['test'],
@@ -127,7 +133,9 @@ testingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'],
 testLoader = DataLoader(dataset=testingSet, batch_size=12, shuffle=False, num_workers=4)
 
 # cost function
-error = snn.loss(net.slayer, netParams['training']['error'])
+# error = snn.loss(net.slayer, netParams['training']['error']).to(device)
+# error = snn.loss(netParams['training']['error'], netParams['neuron'], netParams['simulation']).to(device)
+error = snn.loss(netParams).to(device)
 
 # Optimizer
 optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
@@ -150,6 +158,7 @@ for epoch in range(100):
 
 		input  = input.to(device)
 		target = target.to(device) 
+
 		# print(input.shape)
 		# torch.cuda.synchronize()
 		# print('Time for input', (datetime.now() - _tSt).total_seconds())
@@ -159,6 +168,10 @@ for epoch in range(100):
 		# timeProfile = Network.timelog
 		# print(timeProfile)
 		# print('Time for fwdProp:', sum(timeProfile))
+
+		# print("Outside Model: ", input.device,
+		# 	  input.size(), 
+		# 	  output.size())
 		
 		correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
 		# print('correctSamples:', correctSamples)

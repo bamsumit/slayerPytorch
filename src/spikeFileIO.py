@@ -4,6 +4,19 @@ from matplotlib import animation
 from matplotlib import cm
 
 class event():
+	'''
+	This class provides a way to store, read, write and visualize spike event.
+
+	Members:
+		* ``x`` (numpy ``int`` array): `x` index of spike event.
+		* ``y`` (numpy ``int`` array): `y` index of spike event (not used if the spatial dimension is 1).
+		* ``p`` (numpy ``int`` array): `polarity` or `channel` index of spike event.
+		* ``t`` (numpy ``double`` array): `timestamp` of spike event. Time is assumend to be in ms.
+
+	Usage:
+
+	>>> TD = spikeFileIO.event(xEvent, yEvent, pEvent, tEvent)
+	'''
 	def __init__(self, xEvent, yEvent, pEvent, tEvent):
 		if yEvent is None:
 			self.dim = 1
@@ -15,7 +28,20 @@ class event():
 		self.p = pEvent if type(pEvent) is np.array else np.asarray(pEvent) # spike polarity
 		self.t = tEvent if type(tEvent) is np.array else np.asarray(tEvent) # time stamp in ms
 
-	def toSpikeMat(self, samplingTime=1, dim=None):	# Sampling time in ms
+	def toSpikeArray(self, samplingTime=1, dim=None):	# Sampling time in ms
+		'''
+		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.
+		The array is of dimension (channels, height, time) or``CHT`` for 1D data.
+		The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data.
+
+		Arguments:
+			* ``samplingTime``: the width of time bin to use.
+			* ``dim``: the dimension of the desired tensor. Assignes dimension itself if not provided.
+
+		Usage:
+
+		>>> spike = TD.toSpikeArray()
+		'''
 		if self.dim == 1:
 			if dim is None: dim = ( np.round(max(self.p)+1).astype(int),
 									np.round(max(self.x)+1).astype(int), 
@@ -30,6 +56,18 @@ class event():
 		return self.toSpikeTensor(frame, samplingTime).reshape(dim)
 
 	def toSpikeTensor(self, emptyTensor, samplingTime=1):	# Sampling time in ms
+		'''
+		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.
+		The tensor is of dimension (channels, height, width, time) or``CHWT``.
+
+		Arguments:
+			* ``emptyTensor`` (``numpy or torch tensor``): an empty tensor to hold spike data 
+			* ``samplingTime``: the width of time bin to use.
+
+		Usage:
+
+		>>> spike = TD.toSpikeTensor( torch.zeros((2, 240, 180, 5000)) )
+		'''
 		xEvent = np.round(self.x).astype(int)
 		yEvent = np.round(self.y).astype(int)
 		pEvent = np.round(self.p).astype(int)
@@ -53,7 +91,20 @@ class event():
 				  		tEvent[validInd]] = 1/samplingTime
 		return emptyTensor
 
-def numpyToEvent(spikeMat, samplingTime=1):
+def spikeArrayToEvent(spikeMat, samplingTime=1):
+	'''
+	Returns TD event from a numpy array (of dimension 3 or 4).
+	The numpy array must be of dimension (channels, height, time) or``CHT`` for 1D data.
+	The numpy array must be of dimension (channels, height, width, time) or``CHWT`` for 2D data.
+
+	Arguments:
+		* ``spikeMat``: numpy array with spike information.
+		* ``samplingTime``: time width of each time bin.
+
+	Usage:
+
+	>>> TD = spikeFileIO.spikeArrayToEvent(spike)
+	'''
 	if spikeMat.ndim == 3:
 		spikeEvent = np.argwhere(spikeMat > 0)
 		xEvent = spikeEvent[:,1]
@@ -72,6 +123,22 @@ def numpyToEvent(spikeMat, samplingTime=1):
 	return event(xEvent, yEvent, pEvent, tEvent * samplingTime) 
 
 def read1Dspikes(filename):
+	'''
+	Reads one dimensional binary spike file and returns a TD event.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 40 bit number.
+		* First 16 bits (bits 39-24) represent the neuronID.
+		* Bit 23 represents the sign of spike event: 0=>OFF event, 1=>ON event.
+		* the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+
+	Usage:
+
+	>>> TD = spikeFileIO.read1Dspikes(file_path)
+	'''
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
 	inputAsInt = np.asarray([x for x in inputByteArray])
@@ -81,6 +148,23 @@ def read1Dspikes(filename):
 	return event(xEvent, None, pEvent, tEvent/1000)	# convert spike times to ms
 
 def encode1Dspikes(filename, TD):
+	'''
+	Writes one dimensional binary spike file from a TD event.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 40 bit number.
+		* First 16 bits (bits 39-24) represent the neuronID.
+		* Bit 23 represents the sign of spike event: 0=>OFF event, 1=>ON event.
+		* the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+		* ``TD`` (an ``spikeFileIO.event``): TD event.
+
+	Usage:
+
+	>>> spikeFileIO.write1Dspikes(file_path, TD)
+	'''
 	if TD.dim != 1: 	raise Exception('Expected Td dimension to be 1. It was: {}'.format(TD.dim))
 	xEvent = np.round(TD.x).astype(int)
 	pEvent = np.round(TD.p).astype(int)
@@ -95,6 +179,24 @@ def encode1Dspikes(filename, TD):
 		outputFile.write(outputByteArray)
 
 def read2Dspikes(filename):
+	'''
+	Reads two dimensional binary spike file and returns a TD event.
+	It is the same format used in neuromorphic datasets NMNIST & NCALTECH101.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 40 bit number.
+		* First 8 bits (bits 39-32) represent the xID of the neuron.
+		* Next 8 bits (bits 31-24) represent the yID of the neuron.
+		* Bit 23 represents the sign of spike event: 0=>OFF event, 1=>ON event.
+		* The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+
+	Usage:
+
+	>>> TD = spikeFileIO.read2Dspikes(file_path)
+	'''
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
 	inputAsInt = np.asarray([x for x in inputByteArray])
@@ -105,6 +207,25 @@ def read2Dspikes(filename):
 	return event(xEvent, yEvent, pEvent, tEvent/1000)	# convert spike times to ms
 
 def encode2Dspikes(filename, TD):
+	'''
+	Writes two dimensional binary spike file from a TD event.
+	It is the same format used in neuromorphic datasets NMNIST & NCALTECH101.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 40 bit number.
+		* First 8 bits (bits 39-32) represent the xID of the neuron.
+		* Next 8 bits (bits 31-24) represent the yID of the neuron.
+		* Bit 23 represents the sign of spike event: 0=>OFF event, 1=>ON event.
+		* The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+		* ``TD`` (an ``spikeFileIO.event``): TD event.
+
+	Usage:
+
+	>>> spikeFileIO.write2Dspikes(file_path, TD)
+	'''
 	if TD.dim != 2: 	raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
 	xEvent = np.round(TD.x).astype(int)
 	yEvent = np.round(TD.y).astype(int)
@@ -120,6 +241,23 @@ def encode2Dspikes(filename, TD):
 		outputFile.write(outputByteArray)
 
 def read3Dspikes(filename):
+	'''
+	Reads binary spike file for spike event in height, width and channel dimension and returns a TD event.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 56 bit number.
+		* First 12 bits (bits 56-44) represent the xID of the neuron.
+		* Next 12 bits (bits 43-32) represent the yID of the neuron.
+		* Next 8 bits (bits 31-24) represents the channel ID of the neuron.
+		* The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+
+	Usage:
+
+	>>> TD = spikeFileIO.read3Dspikes(file_path)
+	'''
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
 	inputAsInt = np.asarray([x for x in inputByteArray])
@@ -130,6 +268,24 @@ def read3Dspikes(filename):
 	return event(xEvent, yEvent, pEvent, tEvent/1000)	# convert spike times to ms
 
 def encode3Dspikes(filename, TD):
+	'''
+	Writes binary spike file for TD event in height, width and channel dimension.
+	
+	The binary file is encoded as follows:
+		* Each spike event is represented by a 56 bit number.
+		* First 12 bits (bits 56-44) represent the xID of the neuron.
+		* Next 12 bits (bits 43-32) represent the yID of the neuron.
+		* Next 8 bits (bits 31-24) represents the channel ID of the neuron.
+		* The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+		* ``TD`` (an ``spikeFileIO.event``): TD event.
+
+	Usage:
+
+	>>> spikeFileIO.write3Dspikes(file_path, TD)
+	'''
 	if TD.dim != 2: 	raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
 	xEvent = np.round(TD.x).astype(int)
 	yEvent = np.round(TD.y).astype(int)
@@ -147,6 +303,24 @@ def encode3Dspikes(filename, TD):
 		outputFile.write(outputByteArray)
 
 def read1DnumSpikes(filename):
+	'''
+	Reads a tuple specifying neuron, start of spike region, end of spike region and number of spikes from binary spike file.
+	
+	The binary file is encoded as follows:
+		* Number of spikes data is represented by an 80 bit number.
+		* First 16 bits (bits 79-64) represent the neuronID.
+		* Next 24 bits (bits 63-40) represents the start time in microseconds.
+		* Next 24 bits (bits 39-16) represents the end time in microseconds.
+		* Last 16 bits (bits 15-0) represents the number of spikes.
+	
+	Arguments:
+		* ``filename`` (``string``): path to the binary file
+
+	Usage:
+
+	>>> nID, tSt, tEn, nSp = spikeFileIO.read1DnumSpikes(file_path)
+	``tSt`` and ``tEn`` are returned in milliseconds
+	'''
 	with open(filename, 'rb') as inputFile:
 		inputByteArray = inputFile.read()
 	inputAsInt = np.asarray([x for x in inputByteArray])
@@ -157,6 +331,27 @@ def read1DnumSpikes(filename):
 	return neuronID, tStart/1000, tEnd/1000, nSpikes	# convert spike times to ms
 
 def encode1DnumSpikes(filename, nID, tSt, tEn, nSp):
+	'''
+	Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.
+	
+	The binary file is encoded as follows:
+		* Number of spikes data is represented by an 80 bit number
+		* First 16 bits (bits 79-64) represent the neuronID
+		* Next 24 bits (bits 63-40) represents the start time in microseconds
+		* Next 24 bits (bits 39-16) represents the end time in microseconds
+		* Last 16 bits (bits 15-0) represents the number of spikes
+	
+	Arguments:
+		* ``filename`` (``string``): path to the binary file
+		* ``nID`` (``numpy array``): neuron ID
+		* ``tSt`` (``numpy array``): region start time (in milliseconds)
+		* ``tEn`` (``numpy array``): region end time (in milliseconds)
+		* ``nSp`` (``numpy array``): number of spikes in the region
+
+	Usage:
+
+	>>> spikeFileIO.encode1DnumSpikes(file_path, nID, tSt, tEn, nSp)
+	'''
 	neuronID = np.round(nID).astype(int)
 	tStart   = np.round(tSt * 1000).astype(int)	# encode spike time in us
 	tEnd     = np.round(tEn * 1000).astype(int)	# encode spike time in us
@@ -264,13 +459,26 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 	plt.show()
 
 def showTD(TD, frameRate=24, preComputeFrames=True, repeat=False):
+	'''
+	Visualizes TD event.
+
+	Arguments:
+		* ``TD``: spike event to visualize.
+		* ``frameRate``: framerate of visualization.
+		* ``preComputeFrames``: flag to enable precomputation of frames for faster visualization. Default is ``True``.
+		* ``repeat``: flag to enable repeat of animation. Default is ``False``.
+
+	Usage:
+
+	>>> showTD(TD)
+	'''
 	if TD.dim == 1:
 		_showTD1D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)		
 	else:
 		_showTD2D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)
 
 
-def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms
-	addressEvent = np.argwhere(spikeMat > 0)
-	# print(addressEvent.shape)
-	return event(addressEvent[:,2], addressEvent[:,1], addressEvent[:,0], addressEvent[:,3] * samplingTime)
+# def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms
+# 	addressEvent = np.argwhere(spikeMat > 0)
+# 	# print(addressEvent.shape)
+# 	return event(addressEvent[:,2], addressEvent[:,1], addressEvent[:,0], addressEvent[:,3] * samplingTime)

@@ -58,8 +58,8 @@ print('Error :', np.sum(np.abs(TD.p - TDcopy.p)))
 print('Error :', np.sum(np.abs(TD.t - TDcopy.t)))
 
 # TD to spikeMat
-spike = TD.toSpikeMat()
-TDcopy = spikeMat2TD(spike)
+spike = TD.toSpikeArray()
+TDcopy = spikeArrayToEvent(spike)
 
 plt.figure(1)
 plt.imshow(spike.reshape((-1, spike.shape[-1])))
