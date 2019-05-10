@@ -39,7 +39,7 @@ Python 3 with the following packages installed:
 
 * PyTorch (tested with version 1.0.1.post2)
 * numpy
-* pyyamlrtf view
+* pyyaml
 
 A **CUDA** enabled **GPU** is required for training any model.
 No plans on CPU only implementation yet.
