@@ -57,7 +57,7 @@ TODO: Add documentation link.
 TODO: Add description of example.
 
 ## Contribution
-* By email [Sumit Bam Shrestha](mailto:bam_sumit@hotmail.com).
+* By [Sumit Bam Shrestha](mailto:bam_sumit@hotmail.com).
 * This work builds on initial implementation by [Luca Della VEDOVA](mailto:lucadellavr@gmail.com).
 
 ## Contact
