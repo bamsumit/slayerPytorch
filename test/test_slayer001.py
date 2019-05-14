@@ -25,7 +25,7 @@ spike = torch.FloatTensor(spikeData.reshape((1, 1, 1, 2, Ns))).to(device)
 
 slayer = spikeLayer(net_params['neuron'], net_params['simulation']).to(device)
 
-a = slayer.applySrmKernel(spike)
+a = slayer.psp(spike)
 
 print('neuron type: ', slayer.neuron['type'])
 print('Ts         : ', slayer.simulation['Ts'])

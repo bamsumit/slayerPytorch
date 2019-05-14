@@ -31,14 +31,12 @@ class Network(torch.nn.Module):
 
 		self.slayer = slayer
 		# define network functions
-		self.spike = slayer.spike()
-		self.psp   = slayer.psp()
 		self.fc1   = slayer.dense(Nin, Nhid)
 		self.fc2   = slayer.dense(Nhid, Nout)
 		
 	def forward(self, spikeInput):
-		spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
-		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		spikeLayer1 = self.slayer.spike(self.fc1(self.slayer.psp(spikeInput)))
+		spikeLayer2 = self.slayer.spike(self.fc2(self.slayer.psp(spikeLayer1)))
 		return spikeLayer2
 		
 snn = Network(net_params).to(device)

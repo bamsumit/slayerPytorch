@@ -30,8 +30,6 @@ class Network(torch.nn.Module):
 
 		self.slayer = slayer
 		# define network functions
-		self.spike = slayer.spike()
-		self.psp   = slayer.psp()
 		self.fc1   = slayer.dense(Nin, Nhid)
 		self.fc2   = slayer.dense(Nhid, Nout)
 		# W1 = np.loadtxt('test_files/snnData/w1Initial.txt')
@@ -40,8 +38,8 @@ class Network(torch.nn.Module):
 		# self.fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 1))).to(self.fc2.weight.device), requires_grad = True)
 	
 	def forward(self, spikeInput):
-		spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
-		spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		spikeLayer1 = self.slayer.spike(self.fc1(self.slayer.psp(spikeInput)))
+		spikeLayer2 = self.slayer.spike(self.fc2(self.slayer.psp(spikeLayer1)))
 		return spikeLayer2
 		
 snn = Network(net_params).to(device)

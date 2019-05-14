@@ -26,8 +26,6 @@ device = torch.device('cuda:1')
 slayer = spikeLayer(net_params['neuron'], net_params['simulation'], fullRefKernel = True).to(device)
 
 # define network functions
-spike = slayer.spike()
-psp   = slayer.psp()
 fc1   = slayer.dense(Nin, Nhid).to(device)
 fc2   = slayer.dense(Nhid, Nout).to(device)
 
@@ -54,11 +52,11 @@ fc1.weight = torch.nn.Parameter(torch.FloatTensor(W1.reshape((Nhid, Nin, 1, 1, 1
 # print(fc1.weight.reshape((Nhid, Nin)))
 data = np.loadtxt('test_files/snnData/spikeFuncHid.txt')[0:-1]
 # data = np.loadtxt('test_files/snnData/spikeFuncHid04.txt')[0:-1]
-aIn      = psp(spikeIn)
+aIn      = slayer.psp(spikeIn)
 uHid     = fc1(aIn)
 uHidPre  = uHid.clone().detach()
 
-spikeHid = spike(uHid)
+spikeHid = slayer.spike(uHid)
 s2 = spikeHid.reshape((Nhid, Ns)).cpu().data.numpy()
 s2AER = np.argwhere(s2 > 0)
 s2GT  = np.loadtxt('test_files/snnData/spikeHid.txt')
@@ -74,11 +72,9 @@ spikeHidGT = torch.FloatTensor(spikeHidData.reshape((1, Nhid, 1, 1, Ns))).to(dev
 W2 = np.loadtxt('test_files/snnData/w2learned.txt')
 fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 1))).to(fc2.weight.device), requires_grad = True)
 dOut = np.loadtxt('test_files/snnData/spikeFuncOut.txt')[0:-1]
-# uOut = fc2(psp(spikeHid))
-uOut = psp(fc2(spikeHid))
-# uOut = fc2(psp(spikeHidGT))
+uOut = slayer.psp(fc2(spikeHid))
 uOutPre = uOut.clone().detach()
-spikeOut = spike(uOut)
+spikeOut = slayer.spike(uOut)
 s3 = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 s3AER = np.argwhere(s3 > 0)
 s3GT  = np.loadtxt('test_files/snnData/spikeOut.txt')

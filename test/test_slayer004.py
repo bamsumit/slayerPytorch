@@ -31,14 +31,12 @@ class Network(torch.nn.Module):
 
 		self.slayer = slayer
 		# define network functions
-		self.spike = slayer.spike()
-		self.psp   = slayer.psp()
 		self.fc1   = slayer.dense(Nin, Nout)
 		W1 = np.loadtxt('test_files/snnData/w1Initial.txt')
 		self.fc1.weight = torch.nn.Parameter(torch.FloatTensor(W1.reshape((Nout, Nin , 1, 1, 1))).to(self.fc1.weight.device), requires_grad = True)
 		
 	def forward(self, spikeInput):
-		return self.spike(self.fc1(self.psp(spikeInput)))
+		return self.slayer.spike(self.fc1(self.slayer.psp(spikeInput)))
 		
 snn = Network(net_params).to(device)
 

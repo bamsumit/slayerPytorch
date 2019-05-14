@@ -19,20 +19,14 @@ class spikeLoss(torch.nn.Module):
 		self.simulation = simulationDesc
 		self.errorDescriptor = errorDescriptor
 		self.slayer = spikeLayer(neuronDesc, simulationDesc)
-		# self.dtype = slayer.dtype
-		# self.device = slayer.device
-		self.psp = self.slayer.psp()
-
+		
 	def __init__(self, networkDescriptor):
 		super(spikeLoss, self).__init__()
 		self.neuron = networkDescriptor['neuron']
 		self.simulation = networkDescriptor['simulation']
 		self.errorDescriptor = networkDescriptor['training']['error']
 		self.slayer = spikeLayer(self.neuron, self.simulation)
-		# self.dtype = slayer.dtype
-		# self.device = slayer.device
-		self.psp = self.slayer.psp()
-	
+		
 	def spikeTime(self, spikeOut, spikeDesired):
 		'''
 		Calculates spike loss based on spike time.
@@ -40,7 +34,7 @@ class spikeLoss(torch.nn.Module):
 
 		.. math::
 
-			E = \int_0^T \left( \varepsilon * (output - desired)\right)(t) ^2 \text{d}t
+			E = \int_0^T \\left( \\varepsilon * (output -desired) \\right)(t)^2\\ \\text{d}t 
 
 		Arguments:
 			* ``spikeOut`` (``torch.tensor``): spike tensor
@@ -52,7 +46,8 @@ class spikeLoss(torch.nn.Module):
 		'''
 		# Tested with autograd, it works
 		assert self.errorDescriptor['type'] == 'SpikeTime', "Error type is not SpikeTime"
-		error = self.psp(spikeOut - spikeDesired) 
+		# error = self.psp(spikeOut - spikeDesired) 
+		error = self.slayer.psp(spikeOut - spikeDesired) 
 		return 1/2 * torch.sum(error**2) * self.simulation['Ts']
 	
 	def numSpikes(self, spikeOut, desiredClass, numSpikesScale=1):
@@ -62,15 +57,13 @@ class spikeLoss(torch.nn.Module):
 		Any spikes outside the target region are penalized with ``error.spikeTime`` loss..
 
 		.. math::
-
-			e(t) &=
-			\begin{cases}
-			\frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} & \text{for }t \in targetRegion\\
-			\left(\varepsilon * (output - desired)\right)(t) & \text{otherwise}
-			\end{cases}
-			\\
-			E &= \int_0^T e(t)^2 \text{d}t
-			\end{align}
+			e(t) &= 
+			\\begin{cases}
+			\\frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} & \\text{for }t \in targetRegion\\\\
+			\\left(\\varepsilon * (output - desired)\\right)(t) & \\text{otherwise}
+			\\end{cases}
+			
+			E &= \\int_0^T e(t)^2 \\text{d}t
 
 		Arguments:
 			* ``spikeOut`` (``torch.tensor``): spike tensor
@@ -80,7 +73,6 @@ class spikeLoss(torch.nn.Module):
 
 		>>> loss = error.numSpikes(spikeOut, target)
 		'''
-
 		# Tested with autograd, it works
 		assert self.errorDescriptor['type'] == 'NumSpikes', "Error type is not NumSpikes"
 		# desiredClass should be one-hot tensor with 5th dimension 1
@@ -98,7 +90,8 @@ class spikeLoss(torch.nn.Module):
 		targetRegion[:,:,:,:,startID:stopID] = 1;
 		spikeDesired = torch.FloatTensor(targetRegion * spikeOut.cpu().data.numpy()).to(spikeOut.device)
 		
-		error = self.psp(spikeOut - spikeDesired)
+		# error = self.psp(spikeOut - spikeDesired)
+		error = self.slayer.psp(spikeOut - spikeDesired)
 		error += torch.FloatTensor(errorSpikeCount * targetRegion).to(spikeOut.device)
 		
 		return 1/2 * torch.sum(error**2) * self.simulation['Ts']

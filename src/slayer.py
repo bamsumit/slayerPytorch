@@ -122,24 +122,19 @@ class spikeLayer(torch.nn.Module):
 		prependedZeros = np.zeros((len(kernel) - 1))
 		return np.flip( np.concatenate( (prependedZeros, kernel) ) ).tolist()
 		
-	def applySrmKernel(self, spike):
-		# spikeShape = spike.shape
-		# return nn.functional.conv3d(spike.reshape( (spikeShape[0], 1, spikeShape[1] * spikeShape[2], spikeShape[3], spikeShape[4]) ), 
-		# 							self.srmKernel.reshape((1, 1, 1, 1, len(self.srmKernel))),
-		# 							padding = (0, 0, int( self.srmKernel.shape[0] / 2 ) )).reshape(spikeShape) * self.simulation['Ts']
-		return _pspFunction.apply(spike, self.srmKernel, self.simulation['Ts'])
-
-	def psp(self):
+	def psp(self, spike):
 		'''
-		Returns a function that can be called later to apply psp to spikes.
+		Applies psp filtering to spikes.
 		The output tensor dimension is same as input.
+
+		Arguments:
+			* ``spike``: input spike tensor.
 
 		Usage:
 
-		>>> psp = snnLayer.psp()
-		>>> filteredSpike = psp(spike)
+		>>> filteredSpike = snnLayer.psp(spike)
 		'''
-		return lambda spike : self.applySrmKernel(spike)
+		return _pspFunction.apply(spike, self.srmKernel, self.simulation['Ts'])
 	
 	def dense(self, inFeatures, outFeatures):
 		'''
@@ -209,18 +204,24 @@ class spikeLayer(torch.nn.Module):
 		>>> output = pool(input)
 		'''
 		return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation)
-		
-	def spike(self):
+	
+	# def applySpikeFunction(self, membranePotential):
+	# 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
+
+	def spike(self, membranePotential):
 		'''
-		Returns a function that can be called to apply spike function and refractory response.
+		Applies spike function and refractory response.
 		The output tensor dimension is same as input.
+		``membranePotential`` will reflect spike and refractory behaviour as well.
+
+		Arguments:
+			* ``membranePotential``: subthreshold membrane potential.
 
 		Usage:
 
-		>>> spike = snnLayer.spike()
-		>>> outSpike = spike(membranePotential) #membranePotential will reflect spike and refractory behaviour
+		>>> outSpike = snnLayer.spike(membranePotential)
 		'''
-		return lambda membranePotential : _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
+		return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
 class _denseLayer(nn.Conv3d):
 	def __init__(self, inFeatures, outFeatures, weightScale=1):

@@ -56,24 +56,21 @@ class Network(torch.nn.Module):
 		
 		self.slayer = slayer
 		# define network functions
-		self.spike = slayer.spike()
-		self.psp   = slayer.psp()
 		# self.fc1   = slayer.dense((34, 34, 2), 512)
 		self.fc1   = slayer.dense((34*34*2), 512)
 		self.fc2   = slayer.dense(512, 10)
 
 	def forward(self, spikeInput):
-		# spikeLayer1 = self.spike(self.fc1(self.psp(spikeInput)))
-		# spikeLayer2 = self.spike(self.fc2(self.psp(spikeLayer1)))
+		# spikeLayer1 = self.slayer.spike(self.fc1(self.slayer.psp(spikeInput)))
+		# spikeLayer2 = self.slayer.spike(self.fc2(self.slayer.psp(spikeLayer1)))
 
-		spikeLayer1 = self.spike(self.psp(self.fc1(spikeInput)))
-		spikeLayer2 = self.spike(self.psp(self.fc2(spikeLayer1)))		
+		spikeLayer1 = self.slayer.spike(self.slayer.psp(self.fc1(spikeInput)))
+		spikeLayer2 = self.slayer.spike(self.slayer.psp(self.fc2(spikeLayer1)))		
 		
 		return spikeLayer2
 		# return spikeInput, spikeLayer1, spikeLayer2
 
 # network
-# net = torch.nn.DataParallel(Network(netParams), device_ids=[1, 2, 3])
 net = Network(netParams).to(device)
 
 # dataLoader
@@ -105,9 +102,7 @@ printTestingStats  = lambda cost, accuracy: print('Testing : loss = %-12.5g  acc
 for i in range(5):
 	input, target, label = trainingSet[i]
 	snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
-	# snn.io.numpyToEvent converts input numpy array to TD event
-	# snn.io.numpyToEvent expects input numpy array as a 4d tensor (p, y, x, t)
-
+	
 # training loop
 for epoch in range(100):
 	epochLoss = 0

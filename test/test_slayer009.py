@@ -19,7 +19,9 @@ from torch.utils.data import Dataset, DataLoader
 
 import slayerSNN as snn
 
-device = torch.device('cuda:2')
+device = torch.device('cuda')
+# device = torch.device('cuda:3')
+deviceIds = [0, 3]
 netParams = snn.params('test_files/nmnistNet.yaml')
 
 # Dataloader definition
@@ -99,12 +101,19 @@ class Network(torch.nn.Module):
 		# spikeLayer5 = self.spike(self.conv3(spikeLayer4)) #  8,  8, 64
 		# spikeOut    = self.spike(self.fc1  (spikeLayer5)) #  10
 
-		spikeLayer1 = self.spike(self.conv1(self.psp(spikeInput ))) # 32, 32, 16
-		spikeLayer2 = self.spike(self.pool1(self.psp(spikeLayer1))) # 16, 16, 16
-		spikeLayer3 = self.spike(self.conv2(self.psp(spikeLayer2))) # 16, 16, 32
-		spikeLayer4 = self.spike(self.pool2(self.psp(spikeLayer3))) #  8,  8, 32
-		spikeLayer5 = self.spike(self.conv3(self.psp(spikeLayer4))) #  8,  8, 64
-		spikeOut    = self.spike(self.fc1  (self.psp(spikeLayer5))) #  10
+		# spikeLayer1 = self.spike(self.conv1(self.psp(spikeInput ))) # 32, 32, 16
+		# spikeLayer2 = self.spike(self.pool1(self.psp(spikeLayer1))) # 16, 16, 16
+		# spikeLayer3 = self.spike(self.conv2(self.psp(spikeLayer2))) # 16, 16, 32
+		# spikeLayer4 = self.spike(self.pool2(self.psp(spikeLayer3))) #  8,  8, 32
+		# spikeLayer5 = self.spike(self.conv3(self.psp(spikeLayer4))) #  8,  8, 64
+		# spikeOut    = self.spike(self.fc1  (self.psp(spikeLayer5))) #  10
+
+		spikeLayer1 = self.slayer.spike(self.conv1(self.slayer.psp(spikeInput ))) # 32, 32, 16
+		spikeLayer2 = self.slayer.spike(self.pool1(self.slayer.psp(spikeLayer1))) # 16, 16, 16
+		spikeLayer3 = self.slayer.spike(self.conv2(self.slayer.psp(spikeLayer2))) # 16, 16, 32
+		spikeLayer4 = self.slayer.spike(self.pool2(self.slayer.psp(spikeLayer3))) #  8,  8, 32
+		spikeLayer5 = self.slayer.spike(self.conv3(self.slayer.psp(spikeLayer4))) #  8,  8, 64
+		spikeOut    = self.slayer.spike(self.fc1  (self.slayer.psp(spikeLayer5))) #  10
 
 		# print("\tIn Model: ", spikeInput.device,
 		# 	  spikeInput.size(), 
@@ -114,8 +123,18 @@ class Network(torch.nn.Module):
 		# return spikeInput, spikeLayer1, spikeLayer2
 
 # network
-net = Network(netParams).to(device)
-# net = torch.nn.DataParallel(Network(netParams), device_ids=[2, 3]).to(device)
+# net = Network(netParams).to(device)
+net = torch.nn.DataParallel(Network(netParams).to(device), device_ids=deviceIds)
+
+# replicas = torch.nn.parallel.replicate(net, deviceIds)
+# # print(dir(replicas))
+# print(len(replicas))
+# for id in range(len(replicas)):
+# 	print(replicas[id].slayer.srmKernel.device)
+# 	print(replicas[id].slayer.refKernel.device)
+
+for name, buf in net.named_buffers():
+	print(name, buf.shape)
 
 # print(net.device_ids)
 
