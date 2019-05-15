@@ -51,10 +51,18 @@ The repository includes C++ and CUDA code that has to be compiled and installed 
 `python setup.py install`
 
 ## Documentation
-TODO: Add documentation link.
+The complete documentation is available at [https://bamsumit.github.io/slayerPytorch/spikeLoss.html](https://bamsumit.github.io/slayerPytorch/spikeLoss.html) .
 
 ## Examples
-TODO: Add description of example.
+Example implementations can be found inside Examples folder.
+
+* Run example MLP implementation
+
+	`>>> python nmnistMLP.py`
+	
+* Run example CNN implementation
+	
+	`>>> python nmnistCNN.py`
 
 ## Contribution
 * By [Sumit Bam Shrestha](mailto:bam_sumit@hotmail.com).

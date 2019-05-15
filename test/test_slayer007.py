@@ -3,146 +3,60 @@ import sys, os
 CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
-from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from torch.utils.data import Dataset, DataLoader
-
-# # from data_reader_new import DataReader, SlayerParams
-# from data_reader import SlayerParams
-# from slayer import spikeLayer
-# from spikeLoss import spikeLoss
-# from spikeClassifier import spikeClassifier as predict
-# # import unittest
-# # from txtsaver import txtsaver
-
 import slayerSNN as snn
 
-device = torch.device('cuda')
+
+###############################################################################
+# To test the correctness of convolution operation and pooling operation ######
+
+device = torch.device('cuda') 
+
 netParams = snn.params('test_files/nmnistNet.yaml')
 
-# Dataloader definition
-class nmnistDataset(Dataset):
-	def __init__(self, datasetPath, sampleFile, samplingTime, sampleLength):
-		self.path = datasetPath 
-		self.samples = np.loadtxt(sampleFile).astype('int')
-		self.samplingTime = samplingTime
-		self.nTimeBins    = int(sampleLength / samplingTime)
+slayer = snn.layer(netParams['neuron'], netParams['simulation']).to(device)
 
-	def __getitem__(self, index):
-		inputIndex  = self.samples[index, 0]
-		classLabel  = self.samples[index, 1]
-		
-		inputSpikes = snn.io.read2Dspikes(
-						self.path + str(inputIndex.item()) + '.bs2'
-						).toSpikeTensor(torch.zeros((2,34,34,self.nTimeBins)),
-						samplingTime=self.samplingTime)
-		desiredClass = torch.zeros((10, 1, 1, 1))
-		desiredClass[classLabel,...] = 1
-		# return inputSpikes, desiredClass, classLabel
-		return inputSpikes.reshape((-1, 1, 1, inputSpikes.shape[-1])), desiredClass, classLabel
+# conv operation test
+# (N, C, H, W, D) = (1, 1, 8, 8, 1)
+(N, C, H, W, D) = (4, 8, 100, 100, 500)
+K = 5
 
+conv = slayer.conv(C, 1, K).to(device)
+inTensor = torch.randn((N, C, H, W, D)).to(device)
 
-	def __len__(self):
-		return self.samples.shape[0]
+outGT = torch.zeros((N, 1, H-K+1, W-K+1, D)).to(device)
 
-# Network definition
-class Network(torch.nn.Module):
-	def __init__(self, netParams):
-		super(Network, self).__init__()
-		# initialize slayer
-		slayer = snn.layer(netParams['neuron'], netParams['simulation'])
-		
-		self.slayer = slayer
-		# define network functions
-		# self.fc1   = slayer.dense((34, 34, 2), 512)
-		self.fc1   = slayer.dense((34*34*2), 512)
-		self.fc2   = slayer.dense(512, 10)
+weight = conv.weight.cpu().data.numpy().reshape((C, K, K))
 
-	def forward(self, spikeInput):
-		# spikeLayer1 = self.slayer.spike(self.fc1(self.slayer.psp(spikeInput)))
-		# spikeLayer2 = self.slayer.spike(self.fc2(self.slayer.psp(spikeLayer1)))
+for i in range(K):
+	for j in range(K):
+		temp = inTensor[:, :, j:H-K+1+j, i:W-K+1+i, :]
+		for k in range(C):
+			outGT += weight[k, j, i] * temp[:,k,...].reshape((N,1,H-K+1, W-K+1, D))
 
-		spikeLayer1 = self.slayer.spike(self.slayer.psp(self.fc1(spikeInput)))
-		spikeLayer2 = self.slayer.spike(self.slayer.psp(self.fc2(spikeLayer1)))		
-		
-		return spikeLayer2
-		# return spikeInput, spikeLayer1, spikeLayer2
+out = conv(inTensor)
 
-# network
-net = Network(netParams).to(device)
+error = torch.norm(out - outGT).cpu().data.numpy() / torch.numel(out)
 
-# dataLoader
-trainingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
-						    sampleFile=netParams['training']['path']['train'],
-						    samplingTime=netParams['simulation']['Ts'],
-						    sampleLength=netParams['simulation']['tSample'])
-trainLoader = DataLoader(dataset=trainingSet, batch_size=8, shuffle=False, num_workers=4)
+print('Conv Error :', error)	
 
-testingSet = nmnistDataset(datasetPath=netParams['training']['path']['in'], 
-						    sampleFile=netParams['training']['path']['test'],
-						    samplingTime=netParams['simulation']['Ts'],
-						    sampleLength=netParams['simulation']['tSample'])
-testLoader = DataLoader(dataset=testingSet, batch_size=8, shuffle=False, num_workers=4)
+# print(inTensor.cpu().data)
+# print(conv.weight.cpu().data)
+# print(out.cpu().data)
+# print(outGt.cpu().data)
 
-# cost function
-# error = snn.loss(net.slayer, netParams['training']['error']).to(device)
-error = snn.loss(netParams).to(device)
+# pooling operation
+pool = slayer.pool(2).to(device)
+inTensor = torch.randn((4, 8, 100, 100, 500)).to(device)
 
-# Optimizer
-optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
+outGT = ( inTensor[:, :, 0::2, 0::2, :] + \
+  		  inTensor[:, :, 0::2, 1::2, :] + \
+  		  inTensor[:, :, 1::2, 0::2, :] + \
+  		  inTensor[:, :, 1::2, 1::2, :] ) * 1.1 * netParams['neuron']['theta']
+out   = pool(inTensor)
 
-# printing functions
-printEpoch         = lambda epoch, timeElapsed: print('Epoch: {:4d} \t ({} sec elapsed)'.format(epoch, timeElapsed))
-printTrainingStats = lambda cost, accuracy: print('Training: loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
-printTestingStats  = lambda cost, accuracy: print('Testing : loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
+error = torch.norm(out - outGT).cpu().data.numpy() / torch.numel(out)
 
-# visualize the input spikes (First five samples)
-for i in range(5):
-	input, target, label = trainingSet[i]
-	snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
-	
-# training loop
-for epoch in range(100):
-	epochLoss = 0
-	correctSamples = 0
-	numSamples = 0
-	tSt = datetime.now()
-	
-	for i, (input, target, label) in enumerate(trainLoader, 0):
-		input  = input.to(device)
-		target = target.to(device) 
-		
-		output = net.forward(input)
-		
-		correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-		numSamples += len(label)
-
-		loss = error.numSpikes(output, target)
-		optimizer.zero_grad()
-		loss.backward()
-		optimizer.step()
-
-		epochLoss += loss.cpu().data.item()
-	
-	printEpoch(epoch, (datetime.now() - tSt).total_seconds())
-	printTrainingStats(epochLoss/numSamples, correctSamples/numSamples)
-	
-	correctSamples = 0
-	numSamples = 0
-	epochLoss = 0
-	for i, (input, target, label) in enumerate(testLoader, 0):
-		input  = input.to(device)
-		target = target.to(device) 
-		
-		output = net.forward(input)
-
-		correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-		numSamples += len(label)
-
-		loss = error.numSpikes(output, target)
-		epochLoss += loss.cpu().data.item()
-	
-	printTestingStats(epochLoss/numSamples, correctSamples/numSamples)
-	
+print('Pool Error :', error)
