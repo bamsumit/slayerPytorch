@@ -12,7 +12,6 @@ import slayerCuda
 class yamlParams(object):
 	'''
 	This class reads yaml parameter file and allows dictionary like access to the members.
-	test
 	
 	Usage:
 
