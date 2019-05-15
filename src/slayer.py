@@ -143,7 +143,7 @@ class spikeLayer(torch.nn.Module):
 
 		Arguments:
 			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): 
-				dimension of input featres (Width, Height, Channel) that represents the number of input neurons.
+				dimension of input features (Width, Height, Channel) that represents the number of input neurons.
 			* ``outFeatures`` (``int``): number of output neurons.
 
 		Usage:
