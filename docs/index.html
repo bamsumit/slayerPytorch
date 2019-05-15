@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to SLAYER PyTorch’s documentation! &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SLAYER PyTorch main" href="slayerSNN.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-slayer-pytorch-s-documentation">
+<h1>Welcome to SLAYER PyTorch’s documentation!<a class="headerlink" href="#welcome-to-slayer-pytorch-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+<div class="section" id="usage">
+<h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="k">as</span> <span class="nn">snn</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>The <strong>spike-layer</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>.</p></li>
+<li><p>The <strong>yaml-parameter</strong> module will be availabe as <code class="docutils literal notranslate"><span class="pre">snn.params</span></code>.</p></li>
+<li><p>The <strong>spike-loss</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.loss</span></code>.</p></li>
+<li><p>The <strong>spike-classifier</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.predict</span></code>.</p></li>
+<li><p>The <strong>spike-IO</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.io</span></code>.</p></li>
+</ul>
+</div>
+<div class="section" id="example">
+<h2>Example:<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>The SNN parameters are stored in a yaml file.
+The structure of the yaml file follows the same hierarchy as the
+<a class="reference external" href="https://bitbucket.org/bamsumit/slayer">C++ SLAYER framework</a> (see Network Description)</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="kn">as</span> <span class="nn">snn</span>
+<span class="c1"># other imports and definitions</span>
+
+<span class="k">class</span> <span class="nc">Network</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+   <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netParams</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">):</span>
+      <span class="nb">super</span><span class="p">(</span><span class="n">Network</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+      <span class="c1"># initialize slayer</span>
+      <span class="n">slayer</span> <span class="o">=</span> <span class="n">snn</span><span class="o">.</span><span class="n">layer</span><span class="p">(</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">],</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">sl</span> <span class="o">=</span> <span class="n">slayer</span>
+      <span class="c1"># define network functions</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">conv1</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">conv2</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">conv3</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">pool1</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">pool2</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+      <span class="bp">self</span><span class="o">.</span><span class="n">fc1</span>   <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">dense</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="mi">10</span><span class="p">)</span>
+
+   <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikeInput</span><span class="p">):</span>
+      <span class="n">spikeLayer1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeInput</span><span class="p">)))</span>  <span class="c1"># 32, 32, 16</span>
+      <span class="n">spikeLayer2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool1</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeLayer1</span><span class="p">)))</span> <span class="c1"># 16, 16, 16</span>
+      <span class="n">spikeLayer3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeLayer2</span><span class="p">)))</span> <span class="c1"># 16, 16, 32</span>
+      <span class="n">spikeLayer4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pool2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeLayer3</span><span class="p">)))</span> <span class="c1">#  8,  8, 32</span>
+      <span class="n">spikeLayer5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conv3</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeLayer4</span><span class="p">)))</span> <span class="c1">#  8,  8, 64</span>
+      <span class="n">spikeOut</span>    <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">fc1</span>  <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sl</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeLayer5</span><span class="p">)))</span> <span class="c1">#  10</span>
+      <span class="k">return</span> <span class="n">spikeOut</span>
+
+<span class="c1"># network</span>
+<span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">snn</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="s1">&#39;path to yaml file&#39;</span><span class="p">))</span>
+
+<span class="c1"># cost function</span>
+<span class="n">error</span> <span class="o">=</span> <span class="n">snn</span><span class="o">.</span><span class="n">loss</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+
+<span class="c1"># dataloader not shown. input and target are assumed to be available</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">numSpikes</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+<p><strong>Important:</strong> It is assumed that all the tensors that are being processed are 5 dimensional.
+(Batch, Channels, Height, Width, Time) or <code class="docutils literal notranslate"><span class="pre">NCHWT</span></code> format.
+The user must make sure that an input of correct dimension is supplied.</p>
+<p><em>If the layer does not have spatial dimension, the neurons can be distributed along either
+Channel, Height or Width dimension where Channel * Height * Width is equal to number of neurons.
+It is recommended (for speed reasons) to define the neuons in Channels dimension and make Height and Width
+dimension one.</em></p>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="slayerSNN.html" title="next chapter">SLAYER PyTorch main</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/index.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

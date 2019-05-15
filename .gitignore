@@ -7,3 +7,6 @@ dist/*
 *.egg-info/*
 
 .idea/
+
+#
+docs_readthedocs/
