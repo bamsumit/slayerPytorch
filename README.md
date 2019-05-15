@@ -51,7 +51,7 @@ The repository includes C++ and CUDA code that has to be compiled and installed 
 `python setup.py install`
 
 ## Documentation
-The complete documentation is available at [https://bamsumit.github.io/slayerPytorch/spikeLoss.html](https://bamsumit.github.io/slayerPytorch/spikeLoss.html) .
+The complete documentation is available at [https://bamsumit.github.io/slayerPytorch](https://bamsumit.github.io/slayerPytorch) .
 
 ## Examples
 Example implementations can be found inside Examples folder.
