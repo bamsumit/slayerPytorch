@@ -1,0 +1,564 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>slayer &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for slayer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+<span class="c1"># import slayer_cuda</span>
+<span class="kn">import</span> <span class="nn">slayerCuda</span>
+<span class="c1"># import matplotlib.pyplot as plt</span>
+
+<span class="c1"># Consider dictionary for easier iteration and better scalability</span>
+<div class="viewcode-block" id="yamlParams"><a class="viewcode-back" href="../slayer.html#slayer.yamlParams">[docs]</a><span class="k">class</span> <span class="nc">yamlParams</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class reads yaml parameter file and allows dictionary like access to the members.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	.. code-block:: python</span>
+<span class="sd">		</span>
+<span class="sd">		import slayerSNN as snn</span>
+<span class="sd">		netParams = snn.params(&#39;path_to_yaml_file&#39;)	# OR</span>
+<span class="sd">		netParams = slayer.yamlParams(&#39;path_to_yaml_file&#39;)</span>
+
+<span class="sd">		netParams[&#39;training&#39;][&#39;learning&#39;][&#39;etaW&#39;] = 0.01</span>
+<span class="sd">		print(&#39;Simulation step size        &#39;, netParams[&#39;simulation&#39;][&#39;Ts&#39;])</span>
+<span class="sd">		print(&#39;Spiking neuron time constant&#39;, netParams[&#39;neuron&#39;][&#39;tauSr&#39;])</span>
+<span class="sd">		print(&#39;Spiking neuron threshold    &#39;, netParams[&#39;neuron&#39;][&#39;theta&#39;])</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_file_path</span><span class="p">):</span>
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">parameter_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">param_file</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">param_file</span><span class="p">)</span>
+
+	<span class="c1"># Allow dictionary like access</span>
+	<span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+	<span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<span class="c1"># class spikeLayer():</span>
+<div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class defines the main engine of SLAYER.</span>
+<span class="sd">	It provides necessary funcitons for describing a SNN layer.</span>
+<span class="sd">	The input to output connection can be fully-connected, convolutional, or aggregation (pool)</span>
+<span class="sd">	It also defines the psp operation and spiking mechanism of a spiking neuron in the layer.</span>
+
+<span class="sd">	**Important:** It assumes all the tensors that are being processed are 5 dimensional. </span>
+<span class="sd">	(Batch, Channels, Height, Width, Time) or ``NCHWT`` format.</span>
+<span class="sd">	The user must make sure that an input of correct dimension is supplied.</span>
+
+<span class="sd">	*If the layer does not have spatial dimension, the neurons can be distributed along either</span>
+<span class="sd">	Channel, Height or Width dimension where Channel * Height * Width is equal to number of neurons.</span>
+<span class="sd">	It is recommended (for speed reasons) to define the neuons in Channels dimension and make Height and Width</span>
+<span class="sd">	dimension one.*</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``neuronDesc`` (``slayer.yamlParams``): spiking neuron descriptor.</span>
+<span class="sd">			.. code-block:: python</span>
+
+<span class="sd">				neuron:</span>
+<span class="sd">				    type:     SRMALPHA	# neuron type</span>
+<span class="sd">				    theta:    10	# neuron threshold</span>
+<span class="sd">				    tauSr:    10.0	# neuron time constant</span>
+<span class="sd">				    tauRef:   1.0	# neuron refractory time constant</span>
+<span class="sd">				    scaleRef: 2		# neuron refractory response scaling (relative to theta)</span>
+<span class="sd">				    tauRho:   1		# spike function derivative time constant (relative to theta)</span>
+<span class="sd">				    scaleRho: 1		# spike function derivative scale factor</span>
+<span class="sd">		* ``simulationDesc`` (``slayer.yamlParams``): simulation descriptor</span>
+<span class="sd">			.. code-block:: python</span>
+
+<span class="sd">				simulation:</span>
+<span class="sd">				    Ts: 1.0</span>
+<span class="sd">				    tSample: 300</span>
+<span class="sd">				    nSample: 12		</span>
+<span class="sd">		* ``fullRefKernel`` (``bool``, optional): high resolution refractory kernel (the user shall not use it in practice)  </span>
+<span class="sd">	</span>
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; snnLayer = slayer.spikeLayer(neuronDesc, simulationDesc)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">,</span> <span class="n">fullRefKernel</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">neuronDesc</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulationDesc</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">fullRefKernel</span> <span class="o">=</span> <span class="n">fullRefKernel</span>
+		
+		<span class="c1"># self.srmKernel = self.calculateSrmKernel()</span>
+		<span class="c1"># self.refKernel = self.calculateRefKernel()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;srmKernel&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculateSrmKernel</span><span class="p">())</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">register_buffer</span><span class="p">(</span><span class="s1">&#39;refKernel&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">calculateRefKernel</span><span class="p">())</span>
+		
+	<span class="k">def</span> <span class="nf">calculateSrmKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">srmKernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculateAlphaKernel</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;tauSr&#39;</span><span class="p">])</span>
+		<span class="c1"># TODO implement for different types of kernels</span>
+		<span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">srmKernel</span><span class="p">)</span>
+		<span class="c1"># return torch.tensor( self._zeroPadAndFlip(srmKernel)) # to be removed later when custom cuda code is implemented</span>
+		
+	<span class="k">def</span> <span class="nf">calculateRefKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullRefKernel</span><span class="p">:</span>
+			<span class="n">refKernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculateAlphaKernel</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;tauRef&#39;</span><span class="p">],</span> <span class="n">mult</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">0.0001</span><span class="p">)</span>
+			<span class="c1"># This gives the high precision refractory kernel as MATLAB implementation, however, it is expensive</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">refKernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculateAlphaKernel</span><span class="p">(</span><span class="n">tau</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;tauRef&#39;</span><span class="p">],</span> <span class="n">mult</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span>
+		
+		<span class="c1"># TODO implement for different types of kernels</span>
+		<span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">refKernel</span><span class="p">)</span>
+		
+	<span class="k">def</span> <span class="nf">_calculateAlphaKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tau</span><span class="p">,</span> <span class="n">mult</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">EPSILON</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">):</span>
+		<span class="c1"># could be made faster... NOT A PRIORITY NOW</span>
+		<span class="n">eps</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="c1"># tauSr = self.neuron[&#39;tauSr&#39;]</span>
+		<span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;tSample&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]):</span>
+			<span class="n">epsVal</span> <span class="o">=</span> <span class="n">mult</span> <span class="o">*</span> <span class="n">t</span> <span class="o">/</span> <span class="n">tau</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span>
+			<span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">epsVal</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">EPSILON</span> <span class="ow">and</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">tau</span><span class="p">:</span>
+				<span class="k">break</span>
+			<span class="n">eps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">epsVal</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">eps</span>
+	
+	<span class="k">def</span> <span class="nf">_zeroPadAndFlip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernel</span><span class="p">):</span>
+		<span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="n">kernel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+		<span class="n">prependedZeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+		<span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">(</span><span class="n">prependedZeros</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+		
+<div class="viewcode-block" id="spikeLayer.psp"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.psp">[docs]</a>	<span class="k">def</span> <span class="nf">psp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Applies psp filtering to spikes.</span>
+<span class="sd">		The output tensor dimension is same as input.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``spike``: input spike tensor.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; filteredSpike = snnLayer.psp(spike)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_pspFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
+	
+<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dense">[docs]</a>	<span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.</span>
+<span class="sd">		It behaves similar to ``torch.nn.Linear`` applied for each time instance.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): </span>
+<span class="sd">				dimension of input features (Width, Height, Channel) that represents the number of input neurons.</span>
+<span class="sd">			* ``outFeatures`` (``int``): number of output neurons.</span>
+
+<span class="sd">		Usage:</span>
+<span class="sd">		</span>
+<span class="sd">		&gt;&gt;&gt; fcl = snnLayer.dense(2048, 512)          # takes (N, 2048, 1, 1, T) tensor</span>
+<span class="sd">		&gt;&gt;&gt; fcl = snnLayer.dense((128, 128, 2), 512) # takes (N, 2, 128, 128, T) tensor</span>
+<span class="sd">		&gt;&gt;&gt; output = fcl(input)                      # output will be (N, 512, 1, 1, T) tensor</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span></div>
+		
+<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.conv">[docs]</a>	<span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a function that can be called to apply conv layer mapping to input tensor per time instance.</span>
+<span class="sd">		It behaves same as ``torch.nn.conv2d`` applied for each time instance.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``inChannels`` (``int``): number of channels in input</span>
+<span class="sd">			* ``outChannels`` (``int``): number of channls produced by convoluion</span>
+<span class="sd">			* ``kernelSize`` (``int`` or tuple of two ints): size of the convolving kernel</span>
+<span class="sd">			* ``stride`` (``int`` or tuple of two ints): stride of the convolution. Default: 1</span>
+<span class="sd">			* ``padding`` (``int`` or tuple of two ints):	zero-padding added to both sides of the input. Default: 0</span>
+<span class="sd">			* ``dilation`` (``int`` or tuple of two ints): spacing between kernel elements. Default: 1</span>
+<span class="sd">			* ``groups`` (``int`` or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1</span>
+
+<span class="sd">		The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:</span>
+
+<span class="sd">		- a single ``int`` -- in which case the same value is used for the height and width dimension</span>
+<span class="sd">		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,</span>
+<span class="sd">		  and the second `int` for the width dimension</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; conv = snnLayer.conv(2, 32, 5) # 32C5 flter</span>
+<span class="sd">		&gt;&gt;&gt; output = conv(input)           # must have 2 channels</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+		
+<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pool">[docs]</a>	<span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a function that can be called to apply pool layer mapping to input tensor per time instance.</span>
+<span class="sd">		It behaves same as ``torch.nn.``:sum pooling applied for each time instance.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``kernelSize`` (``int`` or tuple of two ints): the size of the window to pool over</span>
+<span class="sd">			* ``stride`` (``int`` or tuple of two ints): stride of the window. Default: `kernelSize`</span>
+<span class="sd">			* ``padding`` (``int`` or tuple of two ints): implicit zero padding to be added on both sides. Default: 0</span>
+<span class="sd">			* ``dilation`` (``int`` or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1</span>
+<span class="sd">			</span>
+<span class="sd">		The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:</span>
+
+<span class="sd">		- a single ``int`` -- in which case the same value is used for the height and width dimension</span>
+<span class="sd">		- a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,</span>
+<span class="sd">		  and the second `int` for the width dimension</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; pool = snnLayer.pool(4) # 4x4 pooling</span>
+<span class="sd">		&gt;&gt;&gt; output = pool(input)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_poolLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span></div>
+	
+	<span class="c1"># def applySpikeFunction(self, membranePotential):</span>
+	<span class="c1"># 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation[&#39;Ts&#39;])</span>
+
+<div class="viewcode-block" id="spikeLayer.spike"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.spike">[docs]</a>	<span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Applies spike function and refractory response.</span>
+<span class="sd">		The output tensor dimension is same as input.</span>
+<span class="sd">		``membranePotential`` will reflect spike and refractory behaviour as well.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``membranePotential``: subthreshold membrane potential.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; outSpike = snnLayer.spike(membranePotential)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_spikeFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">refKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div></div>
+
+<span class="k">class</span> <span class="nc">_denseLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="c1"># extract information for kernel and inChannels</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+			<span class="n">inChannels</span> <span class="o">=</span> <span class="n">inFeatures</span> 
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">inFeatures</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">inFeatures</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+			<span class="n">inChannels</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">inFeatures</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">inFeatures</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+			<span class="n">inChannels</span> <span class="o">=</span> <span class="n">inFeatures</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;inFeatures should not be more than 3 dimension. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inFeatures</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+		<span class="c1"># print(&#39;Kernel Dimension:&#39;, kernel)</span>
+		<span class="c1"># print(&#39;Input Channels  :&#39;, inChannels)</span>
+		
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">outFeatures</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">outChannels</span> <span class="o">=</span> <span class="n">outFeatures</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;outFeatures should not be more than 1 dimesnion. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outFeatures</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+		<span class="c1"># print(&#39;Output Channels :&#39;, outChannels)</span>
+		
+		<span class="nb">super</span><span class="p">(</span><span class="n">_denseLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">weightScale</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>	
+			<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">weightScale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>	<span class="c1"># scale the weight if needed</span>
+
+	
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+						<span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> 
+						<span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_convLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="n">inChannels</span> <span class="o">=</span> <span class="n">inFeatures</span>
+		<span class="n">outChannels</span> <span class="o">=</span> <span class="n">outFeatures</span>
+		
+		<span class="c1"># kernel</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernelSize</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernelSize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;kernelSize can only be of 1 or 2 dimension. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kernelSize</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># stride</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stride</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;stride can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stride</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># padding</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;padding can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">padding</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># dilation</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">dilation</span> <span class="o">=</span> <span class="p">(</span><span class="n">dilation</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">dilation</span> <span class="o">=</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dilation</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;dilation can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dilation</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># groups</span>
+		<span class="c1"># no need to check for groups. It can only be int</span>
+
+		<span class="c1"># print(&#39;inChannels :&#39;, inChannels)</span>
+		<span class="c1"># print(&#39;outChannels:&#39;, outChannels)</span>
+		<span class="c1"># print(&#39;kernel     :&#39;, kernel, kernelSize)</span>
+		<span class="c1"># print(&#39;stride     :&#39;, stride)</span>
+		<span class="c1"># print(&#39;padding    :&#39;, padding)</span>
+		<span class="c1"># print(&#39;dilation   :&#39;, dilation)</span>
+		<span class="c1"># print(&#39;groups     :&#39;, groups)</span>
+
+		<span class="nb">super</span><span class="p">(</span><span class="n">_convLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">weightScale</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>	
+			<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">weightScale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>	<span class="c1"># scale the weight if needed</span>
+
+	<span class="k">def</span> <span class="nf">foward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+						<span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> 
+						<span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_poolLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="c1"># kernel</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernelSize</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernelSize</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;kernelSize can only be of 1 or 2 dimension. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kernelSize</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+		
+		<span class="c1"># stride</span>
+		<span class="k">if</span> <span class="n">stride</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="n">stride</span> <span class="o">=</span> <span class="n">kernel</span>
+		<span class="k">elif</span> <span class="nb">type</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">stride</span> <span class="o">=</span> <span class="p">(</span><span class="n">stride</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">stride</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;stride can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stride</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># padding</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">padding</span> <span class="o">=</span> <span class="p">(</span><span class="n">padding</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">padding</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;padding can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">padding</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># dilation</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
+			<span class="n">dilation</span> <span class="o">=</span> <span class="p">(</span><span class="n">dilation</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">dilation</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">dilation</span> <span class="o">=</span> <span class="p">(</span><span class="n">dilation</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dilation</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;dilation can be either int or tuple of size 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dilation</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="c1"># print(&#39;theta      :&#39;, theta)</span>
+		<span class="c1"># print(&#39;kernel     :&#39;, kernel, kernelSize)</span>
+		<span class="c1"># print(&#39;stride     :&#39;, stride)</span>
+		<span class="c1"># print(&#39;padding    :&#39;, padding)</span>
+		<span class="c1"># print(&#39;dilation   :&#39;, dilation)</span>
+		
+		<span class="nb">super</span><span class="p">(</span><span class="n">_poolLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>	
+
+		<span class="c1"># set the weights to 1.1*theta and requires_grad = False</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">dataShape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+		<span class="n">result</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">dataShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">4</span><span class="p">])),</span> 
+						  <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> 
+						  <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]))</span>
+						
+<span class="k">class</span> <span class="nc">_spikeFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">,</span> <span class="n">refractoryResponse</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">device</span> <span class="o">=</span> <span class="n">membranePotential</span><span class="o">.</span><span class="n">device</span>
+		<span class="n">dtype</span>  <span class="o">=</span> <span class="n">membranePotential</span><span class="o">.</span><span class="n">dtype</span>
+		<span class="n">threshold</span>      <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
+		<span class="n">oldDevice</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">current_device</span><span class="p">()</span>
+
+		<span class="c1"># if device != oldDevice: torch.cuda.set_device(device)</span>
+		<span class="c1"># torch.cuda.device(3)</span>
+
+		<span class="c1"># spikeTensor = torch.empty_like(membranePotential)</span>
+
+		<span class="c1"># print(&#39;membranePotential  :&#39;, membranePotential .device)</span>
+		<span class="c1"># print(&#39;spikeTensor        :&#39;, spikeTensor       .device)</span>
+		<span class="c1"># print(&#39;refractoryResponse :&#39;, refractoryResponse.device)</span>
+			
+		<span class="c1"># (membranePotential, spikes) = slayer_cuda.get_spikes_cuda(membranePotential,</span>
+		<span class="c1"># 														  torch.empty_like(membranePotential),	# tensor for spikes</span>
+		<span class="c1"># 														  refractoryResponse,</span>
+		<span class="c1"># 														  threshold,</span>
+		<span class="c1"># 														  Ts)</span>
+		<span class="n">spikes</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">getSpikes</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="n">refractoryResponse</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		
+		<span class="n">pdfScale</span>        <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;scaleRho&#39;</span><span class="p">]</span>                 <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="c1"># pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron[&#39;tauRho&#39;]                   , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta</span>
+		<span class="n">pdfTimeConstant</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;tauRho&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># needs to be scaled by theta</span>
+		<span class="n">threshold</span>       <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>                    <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">pdfTimeConstant</span><span class="p">,</span> <span class="n">pdfScale</span><span class="p">)</span>
+		<span class="c1"># torch.cuda.synchronize()</span>
+		
+		<span class="c1"># if device != oldDevice: torch.cuda.set_device(oldDevice)</span>
+		<span class="c1"># torch.cuda.device(oldDevice)</span>
+		
+		<span class="k">return</span> <span class="n">spikes</span>
+		
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">pdfTimeConstant</span><span class="p">,</span> <span class="n">pdfScale</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+		<span class="n">spikePdf</span> <span class="o">=</span> <span class="n">pdfScale</span> <span class="o">/</span> <span class="n">pdfTimeConstant</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">membranePotential</span> <span class="o">-</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="n">pdfTimeConstant</span><span class="p">)</span>
+
+		<span class="c1"># return gradOutput, None, None, None # This seems to work better!</span>
+		<span class="k">return</span> <span class="n">gradOutput</span> <span class="o">*</span> <span class="n">spikePdf</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+		<span class="c1"># plt.figure()</span>
+		<span class="c1"># plt.plot(gradOutput[0,5,0,0,:].cpu().data.numpy())</span>
+		<span class="c1"># print   (gradOutput[0,0,0,0,:].cpu().data.numpy())</span>
+		<span class="c1"># plt.plot(membranePotential[0,0,0,0,:].cpu().data.numpy())</span>
+		<span class="c1"># plt.plot(spikePdf         [0,0,0,0,:].cpu().data.numpy())</span>
+		<span class="c1"># print   (spikePdf         [0,0,0,0,:].cpu().data.numpy())</span>
+		<span class="c1"># plt.show()</span>
+		<span class="c1"># return gradOutput * spikePdf, None, None, None</span>
+
+<span class="k">class</span> <span class="nc">_pspFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">spike</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+		<span class="n">device</span> <span class="o">=</span> <span class="n">spike</span><span class="o">.</span><span class="n">device</span>
+		<span class="n">dtype</span>  <span class="o">=</span> <span class="n">spike</span><span class="o">.</span><span class="n">dtype</span>
+		<span class="n">psp</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="n">Ts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Ts</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">psp</span>
+
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

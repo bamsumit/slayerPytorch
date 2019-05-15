@@ -1,0 +1,589 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>spikeFileIO &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for spikeFileIO</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">animation</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">cm</span>
+
+<div class="viewcode-block" id="event"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event">[docs]</a><span class="k">class</span> <span class="nc">event</span><span class="p">():</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class provides a way to store, read, write and visualize spike event.</span>
+
+<span class="sd">	Members:</span>
+<span class="sd">		* ``x`` (numpy ``int`` array): `x` index of spike event.</span>
+<span class="sd">		* ``y`` (numpy ``int`` array): `y` index of spike event (not used if the spatial dimension is 1).</span>
+<span class="sd">		* ``p`` (numpy ``int`` array): `polarity` or `channel` index of spike event.</span>
+<span class="sd">		* ``t`` (numpy ``double`` array): `timestamp` of spike event. Time is assumend to be in ms.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.event(xEvent, yEvent, pEvent, tEvent)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="p">):</span>
+		<span class="k">if</span> <span class="n">yEvent</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">=</span> <span class="mi">2</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">xEvent</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">xEvent</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">xEvent</span><span class="p">)</span> <span class="c1"># x spatial dimension</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">yEvent</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">yEvent</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">yEvent</span><span class="p">)</span> <span class="c1"># y spatial dimension</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="n">pEvent</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">pEvent</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">pEvent</span><span class="p">)</span> <span class="c1"># spike polarity</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">tEvent</span> <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">tEvent</span><span class="p">)</span> <span class="ow">is</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">tEvent</span><span class="p">)</span> <span class="c1"># time stamp in ms</span>
+
+<div class="viewcode-block" id="event.toSpikeArray"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event.toSpikeArray">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.</span>
+<span class="sd">		The array is of dimension (channels, height, time) or``CHT`` for 1D data.</span>
+<span class="sd">		The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``samplingTime``: the width of time bin to use.</span>
+<span class="sd">			* ``dim``: the dimension of the desired tensor. Assignes dimension itself if not provided.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; spike = TD.toSpikeArray()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span>
+									<span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> 
+									<span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="n">samplingTime</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="p">)</span>
+			<span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
+		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">dim</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="n">dim</span> <span class="o">=</span> <span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> 
+									<span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> 
+									<span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">),</span> 
+									<span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="p">)</span><span class="o">/</span><span class="n">samplingTime</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="p">)</span>
+			<span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">samplingTime</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="event.toSpikeTensor"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event.toSpikeTensor">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeTensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emptyTensor</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.</span>
+<span class="sd">		The tensor is of dimension (channels, height, width, time) or``CHWT``.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``emptyTensor`` (``numpy or torch tensor``): an empty tensor to hold spike data </span>
+<span class="sd">			* ``samplingTime``: the width of time bin to use.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; spike = TD.toSpikeTensor( torch.zeros((2, 240, 180, 5000)) )</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">xEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+		<span class="n">yEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+		<span class="n">pEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+		<span class="n">tEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">t</span><span class="o">/</span><span class="n">samplingTime</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">validInd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">xEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&amp;</span>
+								   <span class="p">(</span><span class="n">pEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span>
+								   <span class="p">(</span><span class="n">tEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+			<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+						<span class="mi">0</span><span class="p">,</span> 
+				  		<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+				  		<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+			<span class="n">validInd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">xEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&amp;</span>
+								   <span class="p">(</span><span class="n">yEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&amp;</span> 
+								   <span class="p">(</span><span class="n">pEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span>
+								   <span class="p">(</span><span class="n">tEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
+			<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span> 
+				  		<span class="n">yEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+				  		<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+				  		<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+		<span class="k">return</span> <span class="n">emptyTensor</span></div></div>
+
+<div class="viewcode-block" id="spikeArrayToEvent"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.spikeArrayToEvent">[docs]</a><span class="k">def</span> <span class="nf">spikeArrayToEvent</span><span class="p">(</span><span class="n">spikeMat</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Returns TD event from a numpy array (of dimension 3 or 4).</span>
+<span class="sd">	The numpy array must be of dimension (channels, height, time) or``CHT`` for 1D data.</span>
+<span class="sd">	The numpy array must be of dimension (channels, height, width, time) or``CHWT`` for 2D data.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``spikeMat``: numpy array with spike information.</span>
+<span class="sd">		* ``samplingTime``: time width of each time bin.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.spikeArrayToEvent(spike)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">spikeMat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+		<span class="n">spikeEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">spikeMat</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">xEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">yEvent</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="n">pEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">tEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+	<span class="k">elif</span> <span class="n">spikeMat</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+		<span class="n">spikeEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">(</span><span class="n">spikeMat</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+		<span class="n">xEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span>
+		<span class="n">yEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">pEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+		<span class="n">tEvent</span> <span class="o">=</span> <span class="n">spikeEvent</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected numpy array of 3 or 4 dimension. It was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">spikeMat</span><span class="o">.</span><span class="n">ndim</span><span class="p">))</span>
+
+	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span> <span class="o">*</span> <span class="n">samplingTime</span><span class="p">)</span> </div>
+
+<div class="viewcode-block" id="read1Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Reads one dimensional binary spike file and returns a TD event.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 40 bit number.</span>
+<span class="sd">		* First 16 bits (bits 39-24) represent the neuronID.</span>
+<span class="sd">		* Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</span>
+<span class="sd">		* the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.read1Dspikes(file_path)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
+		<span class="n">inputByteArray</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+	<span class="n">inputAsInt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputByteArray</span><span class="p">])</span>
+	<span class="n">xEvent</span> <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span>
+	<span class="n">pEvent</span> <span class="o">=</span>   <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">7</span>
+	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">])</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7FFFFF</span>
+	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
+
+<div class="viewcode-block" id="encode1Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Writes one dimensional binary spike file from a TD event.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 40 bit number.</span>
+<span class="sd">		* First 16 bits (bits 39-24) represent the neuronID.</span>
+<span class="sd">		* Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</span>
+<span class="sd">		* the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+<span class="sd">		* ``TD`` (an ``spikeFileIO.event``): TD event.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.write1Dspikes(file_path, TD)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span> 	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 1. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+	<span class="n">xEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">pEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">tEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>	<span class="c1"># encode spike time in us</span>
+	<span class="n">outputByteArray</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tEvent</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="p">(</span><span class="n">xEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF00</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="p">(</span><span class="n">xEvent</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(((</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pEvent</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>  <span class="n">tEvent</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
+		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read2Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Reads two dimensional binary spike file and returns a TD event.</span>
+<span class="sd">	It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 40 bit number.</span>
+<span class="sd">		* First 8 bits (bits 39-32) represent the xID of the neuron.</span>
+<span class="sd">		* Next 8 bits (bits 31-24) represent the yID of the neuron.</span>
+<span class="sd">		* Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</span>
+<span class="sd">		* The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.read2Dspikes(file_path)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
+		<span class="n">inputByteArray</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+	<span class="n">inputAsInt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputByteArray</span><span class="p">])</span>
+	<span class="n">xEvent</span> <span class="o">=</span>   <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span>
+	<span class="n">yEvent</span> <span class="o">=</span>   <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span>
+	<span class="n">pEvent</span> <span class="o">=</span>   <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">7</span>
+	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">])</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7FFFFF</span>
+	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
+
+<div class="viewcode-block" id="encode2Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Writes two dimensional binary spike file from a TD event.</span>
+<span class="sd">	It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 40 bit number.</span>
+<span class="sd">		* First 8 bits (bits 39-32) represent the xID of the neuron.</span>
+<span class="sd">		* Next 8 bits (bits 31-24) represent the yID of the neuron.</span>
+<span class="sd">		* Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</span>
+<span class="sd">		* The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+<span class="sd">		* ``TD`` (an ``spikeFileIO.event``): TD event.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.write2Dspikes(file_path, TD)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span> 	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+	<span class="n">xEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">yEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">pEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">tEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>	<span class="c1"># encode spike time in us</span>
+	<span class="n">outputByteArray</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tEvent</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">xEvent</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">yEvent</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(((</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7F</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">pEvent</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">7</span><span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>  <span class="n">tEvent</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
+		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read3Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Reads binary spike file for spike event in height, width and channel dimension and returns a TD event.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 56 bit number.</span>
+<span class="sd">		* First 12 bits (bits 56-44) represent the xID of the neuron.</span>
+<span class="sd">		* Next 12 bits (bits 43-32) represent the yID of the neuron.</span>
+<span class="sd">		* Next 8 bits (bits 31-24) represents the channel ID of the neuron.</span>
+<span class="sd">		* The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.read3Dspikes(file_path)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
+		<span class="n">inputByteArray</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+	<span class="n">inputAsInt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputByteArray</span><span class="p">])</span>
+	<span class="n">xEvent</span> <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span> <span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span> <span class="p">)</span>
+	<span class="n">yEvent</span> <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="p">)</span>    <span class="o">|</span> <span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0x0F</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span> <span class="p">)</span>
+	<span class="n">pEvent</span> <span class="o">=</span>   <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span>
+	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">5</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">6</span><span class="p">::</span><span class="mi">7</span><span class="p">])</span> <span class="p">)</span>
+	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
+
+<div class="viewcode-block" id="encode3Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Writes binary spike file for TD event in height, width and channel dimension.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Each spike event is represented by a 56 bit number.</span>
+<span class="sd">		* First 12 bits (bits 56-44) represent the xID of the neuron.</span>
+<span class="sd">		* Next 12 bits (bits 43-32) represent the yID of the neuron.</span>
+<span class="sd">		* Next 8 bits (bits 31-24) represents the channel ID of the neuron.</span>
+<span class="sd">		* The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+<span class="sd">		* ``TD`` (an ``spikeFileIO.event``): TD event.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.write3Dspikes(file_path, TD)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span> 	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+	<span class="n">xEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">yEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">pEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">tEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>	<span class="c1"># encode spike time in us</span>
+	<span class="n">outputByteArray</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tEvent</span><span class="p">)</span> <span class="o">*</span> <span class="mi">7</span><span class="p">)</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span><span class="n">xEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="p">((</span><span class="n">xEvent</span> <span class="o">&lt;&lt;</span> <span class="mi">4</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">yEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF00</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>	<span class="n">yEvent</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>   <span class="n">pEvent</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>  <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">16</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">5</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>  <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">6</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span>   <span class="n">tEvent</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
+		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read1DnumSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">read1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Reads a tuple specifying neuron, start of spike region, end of spike region and number of spikes from binary spike file.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Number of spikes data is represented by an 80 bit number.</span>
+<span class="sd">		* First 16 bits (bits 79-64) represent the neuronID.</span>
+<span class="sd">		* Next 24 bits (bits 63-40) represents the start time in microseconds.</span>
+<span class="sd">		* Next 24 bits (bits 39-16) represents the end time in microseconds.</span>
+<span class="sd">		* Last 16 bits (bits 15-0) represents the number of spikes.</span>
+<span class="sd">	</span>
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; nID, tSt, tEn, nSp = spikeFileIO.read1DnumSpikes(file_path)</span>
+<span class="sd">	``tSt`` and ``tEn`` are returned in milliseconds</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">inputFile</span><span class="p">:</span>
+		<span class="n">inputByteArray</span> <span class="o">=</span> <span class="n">inputFile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+	<span class="n">inputAsInt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">inputByteArray</span><span class="p">])</span>
+	<span class="n">neuronID</span> <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span>
+	<span class="n">tStart</span>   <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">10</span><span class="p">])</span>
+	<span class="n">tEnd</span>     <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">5</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">6</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">7</span><span class="p">::</span><span class="mi">10</span><span class="p">])</span>
+	<span class="n">nSpikes</span>  <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">8</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">9</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span>
+	<span class="k">return</span> <span class="n">neuronID</span><span class="p">,</span> <span class="n">tStart</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nSpikes</span>	<span class="c1"># convert spike times to ms</span></div>
+
+<div class="viewcode-block" id="encode1DnumSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">encode1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.</span>
+<span class="sd">	</span>
+<span class="sd">	The binary file is encoded as follows:</span>
+<span class="sd">		* Number of spikes data is represented by an 80 bit number</span>
+<span class="sd">		* First 16 bits (bits 79-64) represent the neuronID</span>
+<span class="sd">		* Next 24 bits (bits 63-40) represents the start time in microseconds</span>
+<span class="sd">		* Next 24 bits (bits 39-16) represents the end time in microseconds</span>
+<span class="sd">		* Last 16 bits (bits 15-0) represents the number of spikes</span>
+<span class="sd">	</span>
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file</span>
+<span class="sd">		* ``nID`` (``numpy array``): neuron ID</span>
+<span class="sd">		* ``tSt`` (``numpy array``): region start time (in milliseconds)</span>
+<span class="sd">		* ``tEn`` (``numpy array``): region end time (in milliseconds)</span>
+<span class="sd">		* ``nSp`` (``numpy array``): number of spikes in the region</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.encode1DnumSpikes(file_path, nID, tSt, tEn, nSp)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">neuronID</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">nID</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">tStart</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tSt</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>	<span class="c1"># encode spike time in us</span>
+	<span class="n">tEnd</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">tEn</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>	<span class="c1"># encode spike time in us</span>
+	<span class="n">nSpikes</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">nSp</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+	<span class="n">outputByteArray</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">neuronID</span><span class="p">)</span> <span class="o">*</span> <span class="mi">10</span><span class="p">)</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">neuronID</span> <span class="o">&gt;&gt;</span> <span class="mi">8</span>  <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">neuronID</span>       <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tStart</span>   <span class="o">&gt;&gt;</span> <span class="mi">16</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tStart</span>   <span class="o">&gt;&gt;</span> <span class="mi">8</span>  <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tStart</span>         <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">5</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tEnd</span>     <span class="o">&gt;&gt;</span> <span class="mi">16</span> <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">6</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tEnd</span>     <span class="o">&gt;&gt;</span> <span class="mi">8</span>  <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">7</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">tEnd</span>           <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">8</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">nSpikes</span>  <span class="o">&gt;&gt;</span> <span class="mi">8</span>  <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="n">outputByteArray</span><span class="p">[</span><span class="mi">9</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">(</span> <span class="n">nSpikes</span>        <span class="p">)</span><span class="o">.</span><span class="n">tobytes</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
+		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_showTD1D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span><span class="mi">1</span><span class="p">:</span>	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 1. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+	<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+	<span class="n">interval</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">/</span> <span class="n">frameRate</span>					<span class="c1"># in ms</span>
+	<span class="n">xDim</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span>
+	<span class="n">tMax</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+	<span class="n">tMin</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
+	<span class="n">pMax</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span>
+	<span class="n">minFrame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">tMin</span> <span class="o">/</span> <span class="n">interval</span><span class="p">))</span>
+	<span class="n">maxFrame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">tMax</span> <span class="o">/</span> <span class="n">interval</span> <span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+
+	<span class="c1"># ignore preComputeFrames</span>
+
+	<span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+		<span class="n">fig</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+		<span class="n">tEnd</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">minFrame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
+		<span class="n">ind</span>  <span class="o">=</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;</span> <span class="n">tEnd</span><span class="p">)</span>
+		<span class="c1"># plot raster</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span>
+		<span class="c1"># plt.plot(TD.t[ind], TD.x[ind], &#39;.&#39;, c=cm.hot(TD.p[ind]))</span>
+		<span class="c1"># plot raster scan line</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="n">tEnd</span> <span class="o">+</span> <span class="n">interval</span><span class="p">,</span> <span class="n">tEnd</span> <span class="o">+</span> <span class="n">interval</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">xDim</span><span class="p">])</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">((</span><span class="n">tMin</span> <span class="o">-</span><span class="mf">0.1</span><span class="o">*</span><span class="n">tMax</span><span class="p">,</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">tMax</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="o">*</span><span class="n">xDim</span><span class="p">,</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">xDim</span><span class="p">))</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">draw</span><span class="p">()</span>
+
+
+	<span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">animate</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">maxFrame</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span> <span class="c1"># 42 means playback at 23.809 fps</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">_showTD2D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span> 	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 2. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
+	<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+	<span class="n">interval</span> <span class="o">=</span> <span class="mf">1e3</span> <span class="o">/</span> <span class="n">frameRate</span>					<span class="c1"># in ms</span>
+	<span class="n">xDim</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span>
+	<span class="n">yDim</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span>
+	
+	<span class="k">if</span> <span class="n">preComputeFrames</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+		<span class="n">minFrame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">interval</span><span class="p">))</span>
+		<span class="n">maxFrame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">/</span> <span class="n">interval</span> <span class="p">))</span>
+		<span class="n">image</span>    <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">yDim</span><span class="p">,</span> <span class="n">xDim</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))</span>
+		<span class="n">frames</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span> <span class="p">(</span><span class="n">maxFrame</span><span class="o">-</span><span class="n">minFrame</span><span class="p">,</span> <span class="n">yDim</span><span class="p">,</span> <span class="n">xDim</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+		<span class="c1"># precompute frames</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">frames</span><span class="p">)):</span>
+			<span class="n">tStart</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">minFrame</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
+			<span class="n">tEnd</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">minFrame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
+			<span class="n">timeMask</span> <span class="o">=</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">tStart</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;</span> <span class="n">tEnd</span><span class="p">)</span>
+			<span class="n">rInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+			<span class="n">gInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">2</span><span class="p">))</span>
+			<span class="n">bInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+			<span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rInd</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">gInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">gInd</span><span class="p">],</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">frames</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">bInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">bInd</span><span class="p">],</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+		<span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">frame</span><span class="p">):</span>
+			<span class="n">image</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">image</span>
+
+		<span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">animate</span><span class="p">,</span> <span class="n">frames</span><span class="o">=</span><span class="n">frames</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span>
+
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">minFrame</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">/</span> <span class="n">interval</span><span class="p">))</span>
+		<span class="k">def</span> <span class="nf">animate</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+			<span class="n">tStart</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">minFrame</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
+			<span class="n">tEnd</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="n">minFrame</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">interval</span>
+			<span class="n">frame</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">yDim</span><span class="p">,</span> <span class="n">xDim</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+			<span class="n">timeMask</span> <span class="o">=</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">&gt;=</span> <span class="n">tStart</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">t</span> <span class="o">&lt;</span> <span class="n">tEnd</span><span class="p">)</span>
+			<span class="n">rInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span>
+			<span class="n">gInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">2</span><span class="p">))</span>
+			<span class="n">bInd</span> <span class="o">=</span> <span class="p">(</span><span class="n">timeMask</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">p</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+			<span class="n">frame</span><span class="p">[</span><span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">rInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">rInd</span><span class="p">],</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">frame</span><span class="p">[</span><span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">gInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">gInd</span><span class="p">],</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">frame</span><span class="p">[</span><span class="n">TD</span><span class="o">.</span><span class="n">y</span><span class="p">[</span><span class="n">bInd</span><span class="p">],</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="n">bInd</span><span class="p">],</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">plot</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+			<span class="k">return</span> <span class="n">plot</span>
+
+		<span class="n">anim</span> <span class="o">=</span> <span class="n">animation</span><span class="o">.</span><span class="n">FuncAnimation</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">animate</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span> <span class="c1"># 42 means playback at 23.809 fps</span>
+
+	<span class="c1"># # save the animation as an mp4.  This requires ffmpeg or mencoder to be</span>
+	<span class="c1"># # installed.  The extra_args ensure that the x264 codec is used, so that</span>
+	<span class="c1"># # the video can be embedded in html5.  You may need to adjust this for</span>
+	<span class="c1"># # your system: for more information, see</span>
+	<span class="c1"># # http://matplotlib.sourceforge.net/api/animation_api.html</span>
+	<span class="c1"># if saveAnimation: anim.save(&#39;showTD_animation.mp4&#39;, fps=30)</span>
+
+	<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<div class="viewcode-block" id="showTD"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.showTD">[docs]</a><span class="k">def</span> <span class="nf">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Visualizes TD event.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``TD``: spike event to visualize.</span>
+<span class="sd">		* ``frameRate``: framerate of visualization.</span>
+<span class="sd">		* ``preComputeFrames``: flag to enable precomputation of frames for faster visualization. Default is ``True``.</span>
+<span class="sd">		* ``repeat``: flag to enable repeat of animation. Default is ``False``.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; showTD(TD)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+		<span class="n">_showTD1D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="n">frameRate</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="n">preComputeFrames</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span>		
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">_showTD2D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="n">frameRate</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="n">preComputeFrames</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span></div>
+
+
+<span class="c1"># def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms</span>
+<span class="c1"># 	addressEvent = np.argwhere(spikeMat &gt; 0)</span>
+<span class="c1"># 	# print(addressEvent.shape)</span>
+<span class="c1"># 	return event(addressEvent[:,2], addressEvent[:,1], addressEvent[:,0], addressEvent[:,3] * samplingTime)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
