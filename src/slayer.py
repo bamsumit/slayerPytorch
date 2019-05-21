@@ -25,6 +25,8 @@ class yamlParams(object):
 		print('Simulation step size        ', netParams['simulation']['Ts'])
 		print('Spiking neuron time constant', netParams['neuron']['tauSr'])
 		print('Spiking neuron threshold    ', netParams['neuron']['theta'])
+
+		netParams.save('filename.yaml')
 	'''
 	def __init__(self, parameter_file_path):
 		with open(parameter_file_path, 'r') as param_file:
@@ -36,6 +38,10 @@ class yamlParams(object):
 
 	def __setitem__(self, key, value):
 		self.parameters[key] = value
+
+	def save(self, filename):
+		with open(filename, 'w') as f:
+			yaml.dump(self.parameters, f)
 
 # class spikeLayer():
 class spikeLayer(torch.nn.Module):

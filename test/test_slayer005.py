@@ -105,3 +105,6 @@ plt.figure(3)
 plt.plot(spikeRaster[:,1], spikeRaster[:,0], '.')
 
 plt.show()
+
+print('saving yaml config files...')
+net_params.save('test.yaml')

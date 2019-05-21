@@ -1,3 +1,0 @@
-# inputID outputID
-	0		0
-	

@@ -13,19 +13,21 @@ class spikeLoss(torch.nn.Module):
 	>>> error = spikeLoss.spikeLoss(networkDescriptor)
 	>>> error = spikeLoss.spikeLoss(errorDescriptor, neuronDesc, simulationDesc)
 	'''
-	def __init__(self, errorDescriptor, neuronDesc, simulationDesc):
+	def __init__(self, errorDescriptor, neuronDesc, simulationDesc, slayerClass=spikeLayer):
 		super(spikeLoss, self).__init__()
 		self.neuron = neuronDesc
 		self.simulation = simulationDesc
 		self.errorDescriptor = errorDescriptor
-		self.slayer = spikeLayer(neuronDesc, simulationDesc)
+		# self.slayer = spikeLayer(neuronDesc, simulationDesc)
+		self.slayer = slayerClass(self.neuron, self.simulation)
 		
-	def __init__(self, networkDescriptor):
+	def __init__(self, networkDescriptor, slayerClass=spikeLayer):
 		super(spikeLoss, self).__init__()
 		self.neuron = networkDescriptor['neuron']
 		self.simulation = networkDescriptor['simulation']
 		self.errorDescriptor = networkDescriptor['training']['error']
-		self.slayer = spikeLayer(self.neuron, self.simulation)
+		# self.slayer = spikeLayer(self.neuron, self.simulation)
+		self.slayer = slayerClass(self.neuron, self.simulation)
 		
 	def spikeTime(self, spikeOut, spikeDesired):
 		'''

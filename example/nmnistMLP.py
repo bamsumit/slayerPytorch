@@ -18,6 +18,7 @@ from torch.utils.data import Dataset, DataLoader
 # # from txtsaver import txtsaver
 
 import slayerSNN as snn
+from learningStats import learningStats
 
 device = torch.device('cuda')
 netParams = snn.params('network.yaml')
@@ -93,10 +94,7 @@ error = snn.loss(netParams).to(device)
 # Optimizer
 optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
 
-# printing functions
-printEpoch         = lambda epoch, timeElapsed: print('Epoch: {:4d} \t ({} sec elapsed)'.format(epoch, timeElapsed))
-printTrainingStats = lambda cost, accuracy: print('Training: loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
-printTestingStats  = lambda cost, accuracy: print('Testing : loss = %-12.5g  accuracy = %-6.5g'%(cost, accuracy))
+stats = learningStats()
 
 # visualize the input spikes (First five samples)
 for i in range(5):
@@ -105,9 +103,7 @@ for i in range(5):
 	
 # training loop
 for epoch in range(100):
-	epochLoss = 0
-	correctSamples = 0
-	numSamples = 0
+	stats.training.reset()
 	tSt = datetime.now()
 	
 	for i, (input, target, label) in enumerate(trainLoader, 0):
@@ -116,33 +112,32 @@ for epoch in range(100):
 		
 		output = net.forward(input)
 		
-		correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-		numSamples += len(label)
+		stats.training.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
+		stats.training.numSamples     += len(label)
 
 		loss = error.numSpikes(output, target)
 		optimizer.zero_grad()
 		loss.backward()
 		optimizer.step()
 
-		epochLoss += loss.cpu().data.item()
+		stats.training.lossSum += loss.cpu().data.item()
+
+		if i%10 == 0:	stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
 	
-	printEpoch(epoch, (datetime.now() - tSt).total_seconds())
-	printTrainingStats(epochLoss/numSamples, correctSamples/numSamples)
+	stats.training.update()
+	stats.testing.reset()
 	
-	correctSamples = 0
-	numSamples = 0
-	epochLoss = 0
 	for i, (input, target, label) in enumerate(testLoader, 0):
 		input  = input.to(device)
 		target = target.to(device) 
 		
 		output = net.forward(input)
 
-		correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-		numSamples += len(label)
+		stats.testing.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
+		stats.testing.numSamples     += len(label)
 
 		loss = error.numSpikes(output, target)
-		epochLoss += loss.cpu().data.item()
+		stats.testing.lossSum += loss.cpu().data.item()
+		if i%10 == 0:	stats.print(epoch, i)
 	
-	printTestingStats(epochLoss/numSamples, correctSamples/numSamples)
-	
+	stats.testing.update()

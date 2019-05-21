@@ -28,6 +28,8 @@ class event():
 		self.p = pEvent if type(pEvent) is np.array else np.asarray(pEvent) # spike polarity
 		self.t = tEvent if type(tEvent) is np.array else np.asarray(tEvent) # time stamp in ms
 
+		self.p -= self.p.min()
+
 	def toSpikeArray(self, samplingTime=1, dim=None):	# Sampling time in ms
 		'''
 		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.
@@ -68,11 +70,10 @@ class event():
 
 		>>> spike = TD.toSpikeTensor( torch.zeros((2, 240, 180, 5000)) )
 		'''
-		xEvent = np.round(self.x).astype(int)
-		yEvent = np.round(self.y).astype(int)
-		pEvent = np.round(self.p).astype(int)
-		tEvent = np.round(self.t/samplingTime).astype(int)
 		if self.dim == 1:
+			xEvent = np.round(self.x).astype(int)
+			pEvent = np.round(self.p).astype(int)
+			tEvent = np.round(self.t/samplingTime).astype(int)
 			validInd = np.argwhere((xEvent < emptyTensor.shape[2]) &
 								   (pEvent < emptyTensor.shape[0]) &
 								   (tEvent < emptyTensor.shape[3]))
@@ -81,6 +82,10 @@ class event():
 				  		xEvent[validInd],
 				  		tEvent[validInd]] = 1/samplingTime
 		elif self.dim == 2:
+			xEvent = np.round(self.x).astype(int)
+			yEvent = np.round(self.y).astype(int)
+			pEvent = np.round(self.p).astype(int)
+			tEvent = np.round(self.t/samplingTime).astype(int)
 			validInd = np.argwhere((xEvent < emptyTensor.shape[2]) &
 								   (yEvent < emptyTensor.shape[1]) & 
 								   (pEvent < emptyTensor.shape[0]) &
