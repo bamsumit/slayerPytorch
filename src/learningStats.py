@@ -1,41 +1,84 @@
 class learningStat():
+	'''
+	This class collect the learning statistics over the epoch.
 
+	Usage:
+
+	This class is designed to be used with learningStats instance although it can be used separately.
+
+	>>> trainingStat = learningStat()
+	'''
 	def __init__(self):
 		self.lossSum = 0
 		self.correctSamples = 0
 		self.numSamples = 0
 		self.minloss = None
 		self.maxAccuracy = None
+		self.lossLog = []
+		self.accuracyLog = []
 
 	def reset(self):
+		'''
+		Reset the learning staistics. 
+		This should usually be done before the start of an epoch so that new statistics counts can be accumulated.
+
+		Usage:
+
+		>>> trainingStat.reset()
+		'''
 		self.lossSum = 0
 		self.correctSamples = 0
 		self.numSamples = 0
 
 	def loss(self):
+		'''
+		Returns the average loss calculated from the point the stats was reset.
+
+		Usage:
+
+		>>> loss = trainingStat.loss()
+		'''
 		if self.numSamples > 0:	
 			return self.lossSum/self.numSamples	
 		else:	
 			return None
 
 	def accuracy(self):
+		'''
+		Returns the average accuracy calculated from the point the stats was reset.
+
+		Usage:
+
+		>>> loss = trainingStat.accuracy()
+		'''
 		if self.numSamples > 0 and self.correctSamples > 0:	
 			return self.correctSamples/self.numSamples	
 		else:	
 			return None
 
 	def update(self):
-		currentloss = self.loss()
+		'''
+		Updates the stats of the current session and resets the measures for next session.
+
+		Usage:
+
+		>>> trainingStat.update()
+		'''
+		currentLoss = self.loss()
+		self.lossLog.append(currentLoss)
 		if self.minloss is None:
-			self.minloss = currentloss
+			self.minloss = currentLoss
 		else:
-			self.minloss = self.minloss if self.minloss < currentloss else currentloss
+			self.minloss = self.minloss if self.minloss < currentLoss else currentLoss
 
 		currentAccuracy = self.accuracy()
+		self.accuracyLog.append(currentAccuracy)
 		if self.maxAccuracy is None:
 			self.maxAccuracy = currentAccuracy
 		else:
 			self.maxAccuracy = self.maxAccuracy if self.maxAccuracy > currentAccuracy else currentAccuracy
+
+		self.reset()
 
 	def displayString(self):
 		loss = self.loss()
@@ -57,16 +100,74 @@ class learningStat():
 				return 'loss = %-12.5g (min = %-12.5g)  \taccuracy = %-10.5g (max = %-10.5g)'%(loss, minloss, accuracy, maxAccuracy)
 
 class learningStats():
+	'''
+	This class provides mechanism to collect learning stats for training and testing, and displaying them efficiently.
+
+	Usage:
+
+	.. code-block:: python
+	
+		stats = learningStats()
+
+		for epoch in range(100):
+			tSt = datetime.now()
+
+			for i in trainingLoop:
+				# other main stuffs
+				stats.training.correctSamples += numberOfCorrectClassification
+				stats.training.numSamples     += numberOfSamplesProcessed
+				stats.training.lossSum        += currentLoss
+				stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
+			stats.training.update()
+
+			for i in testingLoop
+				# other main stuffs
+				stats.testing.correctSamples += numberOfCorrectClassification
+				stats.testing.numSamples     += numberOfSamplesProcessed
+				stats.testing.lossSum        += currentLoss
+				stats.print(epoch, i)
+			stats.training.update()
+
+	'''
 	def __init__(self):
 		self.linesPrinted = 0
 		self.training = learningStat()
 		self.testing  = learningStat()
 
 	def update(self):
+		'''
+		Updates the stats for training and testing and resets the measures for next session.
+
+		Usage:
+
+		>>> stats.update()
+		'''
 		self.training.update()
 		self.testing.update()
 
 	def print(self, epoch, iter=None, timeElapsed=None):
+		'''
+		Prints the available learning statistics from the current session on the console.
+		For Linux systems, prints the data on same terminal space (might not work properly on other systems).
+
+		Arguments:
+			* ``epoch``: epoch counter to display (required).
+			* ``iter``: iteration counter to display (not required).
+			* ``timeElapsed``: runtime information (not required).
+
+		Usage:
+
+		.. code-block:: python
+
+			# prints stats with epoch index provided
+			stats.print(epoch) 
+
+			# prints stats with epoch index and iteration index provided
+			stats.print(epoch, iter=i) 
+			
+			# prints stats with epoch index, iteration index and time elapsed information provided
+			stats.print(epoch, iter=i, timeElapsed=time) 
+		'''
 		print('\033[%dA'%(self.linesPrinted))
 		
 		self.linesPrinted = 1

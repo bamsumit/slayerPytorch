@@ -213,6 +213,8 @@ The output tensor dimension is same as input.
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Simulation step size        &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">][</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron time constant&#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;tauSr&#39;</span><span class="p">])</span>
 <span class="k">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron threshold    &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span>
+
+<span class="n">netParams</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;filename.yaml&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

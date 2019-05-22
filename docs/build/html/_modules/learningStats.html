@@ -1,0 +1,292 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>learningStats &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for learningStats</h1><div class="highlight"><pre>
+<div class="viewcode-block" id="learningStat"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat">[docs]</a><span></span><span class="k">class</span> <span class="nc">learningStat</span><span class="p">():</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class collect the learning statistics over the epoch.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	This class is designed to be used with learningStats instance although it can be used separately.</span>
+
+<span class="sd">	&gt;&gt;&gt; trainingStat = learningStat()</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span> <span class="o">=</span> <span class="p">[]</span>
+
+<div class="viewcode-block" id="learningStat.reset"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.reset">[docs]</a>	<span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Reset the learning staistics. </span>
+<span class="sd">		This should usually be done before the start of an epoch so that new statistics counts can be accumulated.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; trainingStat.reset()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="learningStat.loss"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.loss">[docs]</a>	<span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns the average loss calculated from the point the stats was reset.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; loss = trainingStat.loss()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>	
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span>	
+		<span class="k">else</span><span class="p">:</span>	
+			<span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="learningStat.accuracy"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.accuracy">[docs]</a>	<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns the average accuracy calculated from the point the stats was reset.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; loss = trainingStat.accuracy()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>	
+			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span>	
+		<span class="k">else</span><span class="p">:</span>	
+			<span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="learningStat.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.update">[docs]</a>	<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Updates the stats of the current session and resets the measures for next session.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; trainingStat.update()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">currentLoss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentLoss</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">&lt;</span> <span class="n">currentLoss</span> <span class="k">else</span> <span class="n">currentLoss</span>
+
+		<span class="n">currentAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentAccuracy</span><span class="p">)</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">&gt;</span> <span class="n">currentAccuracy</span> <span class="k">else</span> <span class="n">currentAccuracy</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+
+	<span class="k">def</span> <span class="nf">displayString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+		<span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+		<span class="n">minloss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span>
+		<span class="n">maxAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span>
+
+		<span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>	<span class="c1"># no stats available</span>
+			<span class="k">return</span> <span class="kc">None</span>
+		<span class="k">elif</span> <span class="n">accuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+			<span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>	<span class="c1"># accuracy and minloss stats is not available</span>
+				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>	<span class="c1"># accuracy is not available but minloss is available</span>
+				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12s</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># minloss and maxAccuracy is available</span>
+				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">        </span><span class="si">%-12s</span><span class="s1">   </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1">        </span><span class="si">%-10s</span><span class="s1"> &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>	<span class="c1"># all stats are available</span>
+				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12.5g</span><span class="s1">)  </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1"> (max = </span><span class="si">%-10.5g</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">maxAccuracy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="learningStats"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats">[docs]</a><span class="k">class</span> <span class="nc">learningStats</span><span class="p">():</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	This class provides mechanism to collect learning stats for training and testing, and displaying them efficiently.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	.. code-block:: python</span>
+<span class="sd">	</span>
+<span class="sd">		stats = learningStats()</span>
+
+<span class="sd">		for epoch in range(100):</span>
+<span class="sd">			tSt = datetime.now()</span>
+
+<span class="sd">			for i in trainingLoop:</span>
+<span class="sd">				# other main stuffs</span>
+<span class="sd">				stats.training.correctSamples += numberOfCorrectClassification</span>
+<span class="sd">				stats.training.numSamples     += numberOfSamplesProcessed</span>
+<span class="sd">				stats.training.lossSum        += currentLoss</span>
+<span class="sd">				stats.print(epoch, i, (datetime.now() - tSt).total_seconds())</span>
+<span class="sd">			stats.training.update()</span>
+
+<span class="sd">			for i in testingLoop</span>
+<span class="sd">				# other main stuffs</span>
+<span class="sd">				stats.testing.correctSamples += numberOfCorrectClassification</span>
+<span class="sd">				stats.testing.numSamples     += numberOfSamplesProcessed</span>
+<span class="sd">				stats.testing.lossSum        += currentLoss</span>
+<span class="sd">				stats.print(epoch, i)</span>
+<span class="sd">			stats.training.update()</span>
+
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">0</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span>  <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="learningStats.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.update">[docs]</a>	<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Updates the stats for training and testing and resets the measures for next session.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; stats.update()</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="learningStats.print"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.print">[docs]</a>	<span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Prints the available learning statistics from the current session on the console.</span>
+<span class="sd">		For Linux systems, prints the data on same terminal space (might not work properly on other systems).</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``epoch``: epoch counter to display (required).</span>
+<span class="sd">			* ``iter``: iteration counter to display (not required).</span>
+<span class="sd">			* ``timeElapsed``: runtime information (not required).</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		.. code-block:: python</span>
+
+<span class="sd">			# prints stats with epoch index provided</span>
+<span class="sd">			stats.print(epoch) </span>
+
+<span class="sd">			# prints stats with epoch index and iteration index provided</span>
+<span class="sd">			stats.print(epoch, iter=i) </span>
+<span class="sd">			</span>
+<span class="sd">			# prints stats with epoch index, iteration index and time elapsed information provided</span>
+<span class="sd">			stats.print(epoch, iter=i, timeElapsed=time) </span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[</span><span class="si">%d</span><span class="s1">A&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span><span class="p">))</span>
+		
+		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">1</span>
+
+		<span class="n">epochStr</span>   <span class="o">=</span> <span class="s1">&#39;Epoch : </span><span class="si">%10d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+		<span class="n">iterStr</span>    <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="nb">iter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;(i = </span><span class="si">%7d</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+		<span class="n">profileStr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">timeElapsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;, </span><span class="si">%12.4f</span><span class="s1"> ms elapsed&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">timeElapsed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+
+		<span class="nb">print</span><span class="p">(</span><span class="n">epochStr</span> <span class="o">+</span> <span class="n">iterStr</span> <span class="o">+</span> <span class="n">profileStr</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">2</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
+
+	
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

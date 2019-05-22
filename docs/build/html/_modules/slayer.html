@@ -58,6 +58,8 @@
 <span class="sd">		print(&#39;Simulation step size        &#39;, netParams[&#39;simulation&#39;][&#39;Ts&#39;])</span>
 <span class="sd">		print(&#39;Spiking neuron time constant&#39;, netParams[&#39;neuron&#39;][&#39;tauSr&#39;])</span>
 <span class="sd">		print(&#39;Spiking neuron threshold    &#39;, netParams[&#39;neuron&#39;][&#39;theta&#39;])</span>
+
+<span class="sd">		netParams.save(&#39;filename.yaml&#39;)</span>
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_file_path</span><span class="p">):</span>
 		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">parameter_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">param_file</span><span class="p">:</span>
@@ -68,7 +70,11 @@
 		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
 	<span class="k">def</span> <span class="nf">__setitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+		<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+			<span class="n">yaml</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parameters</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span></div>
 
 <span class="c1"># class spikeLayer():</span>
 <div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -515,6 +521,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
 </ul>
 
 <div class="relations">
