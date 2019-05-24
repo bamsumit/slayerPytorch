@@ -130,9 +130,6 @@ for epoch in range(100):
         # Display training stats.
 		if i%10 == 0:	stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
 	
-	# Update training stats.
-	stats.training.update()
-
 	# Testing loop.
     # Same steps as Training loops except loss backpropagation and weight update.
 	for i, (input, target, label) in enumerate(testLoader, 0):
@@ -148,8 +145,8 @@ for epoch in range(100):
 		stats.testing.lossSum += loss.cpu().data.item()
 		if i%10 == 0:	stats.print(epoch, i)
 	
-	# Update testing stats.
-	stats.testing.update()
+	# Update stats.
+	stats.update()
 
 # Plot the results.
 # Learning loss

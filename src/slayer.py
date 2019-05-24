@@ -381,10 +381,21 @@ class _poolLayer(nn.Conv3d):
 	def forward(self, input):
 		'''
 		'''
+		device = input.device
+		dtype  = input.dtype
+
+		# add necessary padding for odd spatial dimension
+		if input.shape[2]%2 != 0:
+			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], 1, input.shape[3], input.shape[4]), dtype=dtype).to(device)), 2)
+		if input.shape[3]%2 != 0:
+			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], input.shape[2], 1, input.shape[4]), dtype=dtype).to(device)), 3)
+
 		dataShape = input.shape
+
 		result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
 						  self.weight, self.bias, 
 						  self.stride, self.padding, self.dilation)
+		# print(result.shape)
 		return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
 						
 class _spikeFunction(torch.autograd.Function):

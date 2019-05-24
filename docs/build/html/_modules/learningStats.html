@@ -49,6 +49,8 @@
 		<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="kc">None</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span> <span class="o">=</span> <span class="p">[]</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span>
 
 <div class="viewcode-block" id="learningStat.reset"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.reset">[docs]</a>	<span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>
@@ -102,16 +104,24 @@
 		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 			<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
 		<span class="k">else</span><span class="p">:</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">&lt;</span> <span class="n">currentLoss</span> <span class="k">else</span> <span class="n">currentLoss</span>
+			<span class="k">if</span> <span class="n">currentLoss</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">True</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
+			<span class="c1"># self.minloss = self.minloss if self.minloss &lt; currentLoss else currentLoss</span>
 
 		<span class="n">currentAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentAccuracy</span><span class="p">)</span>
 		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
 			<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
 		<span class="k">else</span><span class="p">:</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">&gt;</span> <span class="n">currentAccuracy</span> <span class="k">else</span> <span class="n">currentAccuracy</span>
-
-		<span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+			<span class="k">if</span> <span class="n">currentAccuracy</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">True</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span></div>
+			<span class="c1"># self.maxAccuracy = self.maxAccuracy if self.maxAccuracy &gt; currentAccuracy else currentAccuracy</span>
 
 	<span class="k">def</span> <span class="nf">displayString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 		<span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
@@ -145,6 +155,7 @@
 <span class="sd">		for epoch in range(100):</span>
 <span class="sd">			tSt = datetime.now()</span>
 
+<span class="sd">			stats.training.reset()</span>
 <span class="sd">			for i in trainingLoop:</span>
 <span class="sd">				# other main stuffs</span>
 <span class="sd">				stats.training.correctSamples += numberOfCorrectClassification</span>
@@ -153,6 +164,7 @@
 <span class="sd">				stats.print(epoch, i, (datetime.now() - tSt).total_seconds())</span>
 <span class="sd">			stats.training.update()</span>
 
+<span class="sd">			stats.testing.reset()</span>
 <span class="sd">			for i in testingLoop</span>
 <span class="sd">				# other main stuffs</span>
 <span class="sd">				stats.testing.correctSamples += numberOfCorrectClassification</span>
@@ -176,7 +188,9 @@
 <span class="sd">		&gt;&gt;&gt; stats.update()</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">update</span><span class="p">()</span></div>
+		<span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="learningStats.print"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.print">[docs]</a>	<span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>

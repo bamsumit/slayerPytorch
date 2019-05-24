@@ -16,6 +16,8 @@ class learningStat():
 		self.maxAccuracy = None
 		self.lossLog = []
 		self.accuracyLog = []
+		self.bestLoss = False
+		self.bestAccuracy = False
 
 	def reset(self):
 		'''
@@ -69,16 +71,24 @@ class learningStat():
 		if self.minloss is None:
 			self.minloss = currentLoss
 		else:
-			self.minloss = self.minloss if self.minloss < currentLoss else currentLoss
+			if currentLoss < self.minloss:
+				self.minloss = currentLoss
+				self.bestLoss = True
+			else:
+				self.bestLoss = False
+			# self.minloss = self.minloss if self.minloss < currentLoss else currentLoss
 
 		currentAccuracy = self.accuracy()
 		self.accuracyLog.append(currentAccuracy)
 		if self.maxAccuracy is None:
 			self.maxAccuracy = currentAccuracy
 		else:
-			self.maxAccuracy = self.maxAccuracy if self.maxAccuracy > currentAccuracy else currentAccuracy
-
-		self.reset()
+			if currentAccuracy > self.maxAccuracy:
+				self.maxAccuracy = currentAccuracy
+				self.bestAccuracy = True
+			else:
+				self.bestAccuracy = False
+			# self.maxAccuracy = self.maxAccuracy if self.maxAccuracy > currentAccuracy else currentAccuracy
 
 	def displayString(self):
 		loss = self.loss()
@@ -112,6 +122,7 @@ class learningStats():
 		for epoch in range(100):
 			tSt = datetime.now()
 
+			stats.training.reset()
 			for i in trainingLoop:
 				# other main stuffs
 				stats.training.correctSamples += numberOfCorrectClassification
@@ -120,6 +131,7 @@ class learningStats():
 				stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
 			stats.training.update()
 
+			stats.testing.reset()
 			for i in testingLoop
 				# other main stuffs
 				stats.testing.correctSamples += numberOfCorrectClassification
@@ -143,7 +155,9 @@ class learningStats():
 		>>> stats.update()
 		'''
 		self.training.update()
+		self.training.reset()
 		self.testing.update()
+		self.testing.reset()
 
 	def print(self, epoch, iter=None, timeElapsed=None):
 		'''

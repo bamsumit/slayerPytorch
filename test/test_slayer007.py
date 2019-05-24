@@ -60,3 +60,11 @@ out   = pool(inTensor)
 error = torch.norm(out - outGT).cpu().data.numpy() / torch.numel(out)
 
 print('Pool Error :', error)
+
+# odd pooling
+print('Testing Odd dimension pooling')
+inTensor = torch.randn((4, 8, 101, 101, 500)).to(device)
+out = pool(inTensor)
+
+# print(out.shape)
+print('Success')

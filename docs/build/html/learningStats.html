@@ -95,6 +95,7 @@ This should usually be done before the start of an epoch so that new statistics 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
         <span class="n">tSt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
+        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trainingLoop</span><span class="p">:</span>
                 <span class="c1"># other main stuffs</span>
                 <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
@@ -103,6 +104,7 @@ This should usually be done before the start of an epoch so that new statistics 
                 <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
         <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
+        <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">testingLoop</span>
                 <span class="c1"># other main stuffs</span>
                 <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>

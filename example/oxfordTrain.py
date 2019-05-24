@@ -3,6 +3,7 @@ import sys, os
 CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -72,17 +73,28 @@ losslog = list()
 
 stats = learningStats()
 
-for epoch in range(10000):
+for epoch in range(1000):
 	output = net.forward(input)
 	
 	loss = error.spikeTime(output, desired)
 
 	stats.training.numSamples = 1
 	stats.training.lossSum = loss.cpu().data.item()
-	stats.training.update()
 	
 	if epoch%10 == 0:	stats.print(epoch)
 	losslog.append(loss.cpu().data.numpy())
+	
+	# if epoch==0:
+	# 	minLoss = loss
+	# 	bestNet = copy.deepcopy(net)
+	# else:
+	# 	if loss < minLoss:
+	# 		minLoss = loss
+	# 		bestNet = copy.deepcopy(net)
+	stats.training.update()
+	if stats.training.bestLoss is True:	bestNet = copy.deepcopy(net)
+
+	if loss < 1e-5:	break
 
 	optimizer.zero_grad()
 	loss.backward()
@@ -91,17 +103,10 @@ for epoch in range(10000):
 	# if epoch%100 == 0:
 	# 	snn.io.showTD(snn.io.spikeArrayToEvent(output.reshape((1, -1, Ns)).cpu().data.numpy()))
 
-	if epoch==0:
-		minLoss = loss
-		bestNet = net
-	else:
-		if loss < minLoss:
-			minLoss = loss
-			bestNet = net
-
-	if loss < 1e-5:	break
 
 output = bestNet.forward(input)
+loss = error.spikeTime(output, desired)
+print(loss.item())
 snn.io.showTD(snn.io.spikeArrayToEvent(output.reshape((1, -1, Ns)).cpu().data.numpy()))
 
 plt.figure(1)
