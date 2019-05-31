@@ -11,6 +11,9 @@ import slayerSNN as snn
 from learningStats import learningStats
 
 netParams = snn.params('network.yaml')
+netParams['training']['path']['in']    = '/fast/sumit/NMNIST_34/'
+netParams['training']['path']['train'] = '/fast/sumit/NMNIST_34/train.txt'
+netParams['training']['path']['test']  = '/fast/sumit/NMNIST_34/test.txt'
 
 # Dataset definition
 class nmnistDataset(Dataset):
@@ -64,7 +67,7 @@ class Network(torch.nn.Module):
 # device = torch.device('cuda')
 # Use multiple GPU's if available
 device = torch.device('cuda:2') # should be the first GPU of deviceIDs
-deviceIds = [2, 3]
+deviceIds = [2, 3, 1]
 
 # Create network instance.
 # net = Network(netParams).to(device)
@@ -82,24 +85,24 @@ trainingSet = nmnistDataset(datasetPath =netParams['training']['path']['in'],
 						    sampleFile  =netParams['training']['path']['train'],
 						    samplingTime=netParams['simulation']['Ts'],
 						    sampleLength=netParams['simulation']['tSample'])
-trainLoader = DataLoader(dataset=trainingSet, batch_size=8, shuffle=False, num_workers=4)
+trainLoader = DataLoader(dataset=trainingSet, batch_size=12, shuffle=False, num_workers=4)
 
 testingSet = nmnistDataset(datasetPath  =netParams['training']['path']['in'], 
 						    sampleFile  =netParams['training']['path']['test'],
 						    samplingTime=netParams['simulation']['Ts'],
 						    sampleLength=netParams['simulation']['tSample'])
-testLoader = DataLoader(dataset=testingSet, batch_size=8, shuffle=False, num_workers=4)
+testLoader = DataLoader(dataset=testingSet, batch_size=12, shuffle=False, num_workers=4)
 
 # Learning stats instance.
 stats = learningStats()
 
-# Visualize the network.
-for i in range(5):
-	input, target, label = trainingSet[i]
-	snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
+# # Visualize the network.
+# for i in range(5):
+# 	input, target, label = trainingSet[i]
+# 	snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
 
 # training loop
-for epoch in range(10):
+for epoch in range(100):
 	tSt = datetime.now()
 	
     # Training loop.

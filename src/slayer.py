@@ -142,7 +142,7 @@ class spikeLayer(torch.nn.Module):
 		'''
 		return _pspFunction.apply(spike, self.srmKernel, self.simulation['Ts'])
 	
-	def dense(self, inFeatures, outFeatures):
+	def dense(self, inFeatures, outFeatures, weightScale=10):	# default weight scaling of 10
 		'''
 		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
 		It behaves similar to ``torch.nn.Linear`` applied for each time instance.
@@ -158,9 +158,9 @@ class spikeLayer(torch.nn.Module):
 		>>> fcl = snnLayer.dense((128, 128, 2), 512) # takes (N, 2, 128, 128, T) tensor
 		>>> output = fcl(input)                      # output will be (N, 512, 1, 1, T) tensor
 		'''
-		return _denseLayer(inFeatures, outFeatures, weightScale=self.neuron['theta'])
+		return _denseLayer(inFeatures, outFeatures, weightScale)	
 		
-	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1):
+	def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100):	# default weight scaling of 100
 		'''
 		Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
 		It behaves same as ``torch.nn.conv2d`` applied for each time instance.
@@ -185,7 +185,7 @@ class spikeLayer(torch.nn.Module):
 		>>> conv = snnLayer.conv(2, 32, 5) # 32C5 flter
 		>>> output = conv(input)           # must have 2 channels
 		'''
-		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale=self.neuron['theta']**2)
+		return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale) 
 		
 	def pool(self, kernelSize, stride=None, padding=0, dilation=1):
 		'''
@@ -258,6 +258,7 @@ class _denseLayer(nn.Conv3d):
 
 		if weightScale != 1:	
 			self.weight = torch.nn.Parameter(weightScale * self.weight)	# scale the weight if needed
+			# print('In dense, using weightScale of', weightScale)
 
 	
 	def forward(self, input):
@@ -321,6 +322,7 @@ class _convLayer(nn.Conv3d):
 
 		if weightScale != 1:	
 			self.weight = torch.nn.Parameter(weightScale * self.weight)	# scale the weight if needed
+			# print('In conv, using weightScale of', weightScale)
 
 	def foward(self, input):
 		'''
@@ -377,6 +379,8 @@ class _poolLayer(nn.Conv3d):
 
 		# set the weights to 1.1*theta and requires_grad = False
 		self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad = False)
+		# print('In pool layer, weight =', self.weight.cpu().data.numpy().flatten(), theta)
+
 
 	def forward(self, input):
 		'''
