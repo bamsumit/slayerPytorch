@@ -84,7 +84,7 @@ dimension one.</em></p>
 </div>
 <dl class="method">
 <dt id="slayer.spikeLayer.conv">
-<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
 It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.conv2d</span></code> applied for each time instance.</p>
 <dl class="simple">
@@ -114,7 +114,7 @@ and the second <cite>int</cite> for the width dimension</p></li>
 
 <dl class="method">
 <dt id="slayer.spikeLayer.dense">
-<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> applied for each time instance.</p>
 <dl class="simple">

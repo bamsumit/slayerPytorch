@@ -31,7 +31,9 @@
           <div class="body" role="main">
             
   <h1>Source code for learningStats</h1><div class="highlight"><pre>
-<div class="viewcode-block" id="learningStat"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat">[docs]</a><span></span><span class="k">class</span> <span class="nc">learningStat</span><span class="p">():</span>
+<span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<div class="viewcode-block" id="learningStat"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat">[docs]</a><span class="k">class</span> <span class="nc">learningStat</span><span class="p">():</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	This class collect the learning statistics over the epoch.</span>
 
@@ -228,9 +230,68 @@
 		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">2</span>
 		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
 			<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span></div></div>
+			<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
-	
+<div class="viewcode-block" id="learningStats.plot"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.plot">[docs]</a>	<span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Plots the available learning statistics.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		.. code-block:: python</span>
+
+<span class="sd">			# plot stats</span>
+<span class="sd">			stats.plot() </span>
+
+<span class="sd">			# plot stats figures specified</span>
+<span class="sd">			stats.print(figures=(10, 11)) </span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+		<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">)</span>
+		<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span> </div>
+
+<div class="viewcode-block" id="learningStats.save"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.save">[docs]</a>	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Saves the learning satatistics logs.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		.. code-block:: python</span>
+
+<span class="sd">			# save stats</span>
+<span class="sd">			stats.save() </span>
+
+<span class="sd">			# save stats filename specified</span>
+<span class="sd">			stats.save(filename=&#39;Run101-0.001-&#39;) # Run101-0.001-accuracy.txt and Run101-0.001-loss.txt</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;loss.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">loss</span><span class="p">:</span>
+			<span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">)):</span>	
+				<span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;accuracy.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">accuracy</span><span class="p">:</span>
+			<span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">)):</span>	
+				<span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span></div></div>
 </pre></div>
 
           </div>

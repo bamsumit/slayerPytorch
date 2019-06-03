@@ -175,7 +175,7 @@
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">return</span> <span class="n">_pspFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 	
-<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dense">[docs]</a>	<span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dense">[docs]</a>	<span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>	<span class="c1"># default weight scaling of 10</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.</span>
 <span class="sd">		It behaves similar to ``torch.nn.Linear`` applied for each time instance.</span>
@@ -191,9 +191,9 @@
 <span class="sd">		&gt;&gt;&gt; fcl = snnLayer.dense((128, 128, 2), 512) # takes (N, 2, 128, 128, T) tensor</span>
 <span class="sd">		&gt;&gt;&gt; output = fcl(input)                      # output will be (N, 512, 1, 1, T) tensor</span>
 <span class="sd">		&#39;&#39;&#39;</span>
-		<span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span></div>
+		<span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>	</div>
 		
-<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.conv">[docs]</a>	<span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.conv">[docs]</a>	<span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>	<span class="c1"># default weight scaling of 100</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns a function that can be called to apply conv layer mapping to input tensor per time instance.</span>
 <span class="sd">		It behaves same as ``torch.nn.conv2d`` applied for each time instance.</span>
@@ -218,7 +218,7 @@
 <span class="sd">		&gt;&gt;&gt; conv = snnLayer.conv(2, 32, 5) # 32C5 flter</span>
 <span class="sd">		&gt;&gt;&gt; output = conv(input)           # must have 2 channels</span>
 <span class="sd">		&#39;&#39;&#39;</span>
-		<span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span></div>
+		<span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span> </div>
 		
 <div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pool">[docs]</a>	<span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>
@@ -291,6 +291,7 @@
 
 		<span class="k">if</span> <span class="n">weightScale</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>	
 			<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">weightScale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>	<span class="c1"># scale the weight if needed</span>
+			<span class="c1"># print(&#39;In dense, using weightScale of&#39;, weightScale)</span>
 
 	
 	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
@@ -354,6 +355,7 @@
 
 		<span class="k">if</span> <span class="n">weightScale</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>	
 			<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">weightScale</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span>	<span class="c1"># scale the weight if needed</span>
+			<span class="c1"># print(&#39;In conv, using weightScale of&#39;, weightScale)</span>
 
 	<span class="k">def</span> <span class="nf">foward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>
@@ -410,6 +412,8 @@
 
 		<span class="c1"># set the weights to 1.1*theta and requires_grad = False</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="n">theta</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">)))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+		<span class="c1"># print(&#39;In pool layer, weight =&#39;, self.weight.cpu().data.numpy().flatten(), theta)</span>
+
 
 	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>

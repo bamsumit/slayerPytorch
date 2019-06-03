@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 class learningStat():
 	'''
 	This class collect the learning statistics over the epoch.
@@ -197,4 +199,63 @@ class learningStats():
 			print(self.testing.displayString())
 			self.linesPrinted += 1
 
-	
+	def plot(self, figures=(1, 2)):
+		'''
+		Plots the available learning statistics.
+
+		Arguments:
+			* ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.
+
+		Usage:
+
+		.. code-block:: python
+
+			# plot stats
+			stats.plot() 
+
+			# plot stats figures specified
+			stats.print(figures=(10, 11)) 
+		'''
+		plt.figure(figures[0])
+		plt.cla()
+		plt.semilogy(self.training.lossLog, label='Training')
+		plt.semilogy(self.testing .lossLog, label='Testing')
+		plt.xlabel('Epoch')
+		plt.ylabel('Loss')
+		plt.legend()
+
+		plt.figure(figures[1])
+		plt.cla()
+		plt.plot(self.training.accuracyLog, label='Training')
+		plt.plot(self.testing .accuracyLog, label='Testing')
+		plt.xlabel('Epoch')
+		plt.ylabel('Accuracy')
+		plt.legend() 
+
+	def save(self, filename=''):
+		'''
+		Saves the learning satatistics logs.
+
+		Arguments:
+			* ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended
+
+		Usage:
+
+		.. code-block:: python
+
+			# save stats
+			stats.save() 
+
+			# save stats filename specified
+			stats.save(filename='Run101-0.001-') # Run101-0.001-accuracy.txt and Run101-0.001-loss.txt
+		'''
+
+		with open(filename + 'loss.txt', 'wt') as loss:
+			loss.write('#%11s %11s\r\n'%('Train', 'Test'))
+			for i in range(len(self.training.lossLog)):	
+				loss.write('%12.6g %12.6g \r\n'%(self.training.lossLog[i], self.testing.lossLog[i]))
+
+		with open(filename + 'accuracy.txt', 'wt') as accuracy:
+			accuracy.write('#%11s %11s\r\n'%('Train', 'Test'))
+			for i in range(len(self.training.accuracyLog)):	
+				accuracy.write('%12.6g %12.6g \r\n'%(self.training.accuracyLog[i], self.testing.accuracyLog[i]))

@@ -115,6 +115,26 @@ This should usually be done before the start of an epoch so that new statistics 
 </pre></div>
 </div>
 <dl class="method">
+<dt id="learningStats.learningStats.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>figures=(1</em>, <em>2)</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learningStats.html#learningStats.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learningStats.learningStats.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots the available learning statistics.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">figures</span></code>: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># plot stats</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> 
+
+<span class="c1"># plot stats figures specified</span>
+<span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span> 
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="learningStats.learningStats.print">
 <code class="descname">print</code><span class="sig-paren">(</span><em>epoch</em>, <em>iter=None</em>, <em>timeElapsed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learningStats.html#learningStats.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learningStats.learningStats.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the available learning statistics from the current session on the console.
@@ -136,6 +156,26 @@ For Linux systems, prints the data on same terminal space (might not work proper
 
 <span class="c1"># prints stats with epoch index, iteration index and time elapsed information provided</span>
 <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="n">time</span><span class="p">)</span> 
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="learningStats.learningStats.save">
+<code class="descname">save</code><span class="sig-paren">(</span><em>filename=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learningStats.html#learningStats.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learningStats.learningStats.save" title="Permalink to this definition">¶</a></dt>
+<dd><p>Saves the learning satatistics logs.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>: filename to save the logs. <code class="docutils literal notranslate"><span class="pre">accuracy.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">loss.txt</span></code> will be appended</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save stats</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">save</span><span class="p">()</span> 
+
+<span class="c1"># save stats filename specified</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;Run101-0.001-&#39;</span><span class="p">)</span> <span class="c1"># Run101-0.001-accuracy.txt and Run101-0.001-loss.txt</span>
 </pre></div>
 </div>
 </dd></dl>
