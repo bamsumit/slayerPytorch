@@ -30,7 +30,7 @@ class yamlParams(object):
 	'''
 	def __init__(self, parameter_file_path):
 		with open(parameter_file_path, 'r') as param_file:
-			self.parameters = yaml.load(param_file)
+			self.parameters = yaml.safe_load(param_file)
 
 	# Allow dictionary like access
 	def __getitem__(self, key):
