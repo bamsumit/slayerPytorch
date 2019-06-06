@@ -137,6 +137,27 @@ It behaves similar to <code class="docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="method">
+<dt id="slayer.spikeLayer.dropout">
+<code class="descname">dropout</code><span class="sig-paren">(</span><em>p=0.5</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dropout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dropout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply dropout layer to the input tensor.
+It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code>.
+However, dropout over time dimension is preserved, i.e.
+if a neuron is dropped, it remains dropped for entire time duration.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code>: dropout probability.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inplace</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): inplace opeartion flag.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">drop</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">drop</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="slayer.spikeLayer.pool">
 <code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply pool layer mapping to input tensor per time instance.

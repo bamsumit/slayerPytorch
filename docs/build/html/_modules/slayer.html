@@ -243,6 +243,24 @@
 <span class="sd">		&gt;&gt;&gt; output = pool(input)</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">return</span> <span class="n">_poolLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="spikeLayer.dropout"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dropout">[docs]</a>	<span class="k">def</span> <span class="nf">dropout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a function that can be called to apply dropout layer to the input tensor.</span>
+<span class="sd">		It behaves similar to ``torch.nn.Dropout``.</span>
+<span class="sd">		However, dropout over time dimension is preserved, i.e.</span>
+<span class="sd">		if a neuron is dropped, it remains dropped for entire time duration.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``p``: dropout probability.</span>
+<span class="sd">			* ``inplace`` (``bool``): inplace opeartion flag.</span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; drop = snnLayer.dropout(0.2)</span>
+<span class="sd">		&gt;&gt;&gt; output = drop(input)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_dropoutLayer</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
 	
 	<span class="c1"># def applySpikeFunction(self, membranePotential):</span>
 	<span class="c1"># 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation[&#39;Ts&#39;])</span>
@@ -434,6 +452,19 @@
 						  <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">)</span>
 		<span class="c1"># print(result.shape)</span>
 		<span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dataShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">result</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">4</span><span class="p">]))</span>
+
+<span class="k">class</span> <span class="nc">_dropoutLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Dropout3d</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="c1"># def __init__(self, p=0.5, inplace=False):</span>
+	<span class="c1"># 	super(_dropoutLayer, self)(p, inplace)</span>
+
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		<span class="n">inputShape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+		<span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout3d</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inputShape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span>
+						   <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inputShape</span><span class="p">)</span>
 						
 <span class="k">class</span> <span class="nc">_spikeFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
