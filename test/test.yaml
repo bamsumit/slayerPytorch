@@ -1,0 +1,13 @@
+layer:
+- {dim: 250}
+- {dim: 25}
+- {dim: 1}
+neuron: {scaleRef: 2, scaleRho: 1, tauRef: 1.0, tauRho: 1, tauSr: 1.0, theta: 10,
+  type: SRMALPHA}
+simulation: {Ts: 0.1, nSample: 1, tSample: 50}
+training:
+  error:
+    probSlidingWin: 20
+    tgtSpikeCount: {false: 3, true: 10}
+    tgtSpikeRegion: {start: 10, stop: 40}
+    type: SpikeTime

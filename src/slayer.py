@@ -210,6 +210,24 @@ class spikeLayer(torch.nn.Module):
 		>>> output = pool(input)
 		'''
 		return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation)
+
+	def dropout(self, p=0.5, inplace=False):
+		'''
+		Returns a function that can be called to apply dropout layer to the input tensor.
+		It behaves similar to ``torch.nn.Dropout``.
+		However, dropout over time dimension is preserved, i.e.
+		if a neuron is dropped, it remains dropped for entire time duration.
+
+		Arguments:
+			* ``p``: dropout probability.
+			* ``inplace`` (``bool``): inplace opeartion flag.
+
+		Usage:
+
+		>>> drop = snnLayer.dropout(0.2)
+		>>> output = drop(input)
+		'''
+		return _dropoutLayer(p, inplace)
 	
 	# def applySpikeFunction(self, membranePotential):
 	# 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
@@ -401,6 +419,19 @@ class _poolLayer(nn.Conv3d):
 						  self.stride, self.padding, self.dilation)
 		# print(result.shape)
 		return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
+
+class _dropoutLayer(nn.Dropout3d):
+	'''
+	'''
+	# def __init__(self, p=0.5, inplace=False):
+	# 	super(_dropoutLayer, self)(p, inplace)
+
+	'''
+	'''
+	def forward(self, input):
+		inputShape = input.shape
+		return F.dropout3d(input.reshape((inputShape[0], -1, 1, 1, inputShape[-1])),
+						   self.p, self.training, self.inplace).reshape(inputShape)
 						
 class _spikeFunction(torch.autograd.Function):
 	'''

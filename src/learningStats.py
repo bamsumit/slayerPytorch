@@ -104,7 +104,7 @@ class learningStat():
 			if minloss is None:	# accuracy and minloss stats is not available
 				return 'loss = %-12.5g'%(loss)
 			else:	# accuracy is not available but minloss is available
-				return 'loss = %-12.5g (min = %-12s)'%(loss, minloss)
+				return 'loss = %-12.5g (min = %-12.5g)'%(loss, minloss)
 		else:
 			if minloss is None and maxAccuracy is None: # minloss and maxAccuracy is available
 				return 'loss = %-12.5g        %-12s   \taccuracy = %-10.5g        %-10s '%(loss, ' ', accuracy, ' ')
@@ -199,7 +199,7 @@ class learningStats():
 			print(self.testing.displayString())
 			self.linesPrinted += 1
 
-	def plot(self, figures=(1, 2)):
+	def plot(self, figures=(1, 2), saveFig=False):
 		'''
 		Plots the available learning statistics.
 
@@ -223,6 +223,7 @@ class learningStats():
 		plt.xlabel('Epoch')
 		plt.ylabel('Loss')
 		plt.legend()
+		if saveFig is True:	plt.savefig('loss.png')
 
 		plt.figure(figures[1])
 		plt.cla()
@@ -231,6 +232,7 @@ class learningStats():
 		plt.xlabel('Epoch')
 		plt.ylabel('Accuracy')
 		plt.legend() 
+		if saveFig is True:	plt.savefig('accuracy.png')
 
 	def save(self, filename=''):
 		'''
