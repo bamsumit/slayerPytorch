@@ -2,6 +2,7 @@
 #include <vector>
 #include "spikeKernels.h"
 #include "convKernels.h"
+#include "shiftKernels.h"
 
 #define CHECK_CUDA(x) AT_ASSERTM(x.type().is_cuda(), #x " must be a CUDA tensor")
 #define CHECK_CONTIGUOUS(x) AT_ASSERTM(x.is_contiguous(), #x " must be contiguous")
@@ -73,9 +74,31 @@ torch::Tensor corrCuda(torch::Tensor input, torch::Tensor filter, float Ts)
 	return output;
 }
 
+torch::Tensor shiftCuda(torch::Tensor input, torch::Tensor shiftLUT, float Ts)
+{
+	CHECK_INPUT(input);
+	CHECK_INPUT(shiftLUT);
+	CHECK_DEVICE(input, shiftLUT);
+
+	cudaSetDevice(input.device().index());
+
+	auto output = torch::empty_like(input);
+
+	unsigned signalSize = input.size(-1);
+	unsigned nBatch     = input.size(0);
+	unsigned nNeurons   = input.numel()/signalSize/nBatch;
+
+	// AT_ASSERTM(shiftLUT.numel() != nNeurons, "shift and number of neurons must be same")
+
+	shift<float>(output.data<float>(), input.data<float>(), shiftLUT.data<float>(), signalSize, nNeurons, nBatch, Ts);
+
+	return output;
+}
+
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 {
 	m.def("getSpikes", &getSpikesCuda, "Get spikes (CUDA)");
 	m.def("conv"     , &convCuda     , "Convolution in time (CUDA)");
 	m.def("corr"     , &corrCuda     , "Correlation in time (CUDA)");
+	m.def("shift"    , &shiftCuda    , "Element shift in time (CUDA)");
 }

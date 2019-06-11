@@ -63,7 +63,7 @@
 <span class="sd">	&#39;&#39;&#39;</span>
 	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameter_file_path</span><span class="p">):</span>
 		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">parameter_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">param_file</span><span class="p">:</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">param_file</span><span class="p">)</span>
+			<span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">param_file</span><span class="p">)</span>
 
 	<span class="c1"># Allow dictionary like access</span>
 	<span class="k">def</span> <span class="nf">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
@@ -182,7 +182,7 @@
 
 <span class="sd">		Arguments:</span>
 <span class="sd">			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): </span>
-<span class="sd">				dimension of input features (Width, Height, Channel) that represents the number of input neurons.</span>
+<span class="sd">			  dimension of input features (Width, Height, Channel) that represents the number of input neurons.</span>
 <span class="sd">			* ``outFeatures`` (``int``): number of output neurons.</span>
 
 <span class="sd">		Usage:</span>
@@ -261,6 +261,30 @@
 <span class="sd">		&gt;&gt;&gt; output = drop(input)</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">return</span> <span class="n">_dropoutLayer</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="spikeLayer.delay"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.delay">[docs]</a>	<span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.</span>
+<span class="sd">		The delay parameter is available as ``delay.delay`` and is initialized uniformly between 0ms  and 1ms.</span>
+<span class="sd">		The delay parameter is stored as float values, however, it is floored during actual delay applicaiton internally.</span>
+<span class="sd">		The delay values are not clamped to zero.</span>
+<span class="sd">		To maintain the causality of the network, one should clamp the delay values explicitly to ensure positive delays.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``inputSize`` (``int`` or tuple of three ints): spatial shape of the input signal in CHW format (Channel, Height, Width).</span>
+<span class="sd">			  If integer value is supplied, it refers to the number of neurons in channel dimension. Heighe and Width are assumed to be 1.   </span>
+
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; delay = snnLayer.delay((C, H, W))</span>
+<span class="sd">		&gt;&gt;&gt; delayedSingal = delay(input)</span>
+
+<span class="sd">		Always clamp the delay after ``optimizer.step()``.</span>
+
+<span class="sd">		&gt;&gt;&gt; optimizer.step()</span>
+<span class="sd">		&gt;&gt;&gt; delay.delay.data.clamp_(0)	</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_delayLayer</span><span class="p">(</span><span class="n">inputSize</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 	
 	<span class="c1"># def applySpikeFunction(self, membranePotential):</span>
 	<span class="c1"># 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation[&#39;Ts&#39;])</span>
@@ -542,6 +566,61 @@
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
 		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+<span class="k">class</span> <span class="nc">_delayLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+		<span class="nb">super</span><span class="p">(</span><span class="n">_delayLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputSize</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="n">inputChannels</span> <span class="o">=</span> <span class="n">inputSize</span>
+			<span class="n">inputHeight</span>   <span class="o">=</span> <span class="mi">1</span>
+			<span class="n">inputWidth</span>    <span class="o">=</span> <span class="mi">1</span>
+		<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputSize</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+			<span class="n">inputChannels</span> <span class="o">=</span> <span class="n">inputSize</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+			<span class="n">inputHeight</span>   <span class="o">=</span> <span class="n">inputSize</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+			<span class="n">inputWidth</span>    <span class="o">=</span> <span class="n">inputSize</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;inputSize can only be 1 or 2 dimension. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">inputSize</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">delay</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">((</span><span class="n">inputChannels</span><span class="p">,</span> <span class="n">inputHeight</span><span class="p">,</span> <span class="n">inputWidth</span><span class="p">)),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+		<span class="c1"># self.delay = torch.nn.Parameter(torch.empty((inputChannels, inputHeight, inputWidth)), requires_grad=True)</span>
+		<span class="c1"># print(&#39;delay:&#39;, torch.empty((inputChannels, inputHeight, inputWidth)))</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">Ts</span> <span class="o">=</span> <span class="n">Ts</span>
+
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		
+		<span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_delayFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">device</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">device</span>
+		<span class="n">dtype</span>  <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span>
+		<span class="n">output</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="n">Ts</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Ts</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">delay</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">output</span>
+
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="c1"># autograd tested and verified</span>
+		<span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+		<span class="n">diffFilter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">gradOutput</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">gradOutput</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> <span class="o">/</span> <span class="n">Ts</span>
+		<span class="n">outputDiff</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">diffFilter</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+		<span class="c1"># the conv operation should not be scaled by Ts. </span>
+		<span class="c1"># As such, the output is -( x[k+1]/Ts - x[k]/Ts ) which is what we want.</span>
+		<span class="n">gradDelay</span>  <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">gradOutput</span> <span class="o">*</span> <span class="n">outputDiff</span><span class="p">,</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">gradOutput</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">Ts</span>
+		<span class="c1"># no minus needed here, as it is included in diffFilter which is -1 * [1, -1]</span>
+
+		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="o">-</span><span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="n">gradDelay</span><span class="p">,</span> <span class="kc">None</span>
 </pre></div>
 
           </div>

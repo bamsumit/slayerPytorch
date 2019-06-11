@@ -113,17 +113,41 @@ and the second <cite>int</cite> for the width dimension</p></li>
 </dd></dl>
 
 <dl class="method">
+<dt id="slayer.spikeLayer.delay">
+<code class="descname">delay</code><span class="sig-paren">(</span><em>inputSize</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.delay" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.
+The delay parameter is available as <code class="docutils literal notranslate"><span class="pre">delay.delay</span></code> and is initialized uniformly between 0ms  and 1ms.
+The delay parameter is stored as float values, however, it is floored during actual delay applicaiton internally.
+The delay values are not clamped to zero.
+To maintain the causality of the network, one should clamp the delay values explicitly to ensure positive delays.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inputSize</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of three ints): spatial shape of the input signal in CHW format (Channel, Height, Width).
+If integer value is supplied, it refers to the number of neurons in channel dimension. Heighe and Width are assumed to be 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">delay</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delayedSingal</span> <span class="o">=</span> <span class="n">delay</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Always clamp the delay after <code class="docutils literal notranslate"><span class="pre">optimizer.step()</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="slayer.spikeLayer.dense">
 <code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> applied for each time instance.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
-<li><dl class="simple">
-<dt><code class="docutils literal notranslate"><span class="pre">inFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, tuple of two ints, tuple of three ints): </dt><dd><p>dimension of input features (Width, Height, Channel) that represents the number of input neurons.</p>
-</dd>
-</dl>
-</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, tuple of two ints, tuple of three ints): 
+dimension of input features (Width, Height, Channel) that represents the number of input neurons.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of output neurons.</p></li>
 </ul>
 </dd>

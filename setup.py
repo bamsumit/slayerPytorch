@@ -1,27 +1,18 @@
 from setuptools import setup
 from torch.utils.cpp_extension import BuildExtension, CUDAExtension
 
-# setup(
-#     name='slayer_kernels',
-#     ext_modules=[
-#         CUDAExtension('slayer_cuda', [
-#             'src/cuda/slayer_kernels.cpp',
-#             'src/cuda/spikeKernels.cu',
-#         ])
-#     ],
-#     cmdclass={
-#         'build_ext': BuildExtension
-#     }
-#     )
-
 setup(
     name='slayerCuda',
     ext_modules=[
         CUDAExtension(
             name='slayerCuda',
             sources=[
-                'src/cuda/slayerKernels.cu',
-                # 'src/cuda/spikeKernels.cu',
+                'src/cuda/slayerKernels.cu'
+            ],
+            depends=[
+                'src/cuda/spikeKernels.h',
+                'src/cuda/convKernels.h',
+                'src/cuda/shiftKernels.h'
             ],
             extra_compile_args={
                 'cxx': ['-g'],

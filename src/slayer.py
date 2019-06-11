@@ -149,7 +149,7 @@ class spikeLayer(torch.nn.Module):
 
 		Arguments:
 			* ``inFeatures`` (``int``, tuple of two ints, tuple of three ints): 
-				dimension of input features (Width, Height, Channel) that represents the number of input neurons.
+			  dimension of input features (Width, Height, Channel) that represents the number of input neurons.
 			* ``outFeatures`` (``int``): number of output neurons.
 
 		Usage:
@@ -228,6 +228,30 @@ class spikeLayer(torch.nn.Module):
 		>>> output = drop(input)
 		'''
 		return _dropoutLayer(p, inplace)
+
+	def delay(self, inputSize):
+		'''
+		Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.
+		The delay parameter is available as ``delay.delay`` and is initialized uniformly between 0ms  and 1ms.
+		The delay parameter is stored as float values, however, it is floored during actual delay applicaiton internally.
+		The delay values are not clamped to zero.
+		To maintain the causality of the network, one should clamp the delay values explicitly to ensure positive delays.
+
+		Arguments:
+			* ``inputSize`` (``int`` or tuple of three ints): spatial shape of the input signal in CHW format (Channel, Height, Width).
+			  If integer value is supplied, it refers to the number of neurons in channel dimension. Heighe and Width are assumed to be 1.   
+
+		Usage:
+
+		>>> delay = snnLayer.delay((C, H, W))
+		>>> delayedSingal = delay(input)
+
+		Always clamp the delay after ``optimizer.step()``.
+
+		>>> optimizer.step()
+		>>> delay.delay.data.clamp_(0)	
+		'''
+		return _delayLayer(inputSize, self.simulation['Ts'])
 	
 	# def applySpikeFunction(self, membranePotential):
 	# 	return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
@@ -509,3 +533,58 @@ class _pspFunction(torch.autograd.Function):
 		'''
 		(filter, Ts) = ctx.saved_tensors
 		return slayerCuda.corr(gradOutput, filter, Ts), None, None
+
+class _delayLayer(nn.Module):
+	'''
+	'''
+	def __init__(self, inputSize, Ts):
+		super(_delayLayer, self).__init__()
+
+		if len(inputSize) == 1:
+			inputChannels = inputSize
+			inputHeight   = 1
+			inputWidth    = 1
+		elif len(inputSize) == 3:
+			inputChannels = inputSize[0]
+			inputHeight   = inputSize[1]
+			inputWidth    = inputSize[2]
+		else:
+			raise Exception('inputSize can only be 1 or 2 dimension. It was: {}'.format(inputSize.shape))
+
+		self.delay = torch.nn.Parameter(torch.rand((inputChannels, inputHeight, inputWidth)), requires_grad=True)
+		# self.delay = torch.nn.Parameter(torch.empty((inputChannels, inputHeight, inputWidth)), requires_grad=True)
+		# print('delay:', torch.empty((inputChannels, inputHeight, inputWidth)))
+		self.Ts = Ts
+
+	def forward(self, input):
+		
+		return _delayFunction.apply(input, self.delay, self.Ts)
+
+class _delayFunction(torch.autograd.Function):
+	'''
+	'''
+	@staticmethod
+	def forward(ctx, input, delay, Ts):
+		'''
+		'''
+		device = input.device
+		dtype  = input.dtype
+		output = slayerCuda.shift(input, delay.data, Ts)
+		Ts = torch.autograd.Variable(torch.tensor(Ts, device=device, dtype=dtype), requires_grad=False)
+		ctx.save_for_backward(output, delay.data, Ts)
+		return output
+
+	@staticmethod
+	def backward(ctx, gradOutput):
+		'''
+		'''
+		# autograd tested and verified
+		(output, delay, Ts) = ctx.saved_tensors
+		diffFilter = torch.tensor([-1, 1], dtype=gradOutput.dtype).to(gradOutput.device) / Ts
+		outputDiff = slayerCuda.conv(output, diffFilter, 1)
+		# the conv operation should not be scaled by Ts. 
+		# As such, the output is -( x[k+1]/Ts - x[k]/Ts ) which is what we want.
+		gradDelay  = torch.sum(gradOutput * outputDiff, [0, -1], keepdim=True).reshape(gradOutput.shape[1:-1]) * Ts
+		# no minus needed here, as it is included in diffFilter which is -1 * [1, -1]
+
+		return slayerCuda.shift(gradOutput, -delay, Ts), gradDelay, None

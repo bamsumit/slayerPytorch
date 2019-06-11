@@ -205,6 +205,7 @@ class learningStats():
 
 		Arguments:
 			* ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.
+			* ``saveFig``(``bool``): flag to save figure into a file.
 
 		Usage:
 
