@@ -3,12 +3,14 @@ import sys, os
 CURRENT_TEST_DIR = os.getcwd()
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
+import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import slayerSNN as snn
 import slayerCuda
 
+verbose = True if (('-v' in sys.argv) or ('--verbose' in sys.argv)) else False
 
 # A gradient logger to probe autgrad gradients
 class gradLog(torch.autograd.Function):
@@ -29,7 +31,7 @@ class gradLog(torch.autograd.Function):
 
 
 # Select device to run code on
-device = torch.device('cuda:1')
+device = torch.device('cuda')
 
 # Initialization
 netParams = snn.params('test_files/snnData/network.yaml')
@@ -77,7 +79,11 @@ dpspDelayed_dt = slayerCuda.conv(pspDelayed, diffFilter, 1)
 # delay graident integration (According to the formula)
 delayGrad = -torch.sum(errorRec * dpspDelayed_dt, [0, -1], keepdim=True).reshape((Nin, 1, 1)) * Ts
 
-print('CustomDelayGradient - autoGrad1:', torch.norm(delayGrad - delay.delay.grad).item())
+class TestAutoGrad1(unittest.TestCase):
+	def test(self):
+		# print('CustomDelayGradient - autoGrad1:', torch.norm(delayGrad - delay.delay.grad).item())
+		# self.assertEqual(torch.norm(delayGrad - delay.delay.grad).item(), 0, 'CustomDelayGradient and AutoGrad1 results must match.')
+		self.assertTrue(torch.norm(delayGrad - delay.delay.grad).item() < 1e-4, 'CustomDelayGradient and AutoGrad1 results must match.')
 
 # AutoGrad 2:
 # first delay followed by Psp opeartion
@@ -96,36 +102,47 @@ loss  = error.spikeTime(spikeOut, spikeDes)
 
 loss.backward()
 
-print('CustomDelayGradient - autoGrad2:', torch.norm(delayGrad - delay.delay.grad).item())
+class TestAutoGrad2(unittest.TestCase):
+	def test(self):
+		# print('CustomDelayGradient - autoGrad2:', torch.norm(delayGrad - delay.delay.grad).item())
+		self.assertTrue(torch.norm(delayGrad - delay.delay.grad).item() < 1e-4, 'CustomDelayGradient and AutoGrad2 results must match.')
 
-plt.figure(1)
-plt.subplot(2, 1, 1)
-plt.plot(slayer.psp(spikeOut - spikeDes)[0].cpu().data.numpy().reshape((Nout, -1)).transpose())
-plt.xlabel('Time bins')
-plt.ylabel('Output layer Error')
+def plot():
+	plt.figure(1)
+	plt.subplot(2, 1, 1)
+	plt.plot(slayer.psp(spikeOut - spikeDes)[0].cpu().data.numpy().reshape((Nout, -1)).transpose())
+	plt.xlabel('Time bins')
+	plt.ylabel('Output layer Error')
 
-plt.subplot(2, 1, 2)
-plt.plot(deltaRec[0].cpu().data.numpy().reshape((Nout, -1)).transpose())
-plt.xlabel('Time bins')
-plt.ylabel('Output layer Delta')
+	plt.subplot(2, 1, 2)
+	plt.plot(deltaRec[0].cpu().data.numpy().reshape((Nout, -1)).transpose())
+	plt.xlabel('Time bins')
+	plt.ylabel('Output layer Delta')
 
-plt.figure(2)
-plt.plot(errorRec[0].cpu().data.numpy().reshape((Nin, -1)).transpose())
-plt.xlabel('Time bins')
-plt.ylabel('Hidden layer Error')
+	plt.figure(2)
+	plt.plot(errorRec[0].cpu().data.numpy().reshape((Nin, -1)).transpose())
+	plt.xlabel('Time bins')
+	plt.ylabel('Hidden layer Error')
 
-plt.figure(3)
-plt.subplot(2, 1, 1)
-plt.plot(pspDelayed[0].cpu().data.numpy().reshape((Nin, -1)).transpose())
-plt.xlabel('Time bins')
-plt.ylabel('Hidden layer delayed PSP')
+	plt.figure(3)
+	plt.subplot(2, 1, 1)
+	plt.plot(pspDelayed[0].cpu().data.numpy().reshape((Nin, -1)).transpose())
+	plt.xlabel('Time bins')
+	plt.ylabel('Hidden layer delayed PSP')
 
-plt.subplot(2, 1, 2)
-plt.plot(pspDelayed[0].cpu().data.numpy().reshape((Nin, -1)).transpose()[:, 0], label='PSP')
-plt.plot(np.cumsum(dpspDelayed_dt[0].cpu().data.numpy().reshape((Nin, -1)).transpose()[:, 0]) * Ts, label='PSP reconstructed')
-plt.xlabel('Time bins')
-plt.ylabel('PSP/PSP reconstructed from time derivative')
-plt.legend()
+	plt.subplot(2, 1, 2)
+	plt.plot(pspDelayed[0].cpu().data.numpy().reshape((Nin, -1)).transpose()[:, 0], label='PSP')
+	plt.plot(np.cumsum(dpspDelayed_dt[0].cpu().data.numpy().reshape((Nin, -1)).transpose()[:, 0]) * Ts, label='PSP reconstructed')
+	plt.xlabel('Time bins')
+	plt.ylabel('PSP/PSP reconstructed from time derivative')
+	plt.legend()
 
-plt.show()
+	plt.show()
 
+
+if verbose is True:	
+	if bool(os.environ.get('DISPLAY', None)):
+		plot()
+
+if __name__ == '__main__':	
+	unittest.main()

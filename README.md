@@ -50,6 +50,12 @@ The repository includes C++ and CUDA code that has to be compiled and installed 
 
 `python setup.py install`
 
+To test the installation:
+
+`cd test`
+
+`python -m unittest`
+
 ## Documentation
 The complete documentation is available at [https://bamsumit.github.io/slayerPytorch](https://bamsumit.github.io/slayerPytorch) .
 

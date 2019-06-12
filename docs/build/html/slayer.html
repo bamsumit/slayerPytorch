@@ -140,6 +140,27 @@ If integer value is supplied, it refers to the number of neurons in channel dime
 </dd></dl>
 
 <dl class="method">
+<dt id="slayer.spikeLayer.delayShift">
+<code class="descname">delayShift</code><span class="sig-paren">(</span><em>input</em>, <em>delay</em>, <em>Ts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.delayShift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.delayShift" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies delay in time dimension (assumed to be the last dimension of the tensor) of the input tensor.
+The autograd backward link is established as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">input</span></code>: input Torch tensor.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">delay</span></code> (<code class="docutils literal notranslate"><span class="pre">float</span></code> or Torch tensor): amount of delay to apply.
+Same delay is applied to all the inputs if <code class="docutils literal notranslate"><span class="pre">delay</span></code> is <code class="docutils literal notranslate"><span class="pre">float</span></code> or Torch tensor of size 1.
+If the Torch tensor has size more than 1, its dimension  must match the dimension of input tensor except the last dimension.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Ts</span></code>: sampling time of the delay. Default is 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delayedInput</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="slayer.spikeLayer.dense">
 <code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.

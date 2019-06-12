@@ -229,6 +229,24 @@ class spikeLayer(torch.nn.Module):
 		'''
 		return _dropoutLayer(p, inplace)
 
+	def delayShift(self, input, delay, Ts=1):
+		'''
+		Applies delay in time dimension (assumed to be the last dimension of the tensor) of the input tensor.
+		The autograd backward link is established as well.
+
+		Arguments:
+			* ``input``: input Torch tensor.
+			* ``delay`` (``float`` or Torch tensor): amount of delay to apply.
+			  Same delay is applied to all the inputs if ``delay`` is ``float`` or Torch tensor of size 1.
+			  If the Torch tensor has size more than 1, its dimension  must match the dimension of input tensor except the last dimension.
+			* ``Ts``: sampling time of the delay. Default is 1.
+		
+		Usage:
+
+		>>> delayedInput = slayer.delayShift(input, 5)
+		'''
+		return _delayFunctionNoGradient.apply(input, delay, Ts)
+
 	def delay(self, inputSize):
 		'''
 		Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.
@@ -557,7 +575,7 @@ class _delayLayer(nn.Module):
 		self.Ts = Ts
 
 	def forward(self, input):
-		
+
 		return _delayFunction.apply(input, self.delay, self.Ts)
 
 class _delayFunction(torch.autograd.Function):
@@ -588,3 +606,25 @@ class _delayFunction(torch.autograd.Function):
 		# no minus needed here, as it is included in diffFilter which is -1 * [1, -1]
 
 		return slayerCuda.shift(gradOutput, -delay, Ts), gradDelay, None
+
+class _delayFunctionNoGradient(torch.autograd.Function):
+	'''
+	'''
+	@staticmethod
+	def forward(ctx, input, delay, Ts=1):
+		'''
+		'''
+		device = input.device
+		dtype  = input.dtype
+		output = slayerCuda.shift(input, delay, Ts)
+		Ts     = torch.autograd.Variable(torch.tensor(Ts   , device=device, dtype=dtype), requires_grad=False)
+		delay  = torch.autograd.Variable(torch.tensor(delay, device=device, dtype=dtype), requires_grad=False)
+		ctx.save_for_backward(delay, Ts)
+		return output
+
+	@staticmethod
+	def backward(ctx, gradOutput):
+		'''
+		'''
+		(delay, Ts) = ctx.saved_tensors
+		return slayerCuda.shift(gradOutput, -delay, Ts), None, None

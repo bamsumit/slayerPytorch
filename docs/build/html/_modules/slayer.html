@@ -262,6 +262,24 @@
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">return</span> <span class="n">_dropoutLayer</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="spikeLayer.delayShift"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.delayShift">[docs]</a>	<span class="k">def</span> <span class="nf">delayShift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Applies delay in time dimension (assumed to be the last dimension of the tensor) of the input tensor.</span>
+<span class="sd">		The autograd backward link is established as well.</span>
+
+<span class="sd">		Arguments:</span>
+<span class="sd">			* ``input``: input Torch tensor.</span>
+<span class="sd">			* ``delay`` (``float`` or Torch tensor): amount of delay to apply.</span>
+<span class="sd">			  Same delay is applied to all the inputs if ``delay`` is ``float`` or Torch tensor of size 1.</span>
+<span class="sd">			  If the Torch tensor has size more than 1, its dimension  must match the dimension of input tensor except the last dimension.</span>
+<span class="sd">			* ``Ts``: sampling time of the delay. Default is 1.</span>
+<span class="sd">		</span>
+<span class="sd">		Usage:</span>
+
+<span class="sd">		&gt;&gt;&gt; delayedInput = slayer.delayShift(input, 5)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_delayFunctionNoGradient</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span></div>
+
 <div class="viewcode-block" id="spikeLayer.delay"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.delay">[docs]</a>	<span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.</span>
@@ -590,7 +608,7 @@
 		<span class="bp">self</span><span class="o">.</span><span class="n">Ts</span> <span class="o">=</span> <span class="n">Ts</span>
 
 	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-		
+
 		<span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">_delayFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
@@ -621,6 +639,28 @@
 		<span class="c1"># no minus needed here, as it is included in diffFilter which is -1 * [1, -1]</span>
 
 		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="o">-</span><span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="n">gradDelay</span><span class="p">,</span> <span class="kc">None</span>
+
+<span class="k">class</span> <span class="nc">_delayFunctionNoGradient</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">device</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">device</span>
+		<span class="n">dtype</span>  <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">dtype</span>
+		<span class="n">output</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="n">Ts</span>     <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Ts</span>   <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="n">delay</span>  <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+		<span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">output</span>
+
+	<span class="nd">@staticmethod</span>
+	<span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="p">(</span><span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">shift</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="o">-</span><span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
 </pre></div>
 
           </div>

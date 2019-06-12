@@ -3,6 +3,7 @@ import sys, os
 CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
+import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -12,6 +13,8 @@ from spikeLoss import spikeLoss
 
 ###############################################################################
 # testing spike learning ######################################################
+verbose = True if (('-v' in sys.argv) or ('--verbose' in sys.argv)) else False
+
 net_params = SlayerParams(CURRENT_TEST_DIR + "/test_files/snnData/network.yaml")
 
 Ns   = int(net_params['simulation']['tSample'] / net_params['simulation']['Ts'])
@@ -83,7 +86,9 @@ for epoch in range(1000):
 	spikeRaster = np.append(spikeRaster,spikeTimes, axis=0)
 	
 	loss = error.spikeTime(spikeOut, spikeDes)
-	if epoch%10 == 0:	print('loss in epoch', epoch, ':', loss.cpu().data.numpy() * 10 * 2)
+	if epoch%10 == 0:	
+		if verbose is True:
+			print('loss in epoch', epoch, ':', loss.cpu().data.numpy() * 10 * 2)
 	losslog.append(loss.cpu().data.numpy())
 	
 	optimizer.zero_grad()
@@ -93,18 +98,28 @@ for epoch in range(1000):
 outputAER  = np.argwhere(spikeOut.reshape((Nout,Ns)).cpu().data.numpy() > 0)
 desiredAER = np.argwhere(spikeDes.reshape((Nout,Ns)).cpu().data.numpy() > 0)
 
-plt.figure(1)
-plt.plot(desiredAER[:,1], desiredAER[:,0], 'o', label='desired')
-plt.plot( outputAER[:,1],  outputAER[:,0], '.', label='actual')
-plt.legend()
+if verbose is True:	
+	if bool(os.environ.get('DISPLAY', None)):
+		plt.figure(1)
+		plt.plot(desiredAER[:,1], desiredAER[:,0], 'o', label='desired')
+		plt.plot( outputAER[:,1],  outputAER[:,0], '.', label='actual')
+		plt.legend()
 
-plt.figure(2)
-plt.plot(losslog)
+		plt.figure(2)
+		plt.plot(losslog)
 
-plt.figure(3)
-plt.plot(spikeRaster[:,1], spikeRaster[:,0], '.')
+		plt.figure(3)
+		plt.plot(spikeRaster[:,1], spikeRaster[:,0], '.')
 
-plt.show()
+		plt.show()
 
-print('saving yaml config files...')
+if verbose is True:	print('saving yaml config files...')
 net_params.save('test.yaml')
+
+class testNumSpikesLearning(unittest.TestCase):
+	def test(self):
+		# Fine if it runs till here
+		self.assertTrue(True, 'Failed.')
+
+if __name__ == '__main__':
+	unittest.main()

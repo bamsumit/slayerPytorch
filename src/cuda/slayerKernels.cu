@@ -84,15 +84,53 @@ torch::Tensor shiftCuda(torch::Tensor input, torch::Tensor shiftLUT, float Ts)
 
 	auto output = torch::empty_like(input);
 
-	unsigned signalSize = input.size(-1);
-	unsigned nBatch     = input.size(0);
-	unsigned nNeurons   = input.numel()/signalSize/nBatch;
-
-	// AT_ASSERTM(shiftLUT.numel() != nNeurons, "shift and number of neurons must be same")
-
-	shift<float>(output.data<float>(), input.data<float>(), shiftLUT.data<float>(), signalSize, nNeurons, nBatch, Ts);
+	if(shiftLUT.numel() == 1)
+	{
+		unsigned signalSize = input.size(-1);
+		unsigned nNeurons   = input.numel()/signalSize;
+		
+		float shiftValue = shiftLUT.item<float>();
+		
+		shift<float>(output.data<float>(), input.data<float>(), shiftValue, signalSize, nNeurons, Ts);		
+	}
+	else
+	{
+		unsigned signalSize = input.size(-1);
+		unsigned nBatch     = input.size(0);
+		unsigned nNeurons   = input.numel()/signalSize/nBatch;
+		
+		AT_ASSERTM(shiftLUT.numel() == nNeurons, "shift and number of neurons must be same")
+		
+		shift<float>(output.data<float>(), input.data<float>(), shiftLUT.data<float>(), signalSize, nNeurons, nBatch, Ts);
+	}
 
 	return output;
+}
+
+torch::Tensor shift1Cuda(torch::Tensor input, torch::Tensor shiftLUT)
+{
+	return shiftCuda(input, shiftLUT, 1.0f);
+}
+
+torch::Tensor shiftFlCuda(torch::Tensor input, float shiftLUT, float Ts)
+{
+	CHECK_INPUT(input);
+
+	cudaSetDevice(input.device().index());
+
+	auto output = torch::empty_like(input);
+
+	unsigned signalSize = input.size(-1);
+	unsigned nNeurons   = input.numel()/signalSize;
+	
+	shift<float>(output.data<float>(), input.data<float>(), shiftLUT, signalSize, nNeurons, Ts);		
+	
+	return output;
+}
+
+torch::Tensor shiftFl1Cuda(torch::Tensor input, float shiftLUT)
+{
+	return shiftFlCuda(input, shiftLUT, 1.0f);
 }
 
 PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
@@ -101,4 +139,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m)
 	m.def("conv"     , &convCuda     , "Convolution in time (CUDA)");
 	m.def("corr"     , &corrCuda     , "Correlation in time (CUDA)");
 	m.def("shift"    , &shiftCuda    , "Element shift in time (CUDA)");
+	m.def("shift"    , &shift1Cuda   , "Element shift in time (CUDA)");
+	m.def("shift"    , &shiftFlCuda  , "Element shift in time (CUDA)");
+	m.def("shift"    , &shiftFl1Cuda , "Element shift in time (CUDA)");
 }

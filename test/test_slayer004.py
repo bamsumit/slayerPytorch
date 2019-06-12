@@ -3,6 +3,7 @@ import sys, os
 CURRENT_TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(CURRENT_TEST_DIR + "/../src")
 
+import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -20,8 +21,8 @@ Nin  = int(net_params['layer'][0]['dim'])
 Nout = int(net_params['layer'][1]['dim'])
 net_params['training']['error']['type'] = 'NumSpikes'
 
-# device = torch.device('cuda')
-device = torch.device('cuda:3')
+device = torch.device('cuda')
+# device = torch.device('cuda:3')
 
 class Network(torch.nn.Module):
 	def __init__(self, net_params):
@@ -64,8 +65,11 @@ loss = error.numSpikes(spikeOut, desiredClass)
 loss.backward()
 
 # print('Output Class is :', predict.getClass(spikeOut.reshape((1, 1, 1, Nout, Ns))))
-print('Output Class is :', predict.getClass(spikeOut))
-print('Correct Class is:', 21)
+# print('Output Class is :', predict.getClass(spikeOut))
+# print('Correct Class is:', 21)
+class testSpikeClassifier(unittest.TestCase):
+	def test(self):
+		self.assertEqual(predict.getClass(spikeOut), 21, 'Correct class is 21.')
 
 # output  = spikeOut.reshape((Nout, Ns)).cpu().data.numpy()
 # desired =     loss.reshape((Nout, Ns)).cpu().data.numpy()
