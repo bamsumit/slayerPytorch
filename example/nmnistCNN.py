@@ -11,9 +11,6 @@ import slayerSNN as snn
 from learningStats import learningStats
 
 netParams = snn.params('network.yaml')
-netParams['training']['path']['in']    = '/fast/sumit/NMNIST_34/'
-netParams['training']['path']['train'] = '/fast/sumit/NMNIST_34/train.txt'
-netParams['training']['path']['test']  = '/fast/sumit/NMNIST_34/test.txt'
 
 # Dataset definition
 class nmnistDataset(Dataset):

@@ -12,3 +12,6 @@ dist/*
 docs/build/doctrees/
 docs/build/latex/
 docs_readthedocs/
+
+#
+runs/

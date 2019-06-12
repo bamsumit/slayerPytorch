@@ -262,7 +262,7 @@ class spikeLayer(torch.nn.Module):
 		Usage:
 
 		>>> delay = snnLayer.delay((C, H, W))
-		>>> delayedSingal = delay(input)
+		>>> delayedSignal = delay(input)
 
 		Always clamp the delay after ``optimizer.step()``.
 
@@ -558,7 +558,7 @@ class _delayLayer(nn.Module):
 	def __init__(self, inputSize, Ts):
 		super(_delayLayer, self).__init__()
 
-		if len(inputSize) == 1:
+		if type(inputSize) == int:
 			inputChannels = inputSize
 			inputHeight   = 1
 			inputWidth    = 1
