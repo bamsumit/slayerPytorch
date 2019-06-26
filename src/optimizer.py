@@ -5,7 +5,7 @@ import torch
 
 class Nadam(torch.optim.Optimizer):
     '''
-    Implements Nadam algorithm. (Modified Adam from PyTorch)
+    Implements Nadam algorithm. (Modified Adam from PyTorch_)
 
     It has been proposed in `Incorporating Nesterov Momentum into Adam`_.
 
@@ -20,7 +20,9 @@ class Nadam(torch.optim.Optimizer):
         * ``amsgrad`` (``boolean``, optional): whether to use the AMSGrad variant of this
           algorithm from the paper `On the Convergence of Adam and Beyond`_
           (default: False).
-
+    
+    .. _PyTorch:
+        https://pytorch.org/docs/stable/_modules/torch/optim/adam.html#Adam
     .. _Incorporating Nesterov Momentum into Adam:
         https://openreview.net/pdf?id=OM0jvwB8jIp57ZJjtNEZ
     .. _On the Convergence of Adam and Beyond:
