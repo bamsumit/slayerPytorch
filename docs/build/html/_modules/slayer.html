@@ -174,10 +174,33 @@
 <span class="sd">		&gt;&gt;&gt; filteredSpike = snnLayer.psp(spike)</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="k">return</span> <span class="n">_pspFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spikeLayer.pspLayer"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pspLayer">[docs]</a>	<span class="k">def</span> <span class="nf">pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		Returns a function that can be called to apply psp filtering to spikes.</span>
+<span class="sd">		The output tensor dimension is same as input.</span>
+<span class="sd">		The initial psp filter corresponds to the neuron psp filter.</span>
+<span class="sd">		The psp filter is learnable.</span>
+<span class="sd">		NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.</span>
+<span class="sd">		</span>
+<span class="sd">		Usage:</span>
+<span class="sd">		</span>
+<span class="sd">		&gt;&gt;&gt; pspLayer = snnLayer.pspLayer()</span>
+<span class="sd">		&gt;&gt;&gt; filteredSpike = pspLayer(spike)</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="k">return</span> <span class="n">_pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
+
+	<span class="k">def</span> <span class="nf">replicateInTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">):</span>
+		<span class="n">Ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;tSample&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
+		<span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+		<span class="c1"># output = F.pad(input.reshape(N, C, H, W, 1), pad=(Ns-1, 0, 0, 0, 0, 0), mode=&#39;replicate&#39;)</span>
+		<span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="s1">&#39;nearest&#39;</span><span class="p">:</span>
+			<span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">output</span>
 	
 <div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dense">[docs]</a>	<span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>	<span class="c1"># default weight scaling of 10</span>
 		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.</span>
+<span class="sd">		Returns a function that can be called to apply dense layer mapping to input tensor per time instance.</span>
 <span class="sd">		It behaves similar to ``torch.nn.Linear`` applied for each time instance.</span>
 
 <span class="sd">		Arguments:</span>
@@ -295,7 +318,7 @@
 <span class="sd">		Usage:</span>
 
 <span class="sd">		&gt;&gt;&gt; delay = snnLayer.delay((C, H, W))</span>
-<span class="sd">		&gt;&gt;&gt; delayedSingal = delay(input)</span>
+<span class="sd">		&gt;&gt;&gt; delayedSignal = delay(input)</span>
 
 <span class="sd">		Always clamp the delay after ``optimizer.step()``.</span>
 
@@ -507,7 +530,40 @@
 		<span class="n">inputShape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
 		<span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">dropout3d</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">inputShape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span>
 						   <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inplace</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inputShape</span><span class="p">)</span>
-						
+
+<span class="k">class</span> <span class="nc">_pspLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+		<span class="n">inChannels</span>  <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">outChannels</span> <span class="o">=</span> <span class="mi">1</span>
+		<span class="n">kernel</span>      <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">numel</span><span class="p">(</span><span class="nb">filter</span><span class="p">))</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">Ts</span> <span class="o">=</span> <span class="n">Ts</span>
+
+		<span class="nb">super</span><span class="p">(</span><span class="n">_pspLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+
+		<span class="c1"># print(filter)</span>
+		<span class="c1"># print(np.flip(filter.cpu().data.numpy()).reshape(self.weight.shape)) </span>
+		<span class="c1"># print(torch.tensor(np.flip(filter.cpu().data.numpy()).copy()))</span>
+
+		<span class="n">flippedFilter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="nb">filter</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Parameter</span><span class="p">(</span><span class="n">flippedFilter</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+		<span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ConstantPad3d</span><span class="p">(</span><span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">numel</span><span class="p">(</span><span class="nb">filter</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+	<span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+		<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">		&#39;&#39;&#39;</span>
+		<span class="n">inShape</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+		<span class="n">inPadded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">inShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">inShape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])))</span>
+		<span class="c1"># print((inShape[0], 1, 1, -1, inShape[-1]))</span>
+		<span class="c1"># print(input.reshape((inShape[0], 1, 1, -1, inShape[-1])).shape)</span>
+		<span class="c1"># print(inPadded.shape)</span>
+		<span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="n">inPadded</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span>
+		<span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inShape</span><span class="p">)</span>
+
 <span class="k">class</span> <span class="nc">_spikeFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	&#39;&#39;&#39;</span>
@@ -583,7 +639,14 @@
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		&#39;&#39;&#39;</span>
 		<span class="p">(</span><span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
-		<span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+		<span class="n">gradInput</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">gradOutput</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+		<span class="k">if</span> <span class="nb">filter</span><span class="o">.</span><span class="n">requires_grad</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+			<span class="n">gradFilter</span> <span class="o">=</span> <span class="kc">None</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">gradFilter</span> <span class="o">=</span> <span class="kc">None</span>
+			<span class="k">pass</span>
+			
+		<span class="k">return</span> <span class="n">gradInput</span><span class="p">,</span> <span class="n">gradFilter</span><span class="p">,</span> <span class="kc">None</span>
 
 <span class="k">class</span> <span class="nc">_delayLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
@@ -591,7 +654,7 @@
 	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
 		<span class="nb">super</span><span class="p">(</span><span class="n">_delayLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">inputSize</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+		<span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inputSize</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
 			<span class="n">inputChannels</span> <span class="o">=</span> <span class="n">inputSize</span>
 			<span class="n">inputHeight</span>   <span class="o">=</span> <span class="mi">1</span>
 			<span class="n">inputWidth</span>    <span class="o">=</span> <span class="mi">1</span>
@@ -687,6 +750,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
 </ul>
 
 <div class="relations">

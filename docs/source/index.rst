@@ -16,6 +16,7 @@ Welcome to SLAYER PyTorch's documentation!
    spikeLoss.rst
    spikeIO.rst
    learningStats.rst
+   optimizer.rst
 
 
 Indices and tables

@@ -116,7 +116,7 @@
 		<span class="n">startID</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 		<span class="n">stopID</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span> <span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 		
-		<span class="n">actualSpikes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span>
+		<span class="n">actualSpikes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">startID</span><span class="p">:</span><span class="n">stopID</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span>
 		<span class="n">desiredSpikes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">desiredClass</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">False</span><span class="p">])</span>
 		<span class="c1"># print(&#39;actualSpikes :&#39;, actualSpikes.flatten())</span>
 		<span class="c1"># print(&#39;desiredSpikes:&#39;, desiredSpikes.flatten())</span>
@@ -132,8 +132,40 @@
 		<span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span></div>
 	
 	<span class="k">def</span> <span class="nf">probSpikes</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDesired</span><span class="p">,</span> <span class="n">probSlidingWindow</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-		<span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not ProbSpikes&quot;</span>
+		<span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ProbSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not ProbSpikes&quot;</span>
 		<span class="k">pass</span></div>
+
+	<span class="c1"># def numSpikesII(self, membranePotential, desiredClass, numSpikeScale=1):</span>
+	<span class="c1"># 	assert self.errorDescriptor[&#39;type&#39;] == &#39;NumSpikes&#39;, &quot;Error type is not NumSpikes&quot;</span>
+	<span class="c1"># 	# desiredClass should be one-hot tensor with 5th dimension 1</span>
+	<span class="c1"># 	tgtSpikeRegion = self.errorDescriptor[&#39;tgtSpikeRegion&#39;]</span>
+	<span class="c1"># 	tgtSpikeCount  = self.errorDescriptor[&#39;tgtSpikeCount&#39;]</span>
+	<span class="c1"># 	startID = np.rint( tgtSpikeRegion[&#39;start&#39;] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
+	<span class="c1"># 	stopID  = np.rint( tgtSpikeRegion[&#39;stop&#39; ] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
+		
+	<span class="c1"># 	spikeOut = self.slayer.spike(membranePotential)</span>
+	<span class="c1"># 	spikeDes = torch.zeros(spikeOut.shape, dtype=spikeOut.dtype).to(spikeOut.device)</span>
+		
+	<span class="c1"># 	actualSpikes = torch.sum(spikeOut[...,startID:stopID], 4, keepdim=True).cpu().detach().numpy() * self.simulation[&#39;Ts&#39;]</span>
+	<span class="c1"># 	desiredSpikes = np.where(desiredClass.cpu() == True, tgtSpikeCount[True], tgtSpikeCount[False])</span>
+		
+	<span class="c1"># 	spikesAER = spikeOut.nonzero().tolist()</span>
+		
+	<span class="c1"># 	for n in range(spikeOut.shape[0]):</span>
+	<span class="c1"># 		for c in range(spikeOut.shape[1]):</span>
+	<span class="c1"># 			for h in range(spikeOut.shape[2]):</span>
+	<span class="c1"># 				for w in range(spikeOut.shape[3]):</span>
+	<span class="c1"># 					diff = desiredSpikes[n,c,h,w] - acutalSpikes[n,c,h,w]</span>
+	<span class="c1"># 					if diff &lt; 0:</span>
+	<span class="c1"># 						spikesAER[n,c,h,w] = spikesAER[n,c,h,w,:diff]</span>
+	<span class="c1"># 					elif diff &gt; 0:</span>
+	<span class="c1"># 						spikeDes[n,c,h,w,(actualInd[:diff] + startID)] = 1 / self.simulation[&#39;Ts&#39;]</span>
+	<span class="c1"># 						probableInds = np.random.randint(low=startID, high=stopID, size = diff)</span>
+							
+							
+		
+		
+		
 </pre></div>
 
           </div>
@@ -160,6 +192,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
 </ul>
 
 <div class="relations">

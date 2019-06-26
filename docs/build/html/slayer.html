@@ -129,7 +129,7 @@ If integer value is supplied, it refers to the number of neurons in channel dime
 </dl>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">delay</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">delayedSingal</span> <span class="o">=</span> <span class="n">delay</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">delayedSignal</span> <span class="o">=</span> <span class="n">delay</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Always clamp the delay after <code class="docutils literal notranslate"><span class="pre">optimizer.step()</span></code>.</p>
@@ -163,7 +163,7 @@ If the Torch tensor has size more than 1, its dimension  must match the dimensio
 <dl class="method">
 <dt id="slayer.spikeLayer.dense">
 <code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
-<dd><p>Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
+<dd><p>Returns a function that can be called to apply dense layer mapping to input tensor per time instance.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> applied for each time instance.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -247,6 +247,21 @@ The output tensor dimension is same as input.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="slayer.spikeLayer.pspLayer">
+<code class="descname">pspLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.pspLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.pspLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply psp filtering to spikes.
+The output tensor dimension is same as input.
+The initial psp filter corresponds to the neuron psp filter.
+The psp filter is learnable.
+NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.</p>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspLayer</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspLayer</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">pspLayer</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="slayer.spikeLayer.spike">
 <code class="descname">spike</code><span class="sig-paren">(</span><em>membranePotential</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.spike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.spike" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies spike function and refractory response.
@@ -312,6 +327,7 @@ The output tensor dimension is same as input.
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
 </ul>
 
 <div class="relations">
