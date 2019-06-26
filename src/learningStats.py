@@ -199,13 +199,14 @@ class learningStats():
 			print(self.testing.displayString())
 			self.linesPrinted += 1
 
-	def plot(self, figures=(1, 2), saveFig=False):
+	def plot(self, figures=(1, 2), saveFig=False, path=''):
 		'''
 		Plots the available learning statistics.
 
 		Arguments:
 			* ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.
 			* ``saveFig``(``bool``): flag to save figure into a file.
+			* ``path``: path to save the file. Defaule is ``''``.
 
 		Usage:
 
@@ -224,7 +225,7 @@ class learningStats():
 		plt.xlabel('Epoch')
 		plt.ylabel('Loss')
 		plt.legend()
-		if saveFig is True:	plt.savefig('loss.png')
+		if saveFig is True:	plt.savefig(path + 'loss.png')
 
 		plt.figure(figures[1])
 		plt.cla()
@@ -233,7 +234,7 @@ class learningStats():
 		plt.xlabel('Epoch')
 		plt.ylabel('Accuracy')
 		plt.legend() 
-		if saveFig is True:	plt.savefig('accuracy.png')
+		if saveFig is True:	plt.savefig(path + 'accuracy.png')
 
 	def save(self, filename=''):
 		'''

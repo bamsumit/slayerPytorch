@@ -141,10 +141,33 @@ class spikeLayer(torch.nn.Module):
 		>>> filteredSpike = snnLayer.psp(spike)
 		'''
 		return _pspFunction.apply(spike, self.srmKernel, self.simulation['Ts'])
+
+	def pspLayer(self):
+		'''
+		Returns a function that can be called to apply psp filtering to spikes.
+		The output tensor dimension is same as input.
+		The initial psp filter corresponds to the neuron psp filter.
+		The psp filter is learnable.
+		NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.
+		
+		Usage:
+		
+		>>> pspLayer = snnLayer.pspLayer()
+		>>> filteredSpike = pspLayer(spike)
+		'''
+		return _pspLayer(self.srmKernel, self.simulation['Ts'])
+
+	def replicateInTime(self, input, mode='nearest'):
+		Ns = int(self.simulation['tSample'] / self.simulation['Ts'])
+		N, C, H, W = input.shape
+		# output = F.pad(input.reshape(N, C, H, W, 1), pad=(Ns-1, 0, 0, 0, 0, 0), mode='replicate')
+		if mode == 'nearest':
+			output = F.interpolate(input.reshape(N, C, H, W, 1), size=(H, W, Ns), mode='nearest')
+		return output
 	
 	def dense(self, inFeatures, outFeatures, weightScale=10):	# default weight scaling of 10
 		'''
-		Retuns a function that can be called to apply dense layer mapping to input tensor per time instance.
+		Returns a function that can be called to apply dense layer mapping to input tensor per time instance.
 		It behaves similar to ``torch.nn.Linear`` applied for each time instance.
 
 		Arguments:
@@ -474,7 +497,40 @@ class _dropoutLayer(nn.Dropout3d):
 		inputShape = input.shape
 		return F.dropout3d(input.reshape((inputShape[0], -1, 1, 1, inputShape[-1])),
 						   self.p, self.training, self.inplace).reshape(inputShape)
-						
+
+class _pspLayer(nn.Conv3d):
+	'''
+	'''
+	def __init__(self, filter, Ts):
+		inChannels  = 1
+		outChannels = 1
+		kernel      = (1, 1, torch.numel(filter))
+
+		self.Ts = Ts
+
+		super(_pspLayer, self).__init__(inChannels, outChannels, kernel, bias=False) 
+
+		# print(filter)
+		# print(np.flip(filter.cpu().data.numpy()).reshape(self.weight.shape)) 
+		# print(torch.tensor(np.flip(filter.cpu().data.numpy()).copy()))
+
+		flippedFilter = torch.tensor(np.flip(filter.cpu().data.numpy()).copy()).reshape(self.weight.shape)
+
+		self.weight = torch.nn.Parameter(flippedFilter.to(self.weight.device), requires_grad = True)
+
+		self.pad = torch.nn.ConstantPad3d(padding=(torch.numel(filter)-1, 0, 0, 0, 0, 0), value=0)
+
+	def forward(self, input):
+		'''
+		'''
+		inShape = input.shape
+		inPadded = self.pad(input.reshape((inShape[0], 1, 1, -1, inShape[-1])))
+		# print((inShape[0], 1, 1, -1, inShape[-1]))
+		# print(input.reshape((inShape[0], 1, 1, -1, inShape[-1])).shape)
+		# print(inPadded.shape)
+		output = F.conv3d(inPadded, self.weight) * self.Ts
+		return output.reshape(inShape)
+
 class _spikeFunction(torch.autograd.Function):
 	'''
 	'''
@@ -550,7 +606,14 @@ class _pspFunction(torch.autograd.Function):
 		'''
 		'''
 		(filter, Ts) = ctx.saved_tensors
-		return slayerCuda.corr(gradOutput, filter, Ts), None, None
+		gradInput = slayerCuda.corr(gradOutput, filter, Ts)
+		if filter.requires_grad is False:
+			gradFilter = None
+		else:
+			gradFilter = None
+			pass
+			
+		return gradInput, gradFilter, None
 
 class _delayLayer(nn.Module):
 	'''
