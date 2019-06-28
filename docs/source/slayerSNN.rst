@@ -2,7 +2,7 @@ SLAYER PyTorch main
 ===================
 
 
-This modules bundles various SLAYER PyTorch modules as a single package.
+This module bundles various SLAYER PyTorch modules as a single package.
 The complete module can be imported as
 
 >>> import slayerSNN as snn

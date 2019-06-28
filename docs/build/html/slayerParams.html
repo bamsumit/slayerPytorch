@@ -32,9 +32,70 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-slayerParams">
-<span id="slayer-parameter"></span><h1>SLAYER Parameter<a class="headerlink" href="#module-slayerParams" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+  <div class="section" id="slayer-parameter">
+<h1>SLAYER Parameter<a class="headerlink" href="#slayer-parameter" title="Permalink to this headline">¶</a></h1>
+<p>This module provides a way to read the SLAYER configuration parameters from yaml file with dictionary like access.
+A typical yaml configuration file looks like this.</p>
+<div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">simulation</span><span class="p">:</span>
+   <span class="n">Ts</span><span class="p">:</span> <span class="mf">1.0</span>
+   <span class="n">tSample</span><span class="p">:</span> <span class="mi">1450</span>
+<span class="n">neuron</span><span class="p">:</span>
+   <span class="nb">type</span><span class="p">:</span>     <span class="n">SRMALPHA</span>
+   <span class="n">theta</span><span class="p">:</span>    <span class="mi">10</span>
+   <span class="n">tauSr</span><span class="p">:</span>    <span class="mf">1.0</span>
+   <span class="n">tauRef</span><span class="p">:</span>   <span class="mf">1.0</span>
+   <span class="n">scaleRef</span><span class="p">:</span> <span class="mi">2</span>     <span class="c1"># relative to theta</span>
+   <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>     <span class="c1"># relative to theta</span>
+   <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>
+<span class="n">layer</span><span class="p">:</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">34</span><span class="n">x34x2</span><span class="p">,</span> <span class="n">wScale</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">16</span><span class="n">c5z</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">2</span><span class="n">a</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">64</span><span class="n">c3z</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">2</span><span class="n">a</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">512</span><span class="p">}</span>
+   <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
+<span class="n">training</span><span class="p">:</span>
+   <span class="n">error</span><span class="p">:</span>
+      <span class="nb">type</span><span class="p">:</span> <span class="n">NumSpikes</span> <span class="c1">#ProbSpikes #NumSpikes</span>
+      <span class="n">tgtSpikeRegion</span><span class="p">:</span> <span class="p">{</span><span class="n">start</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="n">stop</span><span class="p">:</span> <span class="mi">350</span><span class="p">}</span>
+      <span class="n">tgtSpikeCount</span><span class="p">:</span>  <span class="p">{</span><span class="n">true</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span> <span class="n">false</span><span class="p">:</span> <span class="mi">10</span><span class="p">}</span>
+   <span class="n">path</span><span class="p">:</span>
+      <span class="n">out</span><span class="p">:</span>     <span class="n">Trained</span><span class="o">/</span>
+      <span class="ow">in</span><span class="p">:</span>      <span class="n">path_to_spike_files</span>
+      <span class="n">train</span><span class="p">:</span>   <span class="n">path_to_train_list</span>
+      <span class="n">test</span><span class="p">:</span>    <span class="n">path_to_test_list</span>
+</pre></div>
+</td></tr></table></div>
+<span class="target" id="module-slayerParams"></span><dl class="class">
 <dt id="slayerParams.yamlParams">
 <em class="property">class </em><code class="descclassname">slayerParams.</code><code class="descname">yamlParams</code><span class="sig-paren">(</span><em>parameter_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerParams.html#yamlParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerParams.yamlParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class reads yaml parameter file and allows dictionary like access to the members.</p>
