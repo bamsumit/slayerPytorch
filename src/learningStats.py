@@ -53,7 +53,7 @@ class learningStat():
 
 		Usage:
 
-		>>> loss = trainingStat.accuracy()
+		>>> accuracy = trainingStat.accuracy()
 		'''
 		if self.numSamples > 0 and self.correctSamples > 0:	
 			return self.correctSamples/self.numSamples	

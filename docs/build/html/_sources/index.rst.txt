@@ -12,6 +12,7 @@ Welcome to SLAYER PyTorch's documentation!
 
    slayerSNN.rst
    slayer.rst
+   slayerParams.rst
    spikeClassifier.rst
    spikeLoss.rst
    spikeIO.rst
