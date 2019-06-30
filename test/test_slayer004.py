@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-from slayer import yamlParams as SlayerParams
+from slayerParams import yamlParams as SlayerParams
 from slayer import spikeLayer
 from spikeLoss import spikeLoss
 from spikeClassifier import spikeClassifier as predict

@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 from slayer import spikeLayer
-from slayer import yamlParams as SlayerParams
+from slayerParams import yamlParams as SlayerParams
 import torch
 
 ###############################################################################
