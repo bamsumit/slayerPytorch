@@ -22,3 +22,26 @@ setup(
     ],
     cmdclass={'build_ext': BuildExtension}
 )
+
+from setuptools import setup
+from torch.utils.cpp_extension import BuildExtension, CUDAExtension
+
+setup(
+    name='slayerLoihiCuda',
+    ext_modules=[
+        CUDAExtension(
+            name='slayerLoihiCuda',
+            sources=[
+                'src/cuda/slayerLoihiKernels.cu'
+            ],
+            depends=[
+                'src/cuda/spikeLoihiKernels.h'
+            ],
+            extra_compile_args={
+                'cxx': ['-g'],
+                'nvcc': ['-arch=sm_60', '-O2', '-use_fast_math']
+            }
+        )
+    ],
+    cmdclass={'build_ext': BuildExtension}
+)
