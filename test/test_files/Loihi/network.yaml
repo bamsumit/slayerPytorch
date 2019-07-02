@@ -1,0 +1,24 @@
+simulation:
+    Ts: 0.1
+    tSample: 50
+    nSample: 1
+neuron:
+    type:     LOIHI
+    vThMant:  80 # 5
+    vDecay:   128
+    iDecay:   1024
+    refDelay: 1
+    wgtExp:   0
+    tauRho:   1
+    scaleRho: 1
+layer:
+    # wScale = 1 and sigma = 0 by default
+    - {dim: 250}
+    - {dim: 25}
+    - {dim: 1}
+training:
+    error:
+        type: SpikeTime #ProbSpikes #NumSpikes #SpikeTime
+        probSlidingWin: 20  # only valid for ProbSpikes
+        tgtSpikeRegion: {start: 10, stop: 40}    # only valid for NumSpikes and ProbSpikes
+        tgtSpikeCount:  {true: 10, false: 3}     # only valid for NumSpikes
