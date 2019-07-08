@@ -1,0 +1,21 @@
+simulation:
+    Ts: 1.0
+    tSample: 350
+neuron:
+    type:     LOIHI
+    vThMant:  80 # 5
+    vDecay:   128
+    iDecay:   1024
+    refDelay: 1
+    wgtExp:   0
+    tauRho:   1     # relative to theta 
+    scaleRho: 1
+training:
+    error:
+        type: NumSpikes #ProbSpikes #NumSpikes
+        tgtSpikeRegion: {start: 0, stop: 300}   # only valid for NumSpikes and ProbSpikes
+        tgtSpikeCount: {true: 60, false: 10}    # only valid for NumSpikes
+    path:
+        in:      NMNISTsmall/
+        train:   NMNISTsmall/train1K.txt
+        test:    NMNISTsmall/test100.txt

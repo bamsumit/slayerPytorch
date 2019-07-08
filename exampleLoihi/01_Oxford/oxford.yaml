@@ -1,0 +1,19 @@
+simulation:
+    Ts: 1
+    tSample: 1900
+neuron:
+    type:     LOIHI
+    vThMant:  80 # 5
+    vDecay:   128
+    iDecay:   1024
+    refDelay: 1
+    wgtExp:   0
+    tauRho:   1
+    scaleRho: 1
+layer:
+    - {dim: 200}
+    - {dim: 256}
+    - {dim: 200}
+training:
+    error:
+        type: SpikeTime #ProbSpikes #NumSpikes #SpikeTime

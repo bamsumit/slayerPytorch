@@ -220,8 +220,10 @@ class learningStats():
 		'''
 		plt.figure(figures[0])
 		plt.cla()
-		plt.semilogy(self.training.lossLog, label='Training')
-		plt.semilogy(self.testing .lossLog, label='Testing')
+		if len(self.training.lossLog) > 0:
+			plt.semilogy(self.training.lossLog, label='Training')
+		if len(self.testing.lossLog) > 0:
+			plt.semilogy(self.testing .lossLog, label='Testing')
 		plt.xlabel('Epoch')
 		plt.ylabel('Loss')
 		plt.legend()
@@ -229,8 +231,10 @@ class learningStats():
 
 		plt.figure(figures[1])
 		plt.cla()
-		plt.plot(self.training.accuracyLog, label='Training')
-		plt.plot(self.testing .accuracyLog, label='Testing')
+		if len(self.training.accuracyLog) > 0:
+			plt.plot(self.training.accuracyLog, label='Training')
+		if len(self.testing.accuracyLog) > 0:
+			plt.plot(self.testing .accuracyLog, label='Testing')
 		plt.xlabel('Epoch')
 		plt.ylabel('Accuracy')
 		plt.legend() 
@@ -261,5 +265,6 @@ class learningStats():
 
 		with open(filename + 'accuracy.txt', 'wt') as accuracy:
 			accuracy.write('#%11s %11s\r\n'%('Train', 'Test'))
-			for i in range(len(self.training.accuracyLog)):	
-				accuracy.write('%12.6g %12.6g \r\n'%(self.training.accuracyLog[i], self.testing.accuracyLog[i]))
+			if self.training.accuracyLog != [None]*len(self.training.accuracyLog):
+				for i in range(len(self.training.accuracyLog)):	
+					accuracy.write('%12.6g %12.6g \r\n'%(self.training.accuracyLog[i], self.testing.accuracyLog[i]))

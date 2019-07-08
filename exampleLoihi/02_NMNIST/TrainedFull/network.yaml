@@ -1,0 +1,24 @@
+simulation:
+    Ts: 1.0
+    tSample: 300
+    nSample: 12
+neuron:
+    type:     LOIHI
+    vThMant:  80 # 5
+    vDecay:   128
+    iDecay:   1024
+    refDelay: 1
+    wgtExp:   0
+    tauRho:   1     # relative to theta 
+    scaleRho: 1
+training:
+    error:
+        type: NumSpikes #ProbSpikes #NumSpikes
+        probSlidingWin: 20  # only valid for ProbSpikes
+        tgtSpikeRegion: {start: 0, stop: 300}    # only valid for NumSpikes and ProbSpikes
+        tgtSpikeCount: {true: 60, false: 10}    # only valid for NumSpikes
+    path:
+        # out:     OutFiles/
+        in:      /fast/sumit/NMNIST_34/
+        train:   /fast/sumit/NMNIST_34/train.txt
+        test:    /fast/sumit/NMNIST_34/test.txt
