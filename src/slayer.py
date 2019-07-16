@@ -470,12 +470,16 @@ class _poolLayer(nn.Conv3d):
 		'''
 		device = input.device
 		dtype  = input.dtype
-
+		
 		# add necessary padding for odd spatial dimension
-		if input.shape[2]%2 != 0:
-			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], 1, input.shape[3], input.shape[4]), dtype=dtype).to(device)), 2)
-		if input.shape[3]%2 != 0:
-			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], input.shape[2], 1, input.shape[4]), dtype=dtype).to(device)), 3)
+		# if input.shape[2]%2 != 0:
+			# input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], 1, input.shape[3], input.shape[4]), dtype=dtype).to(device)), 2)
+		# if input.shape[3]%2 != 0:
+			# input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], input.shape[2], 1, input.shape[4]), dtype=dtype).to(device)), 3)
+		if input.shape[2]%self.weight.shape[2] != 0:
+			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], input.shape[2]%self.weight.shape[2], input.shape[3], input.shape[4]), dtype=dtype).to(device)), 2)
+		if input.shape[3]%self.weight.shape[3] != 0:
+			input = torch.cat((input, torch.zeros((input.shape[0], input.shape[1], input.shape[2], input.shape[3]%self.weight.shape[3], input.shape[4]), dtype=dtype).to(device)), 3)
 
 		dataShape = input.shape
 

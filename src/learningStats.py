@@ -55,7 +55,7 @@ class learningStat():
 
 		>>> accuracy = trainingStat.accuracy()
 		'''
-		if self.numSamples > 0 and self.correctSamples > 0:	
+		if self.numSamples > 0 and self.correctSamples > 0:
 			return self.correctSamples/self.numSamples	
 		else:	
 			return None
