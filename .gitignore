@@ -15,4 +15,6 @@ docs_readthedocs/
 
 #
 runs/
-exampleLoihi/02_NMNSIT/NMNSITsmall/
+example/02_NMNIST_MLP/NMNISTsmall/
+example/03_NMNIST_CNN/NMNISTsmall/
+exampleLoihi/02_NMNIST/NMNISTsmall/

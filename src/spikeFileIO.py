@@ -375,9 +375,9 @@ def encode1DnumSpikes(filename, nID, tSt, tEn, nSp):
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
-def _showTD1D(TD, frameRate=24, preComputeFrames=True, repeat=False):
+def _showTD1D(TD, fig=None, frameRate=24, preComputeFrames=True, repeat=False, plot=True):
 	if TD.dim !=1:	raise Exception('Expected Td dimension to be 1. It was: {}'.format(TD.dim))
-	fig = plt.figure()
+	if fig is None:	fig = plt.figure()
 	interval = 1e3 / frameRate					# in ms
 	xDim = TD.x.max()+1
 	tMax = TD.t.max()
@@ -388,26 +388,27 @@ def _showTD1D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 
 	# ignore preComputeFrames
 
+	raster,   = plt.plot([], [], '.')
+	scanLine, = plt.plot([], [])
+	plt.axis((tMin -0.1*tMax, 1.1*tMax, -0.1*xDim, 1.1*xDim))
+
 	def animate(i):
-		fig.clear()
 		tEnd = (i + minFrame + 1) * interval
 		ind  = (TD.t < tEnd)
-		# plot raster
-		plt.plot(TD.t[ind], TD.x[ind], '.')
-		# plt.plot(TD.t[ind], TD.x[ind], '.', c=cm.hot(TD.p[ind]))
-		# plot raster scan line
-		plt.plot([tEnd + interval, tEnd + interval], [0, xDim])
-		plt.axis((tMin -0.1*tMax, 1.1*tMax, -0.1*xDim, 1.1*xDim))
-		plt.draw()
+		# update raster
+		raster.set_data(TD.t[ind], TD.x[ind])
+		# update raster scan line
+		scanLine.set_data([tEnd + interval, tEnd + interval], [0, xDim])
 
 
-	anim = animation.FuncAnimation(fig, animate, frames=maxFrame, interval=42, repeat=repeat) # 42 means playback at 23.809 fps
+	anim = animation.FuncAnimation(fig, animate, frames=maxFrame, interval=interval, repeat=repeat)
 
-	plt.show()
+	if plot is True:	plt.show()
+	return anim
 
-def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
+def _showTD2D(TD, fig=None, frameRate=24, preComputeFrames=True, repeat=False, plot=True):
 	if TD.dim != 2: 	raise Exception('Expected Td dimension to be 2. It was: {}'.format(TD.dim))
-	fig = plt.figure()
+	if fig is None:		fig = plt.figure()
 	interval = 1e3 / frameRate					# in ms
 	xDim = TD.x.max()+1
 	yDim = TD.y.max()+1
@@ -434,10 +435,12 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 			image.set_data(frame)
 			return image
 
-		anim = animation.FuncAnimation(fig, animate, frames=frames, interval=42, repeat=repeat)
+		anim = animation.FuncAnimation(fig, animate, frames=frames, interval=interval, repeat=repeat)
 
 	else:
 		minFrame = int(np.floor(TD.t.min() / interval))
+		maxFrame = int(np.ceil(TD.t.max() / interval ))
+		image    = plt.imshow(np.zeros((yDim, xDim, 3)))
 		def animate(i):
 			tStart = (i + minFrame) * interval
 			tEnd = (i + minFrame + 1) * interval
@@ -449,10 +452,10 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 			frame[TD.y[rInd], TD.x[rInd], 0] = 1
 			frame[TD.y[gInd], TD.x[gInd], 1] = 1
 			frame[TD.y[bInd], TD.x[bInd], 2] = 1
-			plot = plt.imshow(frame)
-			return plot
+			image.set_data(frame)
+			return image
 
-		anim = animation.FuncAnimation(fig, animate, interval=42, repeat=repeat) # 42 means playback at 23.809 fps
+		anim = animation.FuncAnimation(fig, animate, frames=maxFrame-minFrame, interval=interval, repeat=repeat)
 
 	# # save the animation as an mp4.  This requires ffmpeg or mencoder to be
 	# # installed.  The extra_args ensure that the x264 codec is used, so that
@@ -461,14 +464,16 @@ def _showTD2D(TD, frameRate=24, preComputeFrames=True, repeat=False):
 	# # http://matplotlib.sourceforge.net/api/animation_api.html
 	# if saveAnimation: anim.save('showTD_animation.mp4', fps=30)
 
-	plt.show()
+	if plot is True:	plt.show()
+	return anim
 
-def showTD(TD, frameRate=24, preComputeFrames=True, repeat=False):
+def showTD(TD, fig=None, frameRate=24, preComputeFrames=True, repeat=False):
 	'''
 	Visualizes TD event.
 
 	Arguments:
 		* ``TD``: spike event to visualize.
+		* ``fig``: figure to plot animation. Default is ``None``, in which case a figure is created.
 		* ``frameRate``: framerate of visualization.
 		* ``preComputeFrames``: flag to enable precomputation of frames for faster visualization. Default is ``True``.
 		* ``repeat``: flag to enable repeat of animation. Default is ``False``.
@@ -477,10 +482,36 @@ def showTD(TD, frameRate=24, preComputeFrames=True, repeat=False):
 
 	>>> showTD(TD)
 	'''
+
+	if fig is None:	fig = plt.figure()
 	if TD.dim == 1:
-		_showTD1D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)		
+		_showTD1D(TD, fig, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)		
 	else:
-		_showTD2D(TD, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)
+		_showTD2D(TD, fig, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat)
+
+def animTD(TD, fig=None, frameRate=24, preComputeFrames=True, repeat=True):
+	'''
+	Reutrn animation object for TD event.
+
+	Arguments:
+		* ``TD``: spike event to visualize.
+		* ``fig``: figure to plot animation. Default is ``None``, in which case a figure is created.
+		* ``frameRate``: framerate of visualization.
+		* ``preComputeFrames``: flag to enable precomputation of frames for faster visualization. Default is ``True``.
+		* ``repeat``: flag to enable repeat of animation. Default is ``True``.
+
+	Usage:
+
+	>>> anim = animTD(TD)
+	'''
+	if fig is None:	fig = plt.figure()
+	if TD.dim == 1:
+		anim =  _showTD1D(TD, fig, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat, plot=False)		
+	else:
+		anim =  _showTD2D(TD, fig, frameRate=frameRate, preComputeFrames=preComputeFrames, repeat=repeat, plot=False)
+
+	plt.close(anim._fig)
+	return anim
 
 
 # def spikeMat2TD(spikeMat, samplingTime=1):		# Sampling time in ms

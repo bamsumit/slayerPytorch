@@ -1,0 +1,19 @@
+simulation:
+    Ts: 1
+    tSample: 1900
+    nSample: 1
+neuron:
+    type:     SRMALPHA
+    theta:    10
+    tauSr:    10.0
+    tauRef:   1.0
+    scaleRef: 2     # relative to theta
+    tauRho:   1     # relative to theta
+    scaleRho: 1
+layer:
+    - {dim: 200}
+    - {dim: 256}
+    - {dim: 200}
+training:
+    error:
+        type: SpikeTime #ProbSpikes #NumSpikes #SpikeTime
