@@ -14,7 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="SLAYER Parameter" href="slayerParams.html" />
+    <link rel="next" title="SLAYER Loihi module" href="slayerLoihi.html" />
     <link rel="prev" title="SLAYER PyTorch main" href="slayerSNN.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -38,7 +38,7 @@
 <dt id="slayer.spikeLayer">
 <em class="property">class </em><code class="descclassname">slayer.</code><code class="descname">spikeLayer</code><span class="sig-paren">(</span><em>neuronDesc</em>, <em>simulationDesc</em>, <em>fullRefKernel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines the main engine of SLAYER.
-It provides necessary funcitons for describing a SNN layer.
+It provides necessary functions for describing a SNN layer.
 The input to output connection can be fully-connected, convolutional, or aggregation (pool)
 It also defines the psp operation and spiking mechanism of a spiking neuron in the layer.</p>
 <p><strong>Important:</strong> It assumes all the tensors that are being processed are 5 dimensional. 
@@ -53,12 +53,12 @@ dimension one.</em></p>
 <li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">neuronDesc</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerParams.yamlParams</span></code>): spiking neuron descriptor.</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">neuron</span><span class="p">:</span>
     <span class="nb">type</span><span class="p">:</span>     <span class="n">SRMALPHA</span>  <span class="c1"># neuron type</span>
-    <span class="n">theta</span><span class="p">:</span>    <span class="mi">10</span>        <span class="c1"># neuron threshold</span>
-    <span class="n">tauSr</span><span class="p">:</span>    <span class="mf">10.0</span>      <span class="c1"># neuron time constant</span>
-    <span class="n">tauRef</span><span class="p">:</span>   <span class="mf">1.0</span>       <span class="c1"># neuron refractory time constant</span>
-    <span class="n">scaleRef</span><span class="p">:</span> <span class="mi">2</span>         <span class="c1"># neuron refractory response scaling (relative to theta)</span>
-    <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>         <span class="c1"># spike function derivative time constant (relative to theta)</span>
-    <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>         <span class="c1"># spike function derivative scale factor</span>
+    <span class="n">theta</span><span class="p">:</span>    <span class="mi">10</span>    <span class="c1"># neuron threshold</span>
+    <span class="n">tauSr</span><span class="p">:</span>    <span class="mf">10.0</span>  <span class="c1"># neuron time constant</span>
+    <span class="n">tauRef</span><span class="p">:</span>   <span class="mf">1.0</span>   <span class="c1"># neuron refractory time constant</span>
+    <span class="n">scaleRef</span><span class="p">:</span> <span class="mi">2</span>     <span class="c1"># neuron refractory response scaling (relative to theta)</span>
+    <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>     <span class="c1"># spike function derivative time constant (relative to theta)</span>
+    <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>     <span class="c1"># spike function derivative scale factor</span>
 </pre></div>
 </div>
 </dd>
@@ -66,9 +66,8 @@ dimension one.</em></p>
 </li>
 <li><dl>
 <dt><code class="docutils literal notranslate"><span class="pre">simulationDesc</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerParams.yamlParams</span></code>): simulation descriptor</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simulation</span><span class="p">:</span>
-    <span class="n">Ts</span><span class="p">:</span> <span class="mf">1.0</span>
-    <span class="n">tSample</span><span class="p">:</span> <span class="mi">300</span>
-    <span class="n">nSample</span><span class="p">:</span> <span class="mi">12</span>         
+    <span class="n">Ts</span><span class="p">:</span> <span class="mf">1.0</span>         <span class="c1"># sampling time (ms)</span>
+    <span class="n">tSample</span><span class="p">:</span> <span class="mi">300</span>    <span class="c1"># time length of sample (ms)   </span>
 </pre></div>
 </div>
 </dd>
@@ -96,6 +95,7 @@ It behaves same as <code class="docutils literal notranslate"><span class="pre">
 <li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints):   zero-padding added to both sides of the input. Default: 0</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dilation</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): spacing between kernel elements. Default: 1</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">groups</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100</p></li>
 </ul>
 </dd>
 </dl>
@@ -170,6 +170,7 @@ It behaves similar to <code class="docutils literal notranslate"><span class="pr
 <li><p><code class="docutils literal notranslate"><span class="pre">inFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>, tuple of two ints, tuple of three ints): 
 dimension of input features (Width, Height, Channel) that represents the number of input neurons.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of output neurons.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 10</p></li>
 </ul>
 </dd>
 </dl>
@@ -304,12 +305,14 @@ The output tensor dimension is same as input.
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">
@@ -317,7 +320,7 @@ The output tensor dimension is same as input.
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="slayerSNN.html" title="previous chapter">SLAYER PyTorch main</a></li>
-      <li>Next: <a href="slayerParams.html" title="next chapter">SLAYER Parameter</a></li>
+      <li>Next: <a href="slayerLoihi.html" title="next chapter">SLAYER Loihi module</a></li>
   </ul></li>
 </ul>
 </div>

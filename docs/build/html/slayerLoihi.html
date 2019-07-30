@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>SLAYER Loihi module &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="SLAYER Parameter" href="slayerParams.html" />
+    <link rel="prev" title="SLAYER module" href="slayer.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-slayerLoihi">
+<span id="slayer-loihi-module"></span><h1>SLAYER Loihi module<a class="headerlink" href="#module-slayerLoihi" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="slayerLoihi.spikeLayer">
+<em class="property">class </em><code class="descclassname">slayerLoihi.</code><code class="descname">spikeLayer</code><span class="sig-paren">(</span><em>neuronDesc</em>, <em>simulationDesc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class defines the main engine of SLAYER Loihi module.
+It is derived from <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> with Loihi specific implementation for
+neuon model, weight quantization.
+All of the routines available for <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> are applicable.</p>
+<dl>
+<dt>Arguments:</dt><dd><ul>
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">neuronDesc</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerParams.yamlParams</span></code>): spiking neuron descriptor.</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">neuron</span><span class="p">:</span>
+    <span class="nb">type</span><span class="p">:</span>     <span class="n">LOIHI</span> <span class="c1"># neuron type</span>
+    <span class="n">vThMant</span><span class="p">:</span>  <span class="mi">80</span>    <span class="c1"># neuron threshold mantessa</span>
+    <span class="n">vDecay</span><span class="p">:</span>   <span class="mi">128</span>   <span class="c1"># compartment voltage decay</span>
+    <span class="n">iDecay</span><span class="p">:</span>   <span class="mi">1024</span>  <span class="c1"># compartment current decay</span>
+    <span class="n">refDelay</span><span class="p">:</span> <span class="mi">1</span>     <span class="c1"># refractory delay</span>
+    <span class="n">wgtExp</span><span class="p">:</span>   <span class="mi">0</span>     <span class="c1"># weight exponent</span>
+    <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>     <span class="c1"># spike function derivative time constant (relative to theta)</span>
+    <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>     <span class="c1"># spike function derivative scale factor</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+<li><dl>
+<dt><code class="docutils literal notranslate"><span class="pre">simulationDesc</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerParams.yamlParams</span></code>): simulation descriptor</dt><dd><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">simulation</span><span class="p">:</span>
+    <span class="n">Ts</span><span class="p">:</span> <span class="mf">1.0</span>         <span class="c1"># sampling time (ms)</span>
+    <span class="n">tSample</span><span class="p">:</span> <span class="mi">300</span>    <span class="c1"># time length of sample (ms)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">snnLayer</span> <span class="o">=</span> <span class="n">slayerLoihi</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">(</span><span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="slayerLoihi.spikeLayer.conv">
+<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a>. 
+The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+One can, however, skip the quantization step altogether as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>The arguments that are different from <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a> are listed.
+* <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
+* <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
+</dd>
+<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="slayerLoihi.spikeLayer.dense">
+<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a>. 
+The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+One can, however, skip the quantization step altogether as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>The arguments that are different from <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a> are listed.
+* <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
+* <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
+</dd>
+<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="slayerLoihi.spikeLayer.pool">
+<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a>. 
+The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+One can, however, skip the quantization step altogether as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>The arguments set is same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a>.</p>
+</dd>
+<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="slayerLoihi.spikeLayer.spikeLoihi">
+<code class="descname">spikeLoihi</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.spikeLoihi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.spikeLoihi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies Loihi neuron dynamics to weighted spike inputs and returns output spike tensor.
+The output tensor dimension is same as input.</p>
+<p>NOTE: This function is different than the default <code class="docutils literal notranslate"><span class="pre">spike</span></code> function which takes membrane potential (weighted spikes with psp filter applied).
+Since the dynamics is modeled internally, it just takes in weightedSpikes (NOT FILTERED WITH PSP) for accurate Loihi neuron simulation.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weightedSpikes</span></code>: input spikes weighted by their corresponding synaptic weights.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spikeLoihi</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="slayerLoihi.spikeLayer.spikeLoihiFull">
+<code class="descname">spikeLoihiFull</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.spikeLoihiFull"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.spikeLoihiFull" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies Loihi neuron dynamics to weighted spike inputs and returns output spike, voltage and current.
+The output tensor dimension is same as input.</p>
+<p>NOTE: This function does not have autograd routine in the computational graph.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weightedSpikes</span></code>: input spikes weighted by their corresponding synaptic weights.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span><span class="p">,</span> <span class="n">outVoltage</span><span class="p">,</span> <span class="n">outCurrent</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spikeLoihiFull</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="slayer.html" title="previous chapter">SLAYER module</a></li>
+      <li>Next: <a href="slayerParams.html" title="next chapter">SLAYER Parameter</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/slayerLoihi.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

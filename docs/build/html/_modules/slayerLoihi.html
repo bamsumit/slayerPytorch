@@ -1,0 +1,358 @@
+
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>slayerLoihi &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for slayerLoihi</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+
+<span class="n">CURRENT_SRC_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CURRENT_SRC_DIR</span> <span class="o">+</span> <span class="s2">&quot;/../../slayerPyTorch/src&quot;</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
+<span class="kn">import</span> <span class="nn">torch.nn.functional</span> <span class="k">as</span> <span class="nn">F</span>
+<span class="kn">import</span> <span class="nn">slayer</span>
+<span class="kn">import</span> <span class="nn">slayerCuda</span>
+<span class="kn">import</span> <span class="nn">slayerLoihiCuda</span>
+<span class="kn">from</span> <span class="nn">quantizeParams</span> <span class="k">import</span> <span class="n">quantizeWeights</span>
+
+<div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class defines the main engine of SLAYER Loihi module.</span>
+<span class="sd">    It is derived from ``slayer.spikeLayer`` with Loihi specific implementation for</span>
+<span class="sd">    neuon model, weight quantization.</span>
+<span class="sd">    All of the routines available for ``slayer.spikeLayer`` are applicable.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``neuronDesc`` (``slayerParams.yamlParams``): spiking neuron descriptor.</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                neuron:</span>
+<span class="sd">                    type:     LOIHI # neuron type</span>
+<span class="sd">                    vThMant:  80    # neuron threshold mantessa</span>
+<span class="sd">                    vDecay:   128   # compartment voltage decay</span>
+<span class="sd">                    iDecay:   1024  # compartment current decay</span>
+<span class="sd">                    refDelay: 1     # refractory delay</span>
+<span class="sd">                    wgtExp:   0     # weight exponent</span>
+<span class="sd">                    tauRho:   1     # spike function derivative time constant (relative to theta)</span>
+<span class="sd">                    scaleRho: 1     # spike function derivative scale factor</span>
+<span class="sd">        * ``simulationDesc`` (``slayerParams.yamlParams``): simulation descriptor</span>
+<span class="sd">            .. code-block:: python</span>
+
+<span class="sd">                simulation:</span>
+<span class="sd">                    Ts: 1.0         # sampling time (ms)</span>
+<span class="sd">                    tSample: 300    # time length of sample (ms)</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    &gt;&gt;&gt; snnLayer = slayerLoihi.spikeLayer(neuronDesc, simulationDesc)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">neuronDesc</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LOIHI&#39;</span><span class="p">:</span>
+            <span class="n">neuronDesc</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">neuronDesc</span><span class="p">[</span><span class="s1">&#39;vThMant&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="mi">2</span><span class="o">**</span><span class="mi">6</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Max PSP kernel:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Scaling neuron[scaleRho] by Max PSP Kernel @slayerLoihi&#39;</span><span class="p">)</span>
+        <span class="n">neuronDesc</span><span class="p">[</span><span class="s1">&#39;scaleRho&#39;</span><span class="p">]</span> <span class="o">/=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span>
+        
+    <span class="k">def</span> <span class="nf">calculateSrmKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">srmKernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculateLoihiPSP</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">srmKernel</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">calculateRefKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SCALE</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="n">refKernel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculateLoihiRefKernel</span><span class="p">(</span><span class="n">SCALE</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">refKernel</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">_calculateLoihiPSP</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># u = [0]</span>
+        <span class="c1"># v = [0]</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">6</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;wgtExp&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="p">)</span> <span class="c1"># +1 to compensate for weight resolution of 2 for mixed synapse mode</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">)</span> <span class="c1"># we do not consider bias in slayer</span>
+        <span class="k">while</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">uNext</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span> <span class="n">u</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;iDecay&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span> <span class="p">)</span>
+            <span class="n">vNext</span> <span class="o">=</span> <span class="p">(</span> <span class="p">(</span> <span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;vDecay&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span> <span class="p">)</span> <span class="o">+</span> <span class="n">uNext</span> <span class="c1"># again, we do not consider bias in slayer</span>
+            <span class="n">u</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">uNext</span><span class="p">)</span>
+            <span class="n">v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vNext</span><span class="p">)</span>
+
+        <span class="k">return</span>  <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">v</span><span class="p">]</span> <span class="c1"># scale by half to compensate for 1 in the initial weight</span>
+
+    <span class="k">def</span> <span class="nf">_calculateLoihiRefKernel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">SCALE</span><span class="o">=</span><span class="mi">1000</span><span class="p">):</span>
+        <span class="n">absoluteRefKernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;refDelay&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">SCALE</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span>
+        <span class="n">absoluteRefKernel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">relativeRefKernel</span> <span class="o">=</span> <span class="p">[</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="p">]</span>
+        <span class="k">while</span> <span class="n">relativeRefKernel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">nextRefKernel</span> <span class="o">=</span> <span class="p">(</span> <span class="n">relativeRefKernel</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span> <span class="p">(</span><span class="mi">1</span><span class="o">&lt;&lt;</span><span class="mi">12</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;vDecay&#39;</span><span class="p">])</span> <span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span> 
+            <span class="n">relativeRefKernel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">nextRefKernel</span><span class="p">)</span>
+        <span class="n">refKernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">(</span><span class="n">absoluteRefKernel</span><span class="p">,</span> <span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">relativeRefKernel</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">refKernel</span>
+
+<div class="viewcode-block" id="spikeLayer.spikeLoihi"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer.spikeLoihi">[docs]</a>    <span class="k">def</span> <span class="nf">spikeLoihi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weightedSpikes</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Applies Loihi neuron dynamics to weighted spike inputs and returns output spike tensor.</span>
+<span class="sd">        The output tensor dimension is same as input.</span>
+
+<span class="sd">        NOTE: This function is different than the default ``spike`` function which takes membrane potential (weighted spikes with psp filter applied).</span>
+<span class="sd">        Since the dynamics is modeled internally, it just takes in weightedSpikes (NOT FILTERED WITH PSP) for accurate Loihi neuron simulation.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``weightedSpikes``: input spikes weighted by their corresponding synaptic weights.</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        &gt;&gt;&gt; outSpike = snnLayer.spikeLoihi(weightedSpikes)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">_spike</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spikeLayer.spikeLoihiFull"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer.spikeLoihiFull">[docs]</a>    <span class="k">def</span> <span class="nf">spikeLoihiFull</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weightedSpikes</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Applies Loihi neuron dynamics to weighted spike inputs and returns output spike, voltage and current.</span>
+<span class="sd">        The output tensor dimension is same as input.</span>
+
+<span class="sd">        NOTE: This function does not have autograd routine in the computational graph.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``weightedSpikes``: input spikes weighted by their corresponding synaptic weights.</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        &gt;&gt;&gt; outSpike, outVoltage, outCurrent = snnLayer.spikeLoihiFull(weightedSpikes)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">_spike</span><span class="o">.</span><span class="n">loihi</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.dense`. </span>
+<span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
+<span class="sd">        One can, however, skip the quantization step altogether as well.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.dense` are listed.</span>
+<span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
+<span class="sd">            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">            Same as :meth:`slayer.spikeLayer.dense`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">quantize</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer.conv">[docs]</a>    <span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.conv`. </span>
+<span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
+<span class="sd">        One can, however, skip the quantization step altogether as well.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.</span>
+<span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
+<span class="sd">            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">            Same as :meth:`slayer.spikeLayer.conv`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">quantize</span><span class="p">)</span></div>
+    
+<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../slayerLoihi.html#slayerLoihi.spikeLayer.pool">[docs]</a>    <span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.pool`. </span>
+<span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
+<span class="sd">        One can, however, skip the quantization step altogether as well.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            The arguments set is same as :meth:`slayer.spikeLayer.pool`.</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">            Same as :meth:`slayer.spikeLayer.pool`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">requiredWeight</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="c1"># print(&#39;Required pool layer weight =&#39;, requiredWeight)</span>
+        <span class="k">return</span> <span class="n">slayer</span><span class="o">.</span><span class="n">_poolLayer</span><span class="p">(</span><span class="n">requiredWeight</span><span class="o">/</span> <span class="mf">1.1</span><span class="p">,</span> <span class="c1"># to compensate for maxPsp</span>
+                          <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">getVoltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">):</span>
+        <span class="n">Ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;tSample&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
+        <span class="n">voltage</span> <span class="o">=</span> <span class="n">membranePotential</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Ns</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">voltage</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">500</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">voltage</span><span class="p">)</span></div>
+
+<span class="k">class</span> <span class="nc">_denseLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">_denseLayer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span><span class="o">=</span><span class="kc">True</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_denseLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+                            <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+                            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">_convLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">_convLayer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span><span class="o">=</span><span class="kc">True</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_convLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>
+ 
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+                            <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
+                            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> 
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_spike</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">loihi</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+        <span class="n">iDecay</span> <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;iDecay&#39;</span><span class="p">]</span>
+        <span class="n">vDecay</span> <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;vDecay&#39;</span><span class="p">]</span>
+        <span class="n">theta</span>  <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
+        <span class="c1"># wScale = 1 &lt;&lt; (6 + neuron[&#39;wgtExp&#39;])</span>
+        <span class="n">wgtExp</span> <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;wgtExp&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">weightedSpikes</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
+            <span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span>
+        
+        <span class="n">spike</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">slayerLoihiCuda</span><span class="o">.</span><span class="n">getSpikes</span><span class="p">(</span><span class="n">weightedSpikes</span> <span class="o">*</span> <span class="n">Ts</span><span class="p">,</span> <span class="n">wgtExp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">iDecay</span><span class="p">,</span> <span class="n">vDecay</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">spike</span><span class="o">/</span><span class="n">Ts</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">weightedSpikes</span><span class="p">,</span> <span class="n">srmKernel</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+        <span class="n">device</span> <span class="o">=</span> <span class="n">weightedSpikes</span><span class="o">.</span><span class="n">device</span>
+        <span class="n">dtype</span>  <span class="o">=</span> <span class="n">weightedSpikes</span><span class="o">.</span><span class="n">dtype</span>
+        <span class="n">pdfScale</span>        <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;scaleRho&#39;</span><span class="p">]</span>                 <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">pdfTimeConstant</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;tauRho&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># needs to be scaled by theta</span>
+        <span class="n">threshold</span>       <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>                    <span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">Ts</span>              <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">Ts</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">srmKernel</span>       <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Variable</span><span class="p">(</span><span class="n">srmKernel</span><span class="o">.</span><span class="n">clone</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">(),</span> <span class="n">requires_grad</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        
+        <span class="n">spike</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">_spike</span><span class="o">.</span><span class="n">loihi</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+
+        <span class="n">ctx</span><span class="o">.</span><span class="n">save_for_backward</span><span class="p">(</span><span class="n">voltage</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">pdfTimeConstant</span><span class="p">,</span> <span class="n">pdfScale</span><span class="p">,</span> <span class="n">srmKernel</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">spike</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">backward</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">gradOutput</span><span class="p">):</span>
+        <span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="n">pdfTimeConstant</span><span class="p">,</span> <span class="n">pdfScale</span><span class="p">,</span> <span class="n">srmKernel</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">saved_tensors</span>
+        <span class="n">spikePdf</span> <span class="o">=</span> <span class="n">pdfScale</span> <span class="o">/</span> <span class="n">pdfTimeConstant</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span> <span class="o">-</span><span class="n">torch</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">membranePotential</span> <span class="o">-</span> <span class="n">threshold</span><span class="p">)</span> <span class="o">/</span> <span class="n">pdfTimeConstant</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">corr</span><span class="p">(</span><span class="n">gradOutput</span> <span class="o">*</span> <span class="n">spikePdf</span><span class="p">,</span> <span class="n">srmKernel</span><span class="p">,</span> <span class="n">Ts</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2019, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

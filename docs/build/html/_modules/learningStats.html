@@ -34,268 +34,277 @@
 <span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <div class="viewcode-block" id="learningStat"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat">[docs]</a><span class="k">class</span> <span class="nc">learningStat</span><span class="p">():</span>
-	<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">	This class collect the learning statistics over the epoch.</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class collect the learning statistics over the epoch.</span>
 
-<span class="sd">	Usage:</span>
+<span class="sd">    Usage:</span>
 
-<span class="sd">	This class is designed to be used with learningStats instance although it can be used separately.</span>
+<span class="sd">    This class is designed to be used with learningStats instance although it can be used separately.</span>
 
-<span class="sd">	&gt;&gt;&gt; trainingStat = learningStat()</span>
-<span class="sd">	&#39;&#39;&#39;</span>
-	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="kc">None</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="kc">None</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span> <span class="o">=</span> <span class="p">[]</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span> <span class="o">=</span> <span class="p">[]</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="sd">    &gt;&gt;&gt; trainingStat = learningStat()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="learningStat.reset"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.reset">[docs]</a>	<span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Reset the learning staistics. </span>
-<span class="sd">		This should usually be done before the start of an epoch so that new statistics counts can be accumulated.</span>
+<div class="viewcode-block" id="learningStat.reset"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Reset the learning staistics. </span>
+<span class="sd">        This should usually be done before the start of an epoch so that new statistics counts can be accumulated.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		&gt;&gt;&gt; trainingStat.reset()</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span></div>
+<span class="sd">        &gt;&gt;&gt; trainingStat.reset()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">=</span> <span class="mi">0</span></div>
 
-<div class="viewcode-block" id="learningStat.loss"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.loss">[docs]</a>	<span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Returns the average loss calculated from the point the stats was reset.</span>
+<div class="viewcode-block" id="learningStat.loss"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.loss">[docs]</a>    <span class="k">def</span> <span class="nf">loss</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the average loss calculated from the point the stats was reset.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		&gt;&gt;&gt; loss = trainingStat.loss()</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>	
-			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span>	
-		<span class="k">else</span><span class="p">:</span>	
-			<span class="k">return</span> <span class="kc">None</span></div>
+<span class="sd">        &gt;&gt;&gt; loss = trainingStat.loss()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span> 
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossSum</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> 
+        <span class="k">else</span><span class="p">:</span>   
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="learningStat.accuracy"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.accuracy">[docs]</a>	<span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Returns the average accuracy calculated from the point the stats was reset.</span>
+<div class="viewcode-block" id="learningStat.accuracy"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.accuracy">[docs]</a>    <span class="k">def</span> <span class="nf">accuracy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns the average accuracy calculated from the point the stats was reset.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		&gt;&gt;&gt; accuracy = trainingStat.accuracy()</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>	
-			<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span>	
-		<span class="k">else</span><span class="p">:</span>	
-			<span class="k">return</span> <span class="kc">None</span></div>
+<span class="sd">        &gt;&gt;&gt; accuracy = trainingStat.accuracy()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">correctSamples</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">numSamples</span>  
+        <span class="k">else</span><span class="p">:</span>   
+            <span class="k">return</span> <span class="kc">None</span></div>
 
-<div class="viewcode-block" id="learningStat.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.update">[docs]</a>	<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Updates the stats of the current session and resets the measures for next session.</span>
+<div class="viewcode-block" id="learningStat.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStat.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Updates the stats of the current session and resets the measures for next session.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		&gt;&gt;&gt; trainingStat.update()</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="n">currentLoss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentLoss</span><span class="p">)</span>
-		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
-		<span class="k">else</span><span class="p">:</span>
-			<span class="k">if</span> <span class="n">currentLoss</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span><span class="p">:</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">True</span>
-			<span class="k">else</span><span class="p">:</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
-			<span class="c1"># self.minloss = self.minloss if self.minloss &lt; currentLoss else currentLoss</span>
+<span class="sd">        &gt;&gt;&gt; trainingStat.update()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">currentLoss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lossLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentLoss</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">currentLoss</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span> <span class="o">=</span> <span class="n">currentLoss</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bestLoss</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># self.minloss = self.minloss if self.minloss &lt; currentLoss else currentLoss</span>
 
-		<span class="n">currentAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentAccuracy</span><span class="p">)</span>
-		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
-		<span class="k">else</span><span class="p">:</span>
-			<span class="k">if</span> <span class="n">currentAccuracy</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span><span class="p">:</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">True</span>
-			<span class="k">else</span><span class="p">:</span>
-				<span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span></div>
-			<span class="c1"># self.maxAccuracy = self.maxAccuracy if self.maxAccuracy &gt; currentAccuracy else currentAccuracy</span>
+        <span class="n">currentAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">accuracyLog</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">currentAccuracy</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">currentAccuracy</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span> <span class="o">=</span> <span class="n">currentAccuracy</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bestAccuracy</span> <span class="o">=</span> <span class="kc">False</span></div>
+            <span class="c1"># self.maxAccuracy = self.maxAccuracy if self.maxAccuracy &gt; currentAccuracy else currentAccuracy</span>
 
-	<span class="k">def</span> <span class="nf">displayString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
-		<span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
-		<span class="n">minloss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span>
-		<span class="n">maxAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span>
+    <span class="k">def</span> <span class="nf">displayString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+        <span class="n">accuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+        <span class="n">minloss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">minloss</span>
+        <span class="n">maxAccuracy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxAccuracy</span>
 
-		<span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>	<span class="c1"># no stats available</span>
-			<span class="k">return</span> <span class="kc">None</span>
-		<span class="k">elif</span> <span class="n">accuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
-			<span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>	<span class="c1"># accuracy and minloss stats is not available</span>
-				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
-			<span class="k">else</span><span class="p">:</span>	<span class="c1"># accuracy is not available but minloss is available</span>
-				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12.5g</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">)</span>
-		<span class="k">else</span><span class="p">:</span>
-			<span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># minloss and maxAccuracy is available</span>
-				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">        </span><span class="si">%-12s</span><span class="s1">   </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1">        </span><span class="si">%-10s</span><span class="s1"> &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
-			<span class="k">else</span><span class="p">:</span>	<span class="c1"># all stats are available</span>
-				<span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12.5g</span><span class="s1">)  </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1"> (max = </span><span class="si">%-10.5g</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">maxAccuracy</span><span class="p">)</span></div>
+        <span class="k">if</span> <span class="n">loss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>    <span class="c1"># no stats available</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="n">accuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+            <span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># accuracy and minloss stats is not available</span>
+                <span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>   <span class="c1"># accuracy is not available but minloss is available</span>
+                <span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12.5g</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">minloss</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">maxAccuracy</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="c1"># minloss and maxAccuracy is available</span>
+                <span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1">        </span><span class="si">%-12s</span><span class="s1">   </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1">        </span><span class="si">%-10s</span><span class="s1"> &#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>   <span class="c1"># all stats are available</span>
+                <span class="k">return</span> <span class="s1">&#39;loss = </span><span class="si">%-12.5g</span><span class="s1"> (min = </span><span class="si">%-12.5g</span><span class="s1">)  </span><span class="se">\t</span><span class="s1">accuracy = </span><span class="si">%-10.5g</span><span class="s1"> (max = </span><span class="si">%-10.5g</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">minloss</span><span class="p">,</span> <span class="n">accuracy</span><span class="p">,</span> <span class="n">maxAccuracy</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="learningStats"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats">[docs]</a><span class="k">class</span> <span class="nc">learningStats</span><span class="p">():</span>
-	<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">	This class provides mechanism to collect learning stats for training and testing, and displaying them efficiently.</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class provides mechanism to collect learning stats for training and testing, and displaying them efficiently.</span>
 
-<span class="sd">	Usage:</span>
+<span class="sd">    Usage:</span>
 
-<span class="sd">	.. code-block:: python</span>
-<span class="sd">	</span>
-<span class="sd">		stats = learningStats()</span>
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">    </span>
+<span class="sd">        stats = learningStats()</span>
 
-<span class="sd">		for epoch in range(100):</span>
-<span class="sd">			tSt = datetime.now()</span>
+<span class="sd">        for epoch in range(100):</span>
+<span class="sd">            tSt = datetime.now()</span>
 
-<span class="sd">			stats.training.reset()</span>
-<span class="sd">			for i in trainingLoop:</span>
-<span class="sd">				# other main stuffs</span>
-<span class="sd">				stats.training.correctSamples += numberOfCorrectClassification</span>
-<span class="sd">				stats.training.numSamples     += numberOfSamplesProcessed</span>
-<span class="sd">				stats.training.lossSum        += currentLoss</span>
-<span class="sd">				stats.print(epoch, i, (datetime.now() - tSt).total_seconds())</span>
-<span class="sd">			stats.training.update()</span>
+<span class="sd">            stats.training.reset()</span>
+<span class="sd">            for i in trainingLoop:</span>
+<span class="sd">                # other main stuffs</span>
+<span class="sd">                stats.training.correctSamples += numberOfCorrectClassification</span>
+<span class="sd">                stats.training.numSamples     += numberOfSamplesProcessed</span>
+<span class="sd">                stats.training.lossSum        += currentLoss</span>
+<span class="sd">                stats.print(epoch, i, (datetime.now() - tSt).total_seconds())</span>
+<span class="sd">            stats.training.update()</span>
 
-<span class="sd">			stats.testing.reset()</span>
-<span class="sd">			for i in testingLoop</span>
-<span class="sd">				# other main stuffs</span>
-<span class="sd">				stats.testing.correctSamples += numberOfCorrectClassification</span>
-<span class="sd">				stats.testing.numSamples     += numberOfSamplesProcessed</span>
-<span class="sd">				stats.testing.lossSum        += currentLoss</span>
-<span class="sd">				stats.print(epoch, i)</span>
-<span class="sd">			stats.training.update()</span>
+<span class="sd">            stats.testing.reset()</span>
+<span class="sd">            for i in testingLoop</span>
+<span class="sd">                # other main stuffs</span>
+<span class="sd">                stats.testing.correctSamples += numberOfCorrectClassification</span>
+<span class="sd">                stats.testing.numSamples     += numberOfSamplesProcessed</span>
+<span class="sd">                stats.testing.lossSum        += currentLoss</span>
+<span class="sd">                stats.print(epoch, i)</span>
+<span class="sd">            stats.training.update()</span>
 
-<span class="sd">	&#39;&#39;&#39;</span>
-	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">0</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span>  <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training</span> <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing</span>  <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
 
-<div class="viewcode-block" id="learningStats.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.update">[docs]</a>	<span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Updates the stats for training and testing and resets the measures for next session.</span>
+<div class="viewcode-block" id="learningStats.update"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.update">[docs]</a>    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Updates the stats for training and testing and resets the measures for next session.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		&gt;&gt;&gt; stats.update()</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
+<span class="sd">        &gt;&gt;&gt; stats.update()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="learningStats.print"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.print">[docs]</a>	<span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Prints the available learning statistics from the current session on the console.</span>
-<span class="sd">		For Linux systems, prints the data on same terminal space (might not work properly on other systems).</span>
+<div class="viewcode-block" id="learningStats.print"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.print">[docs]</a>    <span class="k">def</span> <span class="nf">print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Prints the available learning statistics from the current session on the console.</span>
+<span class="sd">        For Linux systems, prints the data on same terminal space (might not work properly on other systems).</span>
 
-<span class="sd">		Arguments:</span>
-<span class="sd">			* ``epoch``: epoch counter to display (required).</span>
-<span class="sd">			* ``iter``: iteration counter to display (not required).</span>
-<span class="sd">			* ``timeElapsed``: runtime information (not required).</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``epoch``: epoch counter to display (required).</span>
+<span class="sd">            * ``iter``: iteration counter to display (not required).</span>
+<span class="sd">            * ``timeElapsed``: runtime information (not required).</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		.. code-block:: python</span>
+<span class="sd">        .. code-block:: python</span>
 
-<span class="sd">			# prints stats with epoch index provided</span>
-<span class="sd">			stats.print(epoch) </span>
+<span class="sd">            # prints stats with epoch index provided</span>
+<span class="sd">            stats.print(epoch) </span>
 
-<span class="sd">			# prints stats with epoch index and iteration index provided</span>
-<span class="sd">			stats.print(epoch, iter=i) </span>
-<span class="sd">			</span>
-<span class="sd">			# prints stats with epoch index, iteration index and time elapsed information provided</span>
-<span class="sd">			stats.print(epoch, iter=i, timeElapsed=time) </span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[</span><span class="si">%d</span><span class="s1">A&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span><span class="p">))</span>
-		
-		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="sd">            # prints stats with epoch index and iteration index provided</span>
+<span class="sd">            stats.print(epoch, iter=i) </span>
+<span class="sd">            </span>
+<span class="sd">            # prints stats with epoch index, iteration index and time elapsed information provided</span>
+<span class="sd">            stats.print(epoch, iter=i, timeElapsed=time) </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[</span><span class="si">%d</span><span class="s1">A&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">=</span> <span class="mi">1</span>
 
-		<span class="n">epochStr</span>   <span class="o">=</span> <span class="s1">&#39;Epoch : </span><span class="si">%10d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
-		<span class="n">iterStr</span>    <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="nb">iter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;(i = </span><span class="si">%7d</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
-		<span class="n">profileStr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">timeElapsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;, </span><span class="si">%12.4f</span><span class="s1"> ms elapsed&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">timeElapsed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+        <span class="n">epochStr</span>   <span class="o">=</span> <span class="s1">&#39;Epoch : </span><span class="si">%10d</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span>
+        <span class="n">iterStr</span>    <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="nb">iter</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;(i = </span><span class="si">%7d</span><span class="s1">)&#39;</span><span class="o">%</span><span class="p">(</span><span class="nb">iter</span><span class="p">)</span>
+        <span class="n">profileStr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">timeElapsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;, </span><span class="si">%12.4f</span><span class="s1"> ms elapsed&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">timeElapsed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
 
-		<span class="nb">print</span><span class="p">(</span><span class="n">epochStr</span> <span class="o">+</span> <span class="n">iterStr</span> <span class="o">+</span> <span class="n">profileStr</span><span class="p">)</span>
-		<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">2</span>
-		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-			<span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
-			<span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span></div>
+        <span class="nb">print</span><span class="p">(</span><span class="n">epochStr</span> <span class="o">+</span> <span class="n">iterStr</span> <span class="o">+</span> <span class="n">profileStr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">()</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">displayString</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="learningStats.plot"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.plot">[docs]</a>	<span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">saveFig</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Plots the available learning statistics.</span>
+<div class="viewcode-block" id="learningStats.plot"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">saveFig</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Plots the available learning statistics.</span>
 
-<span class="sd">		Arguments:</span>
-<span class="sd">			* ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.</span>
-<span class="sd">			* ``saveFig``(``bool``): flag to save figure into a file.</span>
-<span class="sd">			* ``path``: path to save the file. Defaule is ``&#39;&#39;``.</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``figures``: Index of figure ID to plot on. Default is figure(1) for loss plot and figure(2) for accuracy plot.</span>
+<span class="sd">            * ``saveFig``(``bool``): flag to save figure into a file.</span>
+<span class="sd">            * ``path``: path to save the file. Defaule is ``&#39;&#39;``.</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		.. code-block:: python</span>
+<span class="sd">        .. code-block:: python</span>
 
-<span class="sd">			# plot stats</span>
-<span class="sd">			stats.plot() </span>
+<span class="sd">            # plot stats</span>
+<span class="sd">            stats.plot() </span>
 
-<span class="sd">			# plot stats figures specified</span>
-<span class="sd">			stats.print(figures=(10, 11)) </span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
-		<span class="k">if</span> <span class="n">saveFig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;loss.png&#39;</span><span class="p">)</span>
+<span class="sd">            # plot stats figures specified</span>
+<span class="sd">            stats.print(figures=(10, 11)) </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossLog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">lossLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Loss&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">saveFig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span> 
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;loss.png&#39;</span><span class="p">)</span>
+            <span class="c1"># plt.close()</span>
 
-		<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">)</span>
-		<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span> 
-		<span class="k">if</span> <span class="n">saveFig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>	<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;accuracy.png&#39;</span><span class="p">)</span></div>
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figures</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Training&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testing</span> <span class="o">.</span><span class="n">accuracyLog</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Testing&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Epoch&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span> 
+        <span class="k">if</span> <span class="n">saveFig</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span> 
+            <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;accuracy.png&#39;</span><span class="p">)</span></div>
+            <span class="c1"># plt.close()</span>
 
-<div class="viewcode-block" id="learningStats.save"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.save">[docs]</a>	<span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Saves the learning satatistics logs.</span>
+<div class="viewcode-block" id="learningStats.save"><a class="viewcode-back" href="../learningStats.html#learningStats.learningStats.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Saves the learning satatistics logs.</span>
 
-<span class="sd">		Arguments:</span>
-<span class="sd">			* ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		.. code-block:: python</span>
+<span class="sd">        .. code-block:: python</span>
 
-<span class="sd">			# save stats</span>
-<span class="sd">			stats.save() </span>
+<span class="sd">            # save stats</span>
+<span class="sd">            stats.save() </span>
 
-<span class="sd">			# save stats filename specified</span>
-<span class="sd">			stats.save(filename=&#39;Run101-0.001-&#39;) # Run101-0.001-accuracy.txt and Run101-0.001-loss.txt</span>
-<span class="sd">		&#39;&#39;&#39;</span>
+<span class="sd">            # save stats filename specified</span>
+<span class="sd">            stats.save(filename=&#39;Run101-0.001-&#39;) # Run101-0.001-accuracy.txt and Run101-0.001-loss.txt</span>
+<span class="sd">        &#39;&#39;&#39;</span>
 
-		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;loss.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">loss</span><span class="p">:</span>
-			<span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
-			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">)):</span>	
-				<span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;loss.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">loss</span><span class="p">:</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">)):</span> 
+                <span class="n">loss</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
 
-		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;accuracy.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">accuracy</span><span class="p">:</span>
-			<span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
-			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">)):</span>	
-				<span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span></div></div>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span> <span class="o">+</span> <span class="s1">&#39;accuracy.txt&#39;</span><span class="p">,</span> <span class="s1">&#39;wt&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">accuracy</span><span class="p">:</span>
+            <span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;#</span><span class="si">%11s</span><span class="s1"> </span><span class="si">%11s</span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="s1">&#39;Train&#39;</span><span class="p">,</span> <span class="s1">&#39;Test&#39;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span> <span class="o">!=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">)):</span> 
+                    <span class="n">accuracy</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%12.6g</span><span class="s1"> </span><span class="si">%12.6g</span><span class="s1"> </span><span class="se">\r\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">accuracyLog</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span></div></div>
 </pre></div>
 
           </div>
@@ -318,12 +327,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">

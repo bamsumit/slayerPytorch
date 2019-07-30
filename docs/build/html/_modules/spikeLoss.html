@@ -37,135 +37,140 @@
 <span class="kn">import</span> <span class="nn">torch.nn</span> <span class="k">as</span> <span class="nn">nn</span>
 <span class="kn">from</span> <span class="nn">slayer</span> <span class="k">import</span> <span class="n">spikeLayer</span>
 
-<div class="viewcode-block" id="spikeLoss"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss">[docs]</a><span class="k">class</span> <span class="nc">spikeLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>	
-	<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">	This class defines different spike based loss modules that can be used to optimize the SNN.</span>
+<div class="viewcode-block" id="spikeLoss"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss">[docs]</a><span class="k">class</span> <span class="nc">spikeLoss</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>   
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class defines different spike based loss modules that can be used to optimize the SNN.</span>
 
-<span class="sd">	Usage:</span>
+<span class="sd">    NOTE: By default, this class uses the spike kernels from ``slayer.spikeLayer`` (``snn.layer``).</span>
+<span class="sd">    In some cases, you may want to explicitly use different spike kernels, for e.g. ``slayerLoihi.spikeLayer`` (``snn.loihi``).</span>
+<span class="sd">    In that scenario, you can explicitly pass the class name: ``slayerClass=snn.loihi`` </span>
 
-<span class="sd">	&gt;&gt;&gt; error = spikeLoss.spikeLoss(networkDescriptor)</span>
-<span class="sd">	&gt;&gt;&gt; error = spikeLoss.spikeLoss(errorDescriptor, neuronDesc, simulationDesc)</span>
-<span class="sd">	&#39;&#39;&#39;</span>
-	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errorDescriptor</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">spikeLayer</span><span class="p">):</span>
-		<span class="nb">super</span><span class="p">(</span><span class="n">spikeLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">neuronDesc</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulationDesc</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span> <span class="o">=</span> <span class="n">errorDescriptor</span>
-		<span class="c1"># self.slayer = spikeLayer(neuronDesc, simulationDesc)</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayerClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">)</span>
-		
-	<span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networkDescriptor</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">spikeLayer</span><span class="p">):</span>
-		<span class="nb">super</span><span class="p">(</span><span class="n">spikeLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">]</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">]</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">][</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
-		<span class="c1"># self.slayer = spikeLayer(self.neuron, self.simulation)</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayerClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">)</span>
-		
-<div class="viewcode-block" id="spikeLoss.spikeTime"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss.spikeTime">[docs]</a>	<span class="k">def</span> <span class="nf">spikeTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDesired</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Calculates spike loss based on spike time.</span>
-<span class="sd">		The loss is similar to van Rossum distance between output and desired spike train.</span>
+<span class="sd">    Usage:</span>
 
-<span class="sd">		.. math::</span>
+<span class="sd">    &gt;&gt;&gt; error = spikeLoss.spikeLoss(networkDescriptor)</span>
+<span class="sd">    &gt;&gt;&gt; error = spikeLoss.spikeLoss(errorDescriptor, neuronDesc, simulationDesc)</span>
+<span class="sd">    &gt;&gt;&gt; error = spikeLoss.spikeLoss(netParams, slayerClass=slayerLoihi.spikeLayer)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">errorDescriptor</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">spikeLayer</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">spikeLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">neuronDesc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulationDesc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span> <span class="o">=</span> <span class="n">errorDescriptor</span>
+        <span class="c1"># self.slayer = spikeLayer(neuronDesc, simulationDesc)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayerClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">networkDescriptor</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">spikeLayer</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">spikeLoss</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span> <span class="o">=</span> <span class="n">networkDescriptor</span><span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">][</span><span class="s1">&#39;error&#39;</span><span class="p">]</span>
+        <span class="c1"># self.slayer = spikeLayer(self.neuron, self.simulation)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayerClass</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="spikeLoss.spikeTime"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss.spikeTime">[docs]</a>    <span class="k">def</span> <span class="nf">spikeTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDesired</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculates spike loss based on spike time.</span>
+<span class="sd">        The loss is similar to van Rossum distance between output and desired spike train.</span>
 
-<span class="sd">			E = \int_0^T \\left( \\varepsilon * (output -desired) \\right)(t)^2\\ \\text{d}t </span>
+<span class="sd">        .. math::</span>
 
-<span class="sd">		Arguments:</span>
-<span class="sd">			* ``spikeOut`` (``torch.tensor``): spike tensor</span>
-<span class="sd">			* ``spikeDesired`` (``torch.tensor``): desired spike tensor</span>
+<span class="sd">            E = \int_0^T \\left( \\varepsilon * (output -desired) \\right)(t)^2\\ \\text{d}t </span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``spikeOut`` (``torch.tensor``): spike tensor</span>
+<span class="sd">            * ``spikeDesired`` (``torch.tensor``): desired spike tensor</span>
 
-<span class="sd">		&gt;&gt;&gt; loss = error.spikeTime(spikeOut, spikeDes)</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="c1"># Tested with autograd, it works</span>
-		<span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SpikeTime&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not SpikeTime&quot;</span>
-		<span class="c1"># error = self.psp(spikeOut - spikeDesired) </span>
-		<span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeOut</span> <span class="o">-</span> <span class="n">spikeDesired</span><span class="p">)</span> 
-		<span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span></div>
-	
-<div class="viewcode-block" id="spikeLoss.numSpikes"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss.numSpikes">[docs]</a>	<span class="k">def</span> <span class="nf">numSpikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikeOut</span><span class="p">,</span> <span class="n">desiredClass</span><span class="p">,</span> <span class="n">numSpikesScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-		<span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">		Calculates spike loss based on number of spikes within a `target region`.</span>
-<span class="sd">		The `target region` and `desired spike count` is specified in ``error.errorDescriptor[&#39;tgtSpikeRegion&#39;]``</span>
-<span class="sd">		Any spikes outside the target region are penalized with ``error.spikeTime`` loss..</span>
+<span class="sd">        Usage:</span>
 
-<span class="sd">		.. math::</span>
-<span class="sd">			e(t) &amp;= </span>
-<span class="sd">			\\begin{cases}</span>
-<span class="sd">			\\frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} &amp; \\text{for }t \in targetRegion\\\\</span>
-<span class="sd">			\\left(\\varepsilon * (output - desired)\\right)(t) &amp; \\text{otherwise}</span>
-<span class="sd">			\\end{cases}</span>
-<span class="sd">			</span>
-<span class="sd">			E &amp;= \\int_0^T e(t)^2 \\text{d}t</span>
+<span class="sd">        &gt;&gt;&gt; loss = error.spikeTime(spikeOut, spikeDes)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Tested with autograd, it works</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SpikeTime&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not SpikeTime&quot;</span>
+        <span class="c1"># error = self.psp(spikeOut - spikeDesired) </span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeOut</span> <span class="o">-</span> <span class="n">spikeDesired</span><span class="p">)</span> 
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span></div>
+    
+<div class="viewcode-block" id="spikeLoss.numSpikes"><a class="viewcode-back" href="../spikeLoss.html#spikeLoss.spikeLoss.numSpikes">[docs]</a>    <span class="k">def</span> <span class="nf">numSpikes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spikeOut</span><span class="p">,</span> <span class="n">desiredClass</span><span class="p">,</span> <span class="n">numSpikesScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculates spike loss based on number of spikes within a `target region`.</span>
+<span class="sd">        The `target region` and `desired spike count` is specified in ``error.errorDescriptor[&#39;tgtSpikeRegion&#39;]``</span>
+<span class="sd">        Any spikes outside the target region are penalized with ``error.spikeTime`` loss..</span>
 
-<span class="sd">		Arguments:</span>
-<span class="sd">			* ``spikeOut`` (``torch.tensor``): spike tensor</span>
-<span class="sd">			* ``desiredClass`` (``torch.tensor``): one-hot encoded desired class tensor. Time dimension should be 1 and rest of the tensor dimensions should be same as ``spikeOut``.</span>
+<span class="sd">        .. math::</span>
+<span class="sd">            e(t) &amp;= </span>
+<span class="sd">            \\begin{cases}</span>
+<span class="sd">            \\frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} &amp; \\text{for }t \in targetRegion\\\\</span>
+<span class="sd">            \\left(\\varepsilon * (output - desired)\\right)(t) &amp; \\text{otherwise}</span>
+<span class="sd">            \\end{cases}</span>
+<span class="sd">            </span>
+<span class="sd">            E &amp;= \\int_0^T e(t)^2 \\text{d}t</span>
 
-<span class="sd">		Usage:</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``spikeOut`` (``torch.tensor``): spike tensor</span>
+<span class="sd">            * ``desiredClass`` (``torch.tensor``): one-hot encoded desired class tensor. Time dimension should be 1 and rest of the tensor dimensions should be same as ``spikeOut``.</span>
 
-<span class="sd">		&gt;&gt;&gt; loss = error.numSpikes(spikeOut, target)</span>
-<span class="sd">		&#39;&#39;&#39;</span>
-		<span class="c1"># Tested with autograd, it works</span>
-		<span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not NumSpikes&quot;</span>
-		<span class="c1"># desiredClass should be one-hot tensor with 5th dimension 1</span>
-		<span class="n">tgtSpikeRegion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;tgtSpikeRegion&#39;</span><span class="p">]</span>
-		<span class="n">tgtSpikeCount</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;tgtSpikeCount&#39;</span><span class="p">]</span>
-		<span class="n">startID</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-		<span class="n">stopID</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span> <span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
-		
-		<span class="n">actualSpikes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">startID</span><span class="p">:</span><span class="n">stopID</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span>
-		<span class="n">desiredSpikes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">desiredClass</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">False</span><span class="p">])</span>
-		<span class="c1"># print(&#39;actualSpikes :&#39;, actualSpikes.flatten())</span>
-		<span class="c1"># print(&#39;desiredSpikes:&#39;, desiredSpikes.flatten())</span>
-		<span class="n">errorSpikeCount</span> <span class="o">=</span> <span class="p">(</span><span class="n">actualSpikes</span> <span class="o">-</span> <span class="n">desiredSpikes</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">stopID</span> <span class="o">-</span> <span class="n">startID</span><span class="p">)</span> <span class="o">*</span> <span class="n">numSpikesScale</span>
-		<span class="n">targetRegion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-		<span class="n">targetRegion</span><span class="p">[:,:,:,:,</span><span class="n">startID</span><span class="p">:</span><span class="n">stopID</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
-		<span class="n">spikeDesired</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">targetRegion</span> <span class="o">*</span> <span class="n">spikeOut</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-		
-		<span class="c1"># error = self.psp(spikeOut - spikeDesired)</span>
-		<span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeOut</span> <span class="o">-</span> <span class="n">spikeDesired</span><span class="p">)</span>
-		<span class="n">error</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">errorSpikeCount</span> <span class="o">*</span> <span class="n">targetRegion</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
-		
-		<span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span></div>
-	
-	<span class="k">def</span> <span class="nf">probSpikes</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDesired</span><span class="p">,</span> <span class="n">probSlidingWindow</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
-		<span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ProbSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not ProbSpikes&quot;</span>
-		<span class="k">pass</span></div>
+<span class="sd">        Usage:</span>
 
-	<span class="c1"># def numSpikesII(self, membranePotential, desiredClass, numSpikeScale=1):</span>
-	<span class="c1"># 	assert self.errorDescriptor[&#39;type&#39;] == &#39;NumSpikes&#39;, &quot;Error type is not NumSpikes&quot;</span>
-	<span class="c1"># 	# desiredClass should be one-hot tensor with 5th dimension 1</span>
-	<span class="c1"># 	tgtSpikeRegion = self.errorDescriptor[&#39;tgtSpikeRegion&#39;]</span>
-	<span class="c1"># 	tgtSpikeCount  = self.errorDescriptor[&#39;tgtSpikeCount&#39;]</span>
-	<span class="c1"># 	startID = np.rint( tgtSpikeRegion[&#39;start&#39;] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
-	<span class="c1"># 	stopID  = np.rint( tgtSpikeRegion[&#39;stop&#39; ] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
-		
-	<span class="c1"># 	spikeOut = self.slayer.spike(membranePotential)</span>
-	<span class="c1"># 	spikeDes = torch.zeros(spikeOut.shape, dtype=spikeOut.dtype).to(spikeOut.device)</span>
-		
-	<span class="c1"># 	actualSpikes = torch.sum(spikeOut[...,startID:stopID], 4, keepdim=True).cpu().detach().numpy() * self.simulation[&#39;Ts&#39;]</span>
-	<span class="c1"># 	desiredSpikes = np.where(desiredClass.cpu() == True, tgtSpikeCount[True], tgtSpikeCount[False])</span>
-		
-	<span class="c1"># 	spikesAER = spikeOut.nonzero().tolist()</span>
-		
-	<span class="c1"># 	for n in range(spikeOut.shape[0]):</span>
-	<span class="c1"># 		for c in range(spikeOut.shape[1]):</span>
-	<span class="c1"># 			for h in range(spikeOut.shape[2]):</span>
-	<span class="c1"># 				for w in range(spikeOut.shape[3]):</span>
-	<span class="c1"># 					diff = desiredSpikes[n,c,h,w] - acutalSpikes[n,c,h,w]</span>
-	<span class="c1"># 					if diff &lt; 0:</span>
-	<span class="c1"># 						spikesAER[n,c,h,w] = spikesAER[n,c,h,w,:diff]</span>
-	<span class="c1"># 					elif diff &gt; 0:</span>
-	<span class="c1"># 						spikeDes[n,c,h,w,(actualInd[:diff] + startID)] = 1 / self.simulation[&#39;Ts&#39;]</span>
-	<span class="c1"># 						probableInds = np.random.randint(low=startID, high=stopID, size = diff)</span>
-							
-							
-		
-		
-		
+<span class="sd">        &gt;&gt;&gt; loss = error.numSpikes(spikeOut, target)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># Tested with autograd, it works</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;NumSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not NumSpikes&quot;</span>
+        <span class="c1"># desiredClass should be one-hot tensor with 5th dimension 1</span>
+        <span class="n">tgtSpikeRegion</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;tgtSpikeRegion&#39;</span><span class="p">]</span>
+        <span class="n">tgtSpikeCount</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;tgtSpikeCount&#39;</span><span class="p">]</span>
+        <span class="n">startID</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;start&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">stopID</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span> <span class="n">tgtSpikeRegion</span><span class="p">[</span><span class="s1">&#39;stop&#39;</span> <span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span> <span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+        
+        <span class="n">actualSpikes</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">[</span><span class="o">...</span><span class="p">,</span><span class="n">startID</span><span class="p">:</span><span class="n">stopID</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">detach</span><span class="p">()</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span>
+        <span class="n">desiredSpikes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">desiredClass</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span> <span class="o">==</span> <span class="kc">True</span><span class="p">,</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">True</span><span class="p">],</span> <span class="n">tgtSpikeCount</span><span class="p">[</span><span class="kc">False</span><span class="p">])</span>
+        <span class="c1"># print(&#39;actualSpikes :&#39;, actualSpikes.flatten())</span>
+        <span class="c1"># print(&#39;desiredSpikes:&#39;, desiredSpikes.flatten())</span>
+        <span class="n">errorSpikeCount</span> <span class="o">=</span> <span class="p">(</span><span class="n">actualSpikes</span> <span class="o">-</span> <span class="n">desiredSpikes</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">stopID</span> <span class="o">-</span> <span class="n">startID</span><span class="p">)</span> <span class="o">*</span> <span class="n">numSpikesScale</span>
+        <span class="n">targetRegion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+        <span class="n">targetRegion</span><span class="p">[:,:,:,:,</span><span class="n">startID</span><span class="p">:</span><span class="n">stopID</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+        <span class="n">spikeDesired</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">targetRegion</span> <span class="o">*</span> <span class="n">spikeOut</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="c1"># error = self.psp(spikeOut - spikeDesired)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spikeOut</span> <span class="o">-</span> <span class="n">spikeDesired</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">errorSpikeCount</span> <span class="o">*</span> <span class="n">targetRegion</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spikeOut</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        
+        <span class="k">return</span> <span class="mi">1</span><span class="o">/</span><span class="mi">2</span> <span class="o">*</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">error</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span></div>
+    
+    <span class="k">def</span> <span class="nf">probSpikes</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDesired</span><span class="p">,</span> <span class="n">probSlidingWindow</span> <span class="o">=</span> <span class="mi">20</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">errorDescriptor</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ProbSpikes&#39;</span><span class="p">,</span> <span class="s2">&quot;Error type is not ProbSpikes&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="c1"># def numSpikesII(self, membranePotential, desiredClass, numSpikeScale=1):</span>
+    <span class="c1">#   assert self.errorDescriptor[&#39;type&#39;] == &#39;NumSpikes&#39;, &quot;Error type is not NumSpikes&quot;</span>
+    <span class="c1">#   # desiredClass should be one-hot tensor with 5th dimension 1</span>
+    <span class="c1">#   tgtSpikeRegion = self.errorDescriptor[&#39;tgtSpikeRegion&#39;]</span>
+    <span class="c1">#   tgtSpikeCount  = self.errorDescriptor[&#39;tgtSpikeCount&#39;]</span>
+    <span class="c1">#   startID = np.rint( tgtSpikeRegion[&#39;start&#39;] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
+    <span class="c1">#   stopID  = np.rint( tgtSpikeRegion[&#39;stop&#39; ] / self.simulation[&#39;Ts&#39;] ).astype(int)</span>
+        
+    <span class="c1">#   spikeOut = self.slayer.spike(membranePotential)</span>
+    <span class="c1">#   spikeDes = torch.zeros(spikeOut.shape, dtype=spikeOut.dtype).to(spikeOut.device)</span>
+        
+    <span class="c1">#   actualSpikes = torch.sum(spikeOut[...,startID:stopID], 4, keepdim=True).cpu().detach().numpy() * self.simulation[&#39;Ts&#39;]</span>
+    <span class="c1">#   desiredSpikes = np.where(desiredClass.cpu() == True, tgtSpikeCount[True], tgtSpikeCount[False])</span>
+        
+    <span class="c1">#   spikesAER = spikeOut.nonzero().tolist()</span>
+        
+    <span class="c1">#   for n in range(spikeOut.shape[0]):</span>
+    <span class="c1">#       for c in range(spikeOut.shape[1]):</span>
+    <span class="c1">#           for h in range(spikeOut.shape[2]):</span>
+    <span class="c1">#               for w in range(spikeOut.shape[3]):</span>
+    <span class="c1">#                   diff = desiredSpikes[n,c,h,w] - acutalSpikes[n,c,h,w]</span>
+    <span class="c1">#                   if diff &lt; 0:</span>
+    <span class="c1">#                       spikesAER[n,c,h,w] = spikesAER[n,c,h,w,:diff]</span>
+    <span class="c1">#                   elif diff &gt; 0:</span>
+    <span class="c1">#                       spikeDes[n,c,h,w,(actualInd[:diff] + startID)] = 1 / self.simulation[&#39;Ts&#39;]</span>
+    <span class="c1">#                       probableInds = np.random.randint(low=startID, high=stopID, size = diff)</span>
+                            
+                            
+        
+        
+        
 </pre></div>
 
           </div>
@@ -188,12 +193,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">

@@ -38,9 +38,13 @@
 <dt id="spikeLoss.spikeLoss">
 <em class="property">class </em><code class="descclassname">spikeLoss.</code><code class="descname">spikeLoss</code><span class="sig-paren">(</span><em>networkDescriptor</em>, <em>slayerClass=&lt;class 'slayer.spikeLayer'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeLoss.html#spikeLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeLoss.spikeLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines different spike based loss modules that can be used to optimize the SNN.</p>
+<p>NOTE: By default, this class uses the spike kernels from <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>).
+In some cases, you may want to explicitly use different spike kernels, for e.g. <code class="docutils literal notranslate"><span class="pre">slayerLoihi.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.loihi</span></code>).
+In that scenario, you can explicitly pass the class name: <code class="docutils literal notranslate"><span class="pre">slayerClass=snn.loihi</span></code></p>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">networkDescriptor</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">errorDescriptor</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">netParams</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">slayerLoihi</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -115,12 +119,14 @@ The loss is similar to van Rossum distance between output and desired spike trai
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">

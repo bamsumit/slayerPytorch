@@ -38,12 +38,14 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 </div>
 </div>
@@ -60,11 +62,13 @@
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>The <strong>spike-layer</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>.</p></li>
-<li><p>The <strong>yaml-parameter</strong> module will be availabe as <code class="docutils literal notranslate"><span class="pre">snn.params</span></code>.</p></li>
-<li><p>The <strong>spike-loss</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.loss</span></code>.</p></li>
-<li><p>The <strong>spike-classifier</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.predict</span></code>.</p></li>
-<li><p>The <strong>spike-IO</strong> module will be available as <code class="docutils literal notranslate"><span class="pre">snn.io</span></code>.</p></li>
+<li><p>The <strong>slayer:spike-layer</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>.</p></li>
+<li><p>The <strong>slayer-Loihi:spike-layer</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.loihi</span></code></p></li>
+<li><p>The <strong>yaml-parameter</strong> module is availabe as <code class="docutils literal notranslate"><span class="pre">snn.params</span></code>.</p></li>
+<li><p>The <strong>spike-loss</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.loss</span></code>.</p></li>
+<li><p>The <strong>spike-classifier</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.predict</span></code>.</p></li>
+<li><p>The <strong>spike-IO</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.io</span></code>.</p></li>
+<li><p>The <strong>quantize</strong> module is available as <code class="docutils literal notranslate"><span class="pre">snn.quantize</span></code>.</p></li>
 </ul>
 </div>
 <div class="section" id="example">
@@ -72,6 +76,8 @@
 <p>The SNN parameters are stored in a yaml file.
 The structure of the yaml file follows the same hierarchy as the
 <a class="reference external" href="https://bitbucket.org/bamsumit/slayer">C++ SLAYER framework</a> (see Network Description)</p>
+<p>A set of working example for SLAYER are available at <a class="reference external" href="https://github.com/bamsumit/slayerPytorch/tree/master/example">SLAYER PyTorch repo: examples</a></p>
+<p>A set of working example for SLAYER Loihi are available at <a class="reference external" href="https://github.com/bamsumit/slayerPytorch/tree/master/exampleLoihi">SLAYER PyTorch repo: examplesLoihi</a></p>
 <div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
  2
  3
@@ -174,12 +180,14 @@ dimension one.</em></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">

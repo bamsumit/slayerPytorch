@@ -12,12 +12,14 @@ Welcome to SLAYER PyTorch's documentation!
 
    slayerSNN.rst
    slayer.rst
+   slayerLoihi.rst
    slayerParams.rst
    spikeClassifier.rst
    spikeLoss.rst
    spikeIO.rst
    learningStats.rst
    optimizer.rst
+   quantizeParams.rst
 
 
 Indices and tables
@@ -33,11 +35,13 @@ Usage:
 
 >>> import slayerSNN as snn
 
-* The **spike-layer** module will be available as ``snn.layer``.
-* The **yaml-parameter** module will be availabe as ``snn.params``.
-* The **spike-loss** module will be available as ``snn.loss``.
-* The **spike-classifier** module will be available as ``snn.predict``.
-* The **spike-IO** module will be available as ``snn.io``.
+* The **slayer:spike-layer** module is available as ``snn.layer``.
+* The **slayer-Loihi:spike-layer** module is available as ``snn.loihi``
+* The **yaml-parameter** module is availabe as ``snn.params``.
+* The **spike-loss** module is available as ``snn.loss``.
+* The **spike-classifier** module is available as ``snn.predict``.
+* The **spike-IO** module is available as ``snn.io``.
+* The **quantize** module is available as ``snn.quantize``.
 
 Example:
 --------
@@ -45,6 +49,10 @@ The SNN parameters are stored in a yaml file.
 The structure of the yaml file follows the same hierarchy as the 
 `C++ SLAYER framework
 <https://bitbucket.org/bamsumit/slayer>`_ (see Network Description)
+
+A set of working example for SLAYER are available at `SLAYER PyTorch repo: examples <https://github.com/bamsumit/slayerPytorch/tree/master/example>`_
+
+A set of working example for SLAYER Loihi are available at `SLAYER PyTorch repo: examplesLoihi <https://github.com/bamsumit/slayerPytorch/tree/master/exampleLoihi>`_
 
 .. code-block:: python
    :linenos:

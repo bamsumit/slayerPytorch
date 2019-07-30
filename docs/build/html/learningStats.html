@@ -94,25 +94,25 @@ This should usually be done before the start of an epoch so that new statistics 
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">learningStats</span><span class="p">()</span>
 
 <span class="k">for</span> <span class="n">epoch</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
-        <span class="n">tSt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+    <span class="n">tSt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
 
-        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trainingLoop</span><span class="p">:</span>
-                <span class="c1"># other main stuffs</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
-                <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
-        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">trainingLoop</span><span class="p">:</span>
+        <span class="c1"># other main stuffs</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
+        <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
-        <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">testingLoop</span>
-                <span class="c1"># other main stuffs</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
-                <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
-                <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">testingLoop</span>
+        <span class="c1"># other main stuffs</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
+        <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
 <dl class="method">
@@ -218,7 +218,8 @@ For Linux systems, prints the data on same terminal space (might not work proper
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>

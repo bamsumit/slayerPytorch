@@ -35,6 +35,26 @@
   <div class="section" id="module-spikeFileIO">
 <span id="spike-input-output"></span><h1>Spike Input/Output<a class="headerlink" href="#module-spikeFileIO" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
+<dt id="spikeFileIO.animTD">
+<code class="descclassname">spikeFileIO.</code><code class="descname">animTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#animTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.animTD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reutrn animation object for TD event.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code>: spike event to visualize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fig</span></code>: figure to plot animation. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in which case a figure is created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frameRate</span></code>: framerate of visualization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preComputeFrames</span></code>: flag to enable precomputation of frames for faster visualization. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repeat</span></code>: flag to enable repeat of animation. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">anim</span> <span class="o">=</span> <span class="n">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
 <dt id="spikeFileIO.encode1DnumSpikes">
 <code class="descclassname">spikeFileIO.</code><code class="descname">encode1DnumSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>nID</em>, <em>tSt</em>, <em>tEn</em>, <em>nSp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encode1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encode1DnumSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.</p>
@@ -292,11 +312,12 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 
 <dl class="function">
 <dt id="spikeFileIO.showTD">
-<code class="descclassname">spikeFileIO.</code><code class="descname">showTD</code><span class="sig-paren">(</span><em>TD</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#showTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.showTD" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">spikeFileIO.</code><code class="descname">showTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#showTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.showTD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualizes TD event.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code>: spike event to visualize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fig</span></code>: figure to plot animation. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in which case a figure is created.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">frameRate</span></code>: framerate of visualization.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">preComputeFrames</span></code>: flag to enable precomputation of frames for faster visualization. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">repeat</span></code>: flag to enable repeat of animation. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
@@ -351,10 +372,13 @@ The numpy array must be of dimension (channels, height, width, time) or``CHWT`` 
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="slayerSNN.html">SLAYER PyTorch main</a></li>
 <li class="toctree-l1"><a class="reference internal" href="slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="slayerParams.html">SLAYER Parameter</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeClassifier.html">Spike Classifier</a></li>
 <li class="toctree-l1"><a class="reference internal" href="spikeLoss.html">Spike Loss</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
 </ul>
 
 <div class="relations">
