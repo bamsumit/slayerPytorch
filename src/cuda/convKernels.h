@@ -68,14 +68,31 @@ void conv(	T* output,
 			float Ts)
 {
 	dim3 thread(128, 8, 1);
-	dim3 block(	ceil( 1.0f * signalSize /thread.x ), 
-				ceil( 1.0f * nNeurons   /thread.y ), 
-				1 ); 
-	if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
-	if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
-	
-	convKernel<T><<< block, thread >>>( output, input, filter, 
-										signalSize, filterSize, nNeurons, Ts);
+
+	// int nGrid = 128;
+	int nGrid = ceil( 1.0f * 65535 * thread.y / nNeurons);
+	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
+
+	for(auto i=0; i<nGrid; ++i)
+	{
+		int startOffset = i * neuronsPerGrid;
+		int neuronsInGrid = (startOffset + neuronsPerGrid <= nNeurons) ? neuronsPerGrid : nNeurons - startOffset;
+
+		if(neuronsInGrid < 0)	break;
+
+		dim3 block(	ceil( 1.0f * signalSize    /thread.x ), 
+					ceil( 1.0f * neuronsInGrid /thread.y ), 
+					1 );
+
+		// these should never be trigerred
+		if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
+		if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
+
+		convKernel<T><<< block, thread >>>( output + startOffset * signalSize, 
+											input  + startOffset * signalSize, 
+											filter, signalSize, filterSize, 
+											neuronsInGrid, Ts);
+	}
 }
 
 template <class T>
@@ -85,14 +102,30 @@ void corr(	T* output,
 			float Ts)
 {
 	dim3 thread(128, 8, 1);
-	dim3 block(	ceil( 1.0f * signalSize /thread.x ), 
-				ceil( 1.0f * nNeurons   /thread.y ), 
-				1 ); 
-	if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
-	if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
-	
-	corrKernel<T><<< block, thread >>>( output, input, filter, 
-										signalSize, filterSize, nNeurons, Ts );
+
+	// int nGrid = 128;
+	int nGrid = ceil( 1.0f * 65535 * thread.y / nNeurons);
+	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
+	for(auto i=0; i<nGrid; ++i)
+	{
+		int startOffset = i * neuronsPerGrid;
+		int neuronsInGrid = (startOffset + neuronsPerGrid <= nNeurons) ? neuronsPerGrid : nNeurons - startOffset;
+
+		if(neuronsInGrid < 0)	break;
+
+		dim3 block(	ceil( 1.0f * signalSize    /thread.x ), 
+					ceil( 1.0f * neuronsInGrid /thread.y ), 
+					1 );
+
+		// these should never be trigerred
+		if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
+		if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
+
+		corrKernel<T><<< block, thread >>>( output + startOffset * signalSize, 
+											input  + startOffset * signalSize, 
+											filter, signalSize, filterSize, 
+											neuronsInGrid, Ts);
+	}
 }
 
 #endif // CONVKERNELS_H_INCLUDED
