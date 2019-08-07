@@ -70,7 +70,7 @@ void conv(	T* output,
 	dim3 thread(128, 8, 1);
 
 	// int nGrid = 128;
-	int nGrid = ceil( 1.0f * 65535 * thread.y / nNeurons);
+	int nGrid = ceil( 1.0f * nNeurons / thread.y / 65535);
 	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
 
 	for(auto i=0; i<nGrid; ++i)
@@ -104,7 +104,7 @@ void corr(	T* output,
 	dim3 thread(128, 8, 1);
 
 	// int nGrid = 128;
-	int nGrid = ceil( 1.0f * 65535 * thread.y / nNeurons);
+	int nGrid = ceil( 1.0f * nNeurons / thread.y / 65535 );
 	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
 	for(auto i=0; i<nGrid; ++i)
 	{
