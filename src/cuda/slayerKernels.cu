@@ -99,7 +99,7 @@ torch::Tensor shiftCuda(torch::Tensor input, torch::Tensor shiftLUT, float Ts)
 		unsigned nBatch     = input.size(0);
 		unsigned nNeurons   = input.numel()/signalSize/nBatch;
 		
-		AT_ASSERTM(shiftLUT.numel() == nNeurons, "shift and number of neurons must be same")
+		AT_ASSERTM(shiftLUT.numel() == nNeurons, "shift and number of neurons must be same");
 		
 		shift<float>(output.data<float>(), input.data<float>(), shiftLUT.data<float>(), signalSize, nNeurons, nBatch, Ts);
 	}
