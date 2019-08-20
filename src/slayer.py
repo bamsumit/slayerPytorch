@@ -156,6 +156,26 @@ class spikeLayer(torch.nn.Module):
         '''
         return _pspLayer(self.srmKernel, self.simulation['Ts'])
 
+    def pspFilter(self, nFilter, filterLength, filterScale=1):
+        '''
+        Returns a function that can be called to apply a bank of temporal filters.
+        The output tensor is of same dimension as input except the channel dimension is scaled by number of filters.
+        The initial filters are initialized using default PyTorch initializaion for conv layer.
+        The filter banks are learnable.
+        NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.
+        
+        Arguments:
+            * ``nFilter``: number of filters in the filterbank.
+            * ``filterLength``: length of filter in number of time bins.
+            * ``filterScale``: initial scaling factor for filter banks. Default: 1.
+
+        Usage:
+        
+        >>> pspFilter = snnLayer.pspFilter()
+        >>> filteredSpike = pspFilter(spike)
+        '''
+        return _pspFilter(nFilter, filterLength, self.simulation['Ts'], filterScale)
+
     def replicateInTime(self, input, mode='nearest'):
         Ns = int(self.simulation['tSample'] / self.simulation['Ts'])
         N, C, H, W = input.shape
@@ -536,6 +556,30 @@ class _pspLayer(nn.Conv3d):
         output = F.conv3d(inPadded, self.weight) * self.Ts
         return output.reshape(inShape)
 
+class _pspFilter(nn.Conv3d):
+    '''
+    '''
+    def __init__(self, nFilter, filterLength, Ts, filterScale=1):
+        inChannels  = 1
+        outChannels = nFilter
+        kernel      = (1, 1, filterLength)
+        
+        super(_pspFilter, self).__init__(inChannels, outChannels, kernel, bias=False) 
+
+        self.Ts  = Ts
+        self.pad = torch.nn.ConstantPad3d(padding=(filterLength-1, 0, 0, 0, 0, 0), value=0)
+
+        if filterScale != 1:
+            self.weight.data *= filterScale
+
+    def forward(self, input):
+        '''
+        '''
+        N, C, H, W, Ns = input.shape
+        inPadded = self.pad(input.reshape((N, 1, 1, -1, Ns)))
+        output = F.conv3d(inPadded, self.weight) * self.Ts
+        return output.reshape((N, -1, H, W, Ns))
+
 class _spikeFunction(torch.autograd.Function):
     '''
     '''
@@ -643,8 +687,11 @@ class _delayLayer(nn.Module):
         self.Ts = Ts
 
     def forward(self, input):
-
-        return _delayFunction.apply(input, self.delay, self.Ts)
+        N, C, H, W, Ns = input.shape
+        if input.numel() != self.delay.numel() * input.shape[-1]:
+            return _delayFunction.apply(input, self.delay.repeat((1, H, W)), self.Ts) # different delay per channel
+        else:
+            return _delayFunction.apply(input, self.delay, self.Ts)
 
 class _delayFunction(torch.autograd.Function):
     '''
