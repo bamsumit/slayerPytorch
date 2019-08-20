@@ -248,6 +248,29 @@ The output tensor dimension is same as input.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="slayer.spikeLayer.pspFilter">
+<code class="descname">pspFilter</code><span class="sig-paren">(</span><em>nFilter</em>, <em>filterLength</em>, <em>filterScale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.pspFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.pspFilter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply a bank of temporal filters.
+The output tensor is of same dimension as input except the channel dimension is scaled by number of filters.
+The initial filters are initialized using default PyTorch initializaion for conv layer.
+The filter banks are learnable.
+NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nFilter</span></code>: number of filters in the filterbank.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filterLength</span></code>: length of filter in number of time bins.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filterScale</span></code>: initial scaling factor for filter banks. Default: 1.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspFilter</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspFilter</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">pspFilter</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="slayer.spikeLayer.pspLayer">
 <code class="descname">pspLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayer.html#spikeLayer.pspLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayer.spikeLayer.pspLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply psp filtering to spikes.

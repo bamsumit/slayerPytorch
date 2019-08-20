@@ -189,6 +189,26 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 
+<div class="viewcode-block" id="spikeLayer.pspFilter"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pspFilter">[docs]</a>    <span class="k">def</span> <span class="nf">pspFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Returns a function that can be called to apply a bank of temporal filters.</span>
+<span class="sd">        The output tensor is of same dimension as input except the channel dimension is scaled by number of filters.</span>
+<span class="sd">        The initial filters are initialized using default PyTorch initializaion for conv layer.</span>
+<span class="sd">        The filter banks are learnable.</span>
+<span class="sd">        NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.</span>
+<span class="sd">        </span>
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``nFilter``: number of filters in the filterbank.</span>
+<span class="sd">            * ``filterLength``: length of filter in number of time bins.</span>
+<span class="sd">            * ``filterScale``: initial scaling factor for filter banks. Default: 1.</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">        </span>
+<span class="sd">        &gt;&gt;&gt; pspFilter = snnLayer.pspFilter()</span>
+<span class="sd">        &gt;&gt;&gt; filteredSpike = pspFilter(spike)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="n">_pspFilter</span><span class="p">(</span><span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">],</span> <span class="n">filterScale</span><span class="p">)</span></div>
+
     <span class="k">def</span> <span class="nf">replicateInTime</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">):</span>
         <span class="n">Ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;tSample&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
         <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
@@ -569,6 +589,30 @@
         <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="n">inPadded</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span>
         <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inShape</span><span class="p">)</span>
 
+<span class="k">class</span> <span class="nc">_pspFilter</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">Ts</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="n">inChannels</span>  <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">outChannels</span> <span class="o">=</span> <span class="n">nFilter</span>
+        <span class="n">kernel</span>      <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">)</span>
+        
+        <span class="nb">super</span><span class="p">(</span><span class="n">_pspFilter</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> 
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span>  <span class="o">=</span> <span class="n">Ts</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pad</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ConstantPad3d</span><span class="p">(</span><span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="n">filterLength</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">value</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">filterScale</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">*=</span> <span class="n">filterScale</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">inPadded</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pad</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Ns</span><span class="p">)))</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="n">inPadded</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span>
+        <span class="k">return</span> <span class="n">output</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span><span class="p">))</span>
+
 <span class="k">class</span> <span class="nc">_spikeFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
@@ -676,8 +720,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span> <span class="o">=</span> <span class="n">Ts</span>
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-
-        <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span>
+        <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span> <span class="c1"># different delay per channel</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span>
 
 <span class="k">class</span> <span class="nc">_delayFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
