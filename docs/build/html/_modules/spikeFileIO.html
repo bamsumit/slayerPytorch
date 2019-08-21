@@ -408,6 +408,65 @@
 	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
 		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
 
+<div class="viewcode-block" id="readNpSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.readNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">readNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Reads numpy spike event and returns a TD event.</span>
+<span class="sd">	The numpy array is assumed to be of nEvent x event diension.</span>
+<span class="sd">	</span>
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the file.</span>
+<span class="sd">		* ``fmt`` (``string``): format of event. For e.g.&#39;xypt&#39; means the event data is arrange in x data, y data, p data and time data.</span>
+<span class="sd">		* ``timeUnit`` (``double``): factor to scale the time data to convert it into seconds. Default: 1e-3 (ms).</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.readNpSpikes(file_path)</span>
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.readNpSpikes(file_path, fmt=&#39;xypt&#39;)</span>
+<span class="sd">	&gt;&gt;&gt; TD = spikeFileIO.readNpSpikes(file_path, timeUnit=1e-6)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="n">npEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">fmt</span><span class="o">==</span><span class="s1">&#39;xypt&#39;</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">npEvnet</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="kc">None</span><span class="p">,</span> <span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">timeUnit</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+		<span class="k">elif</span> <span class="n">npEvent</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+			<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">*</span> <span class="n">timeUnit</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Numpy array format did not match. Ecpected it to be nEvents x eventDim.&#39;</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;fmt=&#39;</span><span class="si">%s</span><span class="s2">&#39; not implemented.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fmt</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="encodeNpSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encodeNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">encodeNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+	<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">	Writes TD event into numpy file.</span>
+
+<span class="sd">	Arguments:</span>
+<span class="sd">		* ``filename`` (``string``): path to the binary file.</span>
+<span class="sd">		* ``TD`` (an ``spikeFileIO.event``): TD event.</span>
+
+<span class="sd">	Usage:</span>
+
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.write1Dspikes(file_path, TD)</span>
+<span class="sd">	&gt;&gt;&gt; spikeFileIO.write1Dspikes(file_path, TD, fmt=&#39;xypt&#39;)</span>
+<span class="sd">	&#39;&#39;&#39;</span>
+	<span class="k">if</span> <span class="n">fmt</span><span class="o">==</span><span class="s1">&#39;xypt&#39;</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+			<span class="n">npEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">p</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">t</span>
+		<span class="k">elif</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
+			<span class="n">npEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="mi">3</span><span class="p">))</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">x</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">y</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">p</span>
+			<span class="n">npEvent</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">t</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Numpy array format did not match. Ecpected it to be nEvents x eventDim.&#39;</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;fmt=&#39;</span><span class="si">%s</span><span class="s2">&#39; not implemented.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fmt</span><span class="p">))</span>
+	<span class="n">np</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">npEvent</span><span class="p">)</span></div>
+
 <span class="k">def</span> <span class="nf">_showTD1D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 	<span class="k">if</span> <span class="n">TD</span><span class="o">.</span><span class="n">dim</span> <span class="o">!=</span><span class="mi">1</span><span class="p">:</span>	<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Expected Td dimension to be 1. It was: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">TD</span><span class="o">.</span><span class="n">dim</span><span class="p">))</span>
 	<span class="k">if</span> <span class="n">fig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>	<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>

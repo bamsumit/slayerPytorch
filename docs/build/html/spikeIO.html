@@ -32,8 +32,362 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="spike-input-output">
-<h1>Spike Input/Output<a class="headerlink" href="#spike-input-output" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-spikeFileIO">
+<span id="spike-input-output"></span><h1>Spike Input/Output<a class="headerlink" href="#module-spikeFileIO" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="spikeFileIO.animTD">
+<code class="descclassname">spikeFileIO.</code><code class="descname">animTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#animTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.animTD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reutrn animation object for TD event.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code>: spike event to visualize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fig</span></code>: figure to plot animation. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in which case a figure is created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frameRate</span></code>: framerate of visualization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preComputeFrames</span></code>: flag to enable precomputation of frames for faster visualization. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repeat</span></code>: flag to enable repeat of animation. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">anim</span> <span class="o">=</span> <span class="n">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.encode1DnumSpikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">encode1DnumSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>nID</em>, <em>tSt</em>, <em>tEn</em>, <em>nSp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encode1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encode1DnumSpikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Number of spikes data is represented by an 80 bit number</p></li>
+<li><p>First 16 bits (bits 79-64) represent the neuronID</p></li>
+<li><p>Next 24 bits (bits 63-40) represents the start time in microseconds</p></li>
+<li><p>Next 24 bits (bits 39-16) represents the end time in microseconds</p></li>
+<li><p>Last 16 bits (bits 15-0) represents the number of spikes</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nID</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">array</span></code>): neuron ID</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tSt</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">array</span></code>): region start time (in milliseconds)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tEn</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">array</span></code>): region end time (in milliseconds)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nSp</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">array</span></code>): number of spikes in the region</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">encode1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.encode1Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">encode1Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encode1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encode1Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes one dimensional binary spike file from a TD event.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 40 bit number.</p></li>
+<li><p>First 16 bits (bits 39-24) represent the neuronID.</p></li>
+<li><p>Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</p></li>
+<li><p>the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code> (an <code class="docutils literal notranslate"><span class="pre">spikeFileIO.event</span></code>): TD event.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.encode2Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">encode2Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encode2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encode2Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes two dimensional binary spike file from a TD event.
+It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 40 bit number.</p></li>
+<li><p>First 8 bits (bits 39-32) represent the xID of the neuron.</p></li>
+<li><p>Next 8 bits (bits 31-24) represent the yID of the neuron.</p></li>
+<li><p>Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</p></li>
+<li><p>The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code> (an <code class="docutils literal notranslate"><span class="pre">spikeFileIO.event</span></code>): TD event.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.encode3Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">encode3Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encode3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encode3Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes binary spike file for TD event in height, width and channel dimension.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 56 bit number.</p></li>
+<li><p>First 12 bits (bits 56-44) represent the xID of the neuron.</p></li>
+<li><p>Next 12 bits (bits 43-32) represent the yID of the neuron.</p></li>
+<li><p>Next 8 bits (bits 31-24) represents the channel ID of the neuron.</p></li>
+<li><p>The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code> (an <code class="docutils literal notranslate"><span class="pre">spikeFileIO.event</span></code>): TD event.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.encodeNpSpikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">encodeNpSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em>, <em>fmt='xypt'</em>, <em>timeUnit=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#encodeNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.encodeNpSpikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes TD event into numpy file.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code> (an <code class="docutils literal notranslate"><span class="pre">spikeFileIO.event</span></code>): TD event.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="class">
+<dt id="spikeFileIO.event">
+<em class="property">class </em><code class="descclassname">spikeFileIO.</code><code class="descname">event</code><span class="sig-paren">(</span><em>xEvent</em>, <em>yEvent</em>, <em>pEvent</em>, <em>tEvent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.event" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class provides a way to store, read, write and visualize spike event.</p>
+<dl class="simple">
+<dt>Members:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">x</span></code> (numpy <code class="docutils literal notranslate"><span class="pre">int</span></code> array): <cite>x</cite> index of spike event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">y</span></code> (numpy <code class="docutils literal notranslate"><span class="pre">int</span></code> array): <cite>y</cite> index of spike event (not used if the spatial dimension is 1).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">p</span></code> (numpy <code class="docutils literal notranslate"><span class="pre">int</span></code> array): <cite>polarity</cite> or <cite>channel</cite> index of spike event.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">t</span></code> (numpy <code class="docutils literal notranslate"><span class="pre">double</span></code> array): <cite>timestamp</cite> of spike event. Time is assumend to be in ms.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="spikeFileIO.event.toSpikeArray">
+<code class="descname">toSpikeArray</code><span class="sig-paren">(</span><em>samplingTime=1</em>, <em>dim=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#event.toSpikeArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.event.toSpikeArray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
+The array is of dimension (channels, height, time) or``CHT`` for 1D data.
+The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">samplingTime</span></code>: the width of time bin to use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dim</span></code>: the dimension of the desired tensor. Assignes dimension itself if not provided.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeArray</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="spikeFileIO.event.toSpikeTensor">
+<code class="descname">toSpikeTensor</code><span class="sig-paren">(</span><em>emptyTensor</em>, <em>samplingTime=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
+The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">emptyTensor</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">or</span> <span class="pre">torch</span> <span class="pre">tensor</span></code>): an empty tensor to hold spike data</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">samplingTime</span></code>: the width of time bin to use.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span> <span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.read1DnumSpikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">read1DnumSpikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#read1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.read1DnumSpikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads a tuple specifying neuron, start of spike region, end of spike region and number of spikes from binary spike file.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Number of spikes data is represented by an 80 bit number.</p></li>
+<li><p>First 16 bits (bits 79-64) represent the neuronID.</p></li>
+<li><p>Next 24 bits (bits 63-40) represents the start time in microseconds.</p></li>
+<li><p>Next 24 bits (bits 39-16) represents the end time in microseconds.</p></li>
+<li><p>Last 16 bits (bits 15-0) represents the number of spikes.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<span class="go">``tSt`` and ``tEn`` are returned in milliseconds</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.read1Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">read1Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#read1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.read1Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads one dimensional binary spike file and returns a TD event.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 40 bit number.</p></li>
+<li><p>First 16 bits (bits 39-24) represent the neuronID.</p></li>
+<li><p>Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</p></li>
+<li><p>the last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.read2Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">read2Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#read2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.read2Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads two dimensional binary spike file and returns a TD event.
+It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 40 bit number.</p></li>
+<li><p>First 8 bits (bits 39-32) represent the xID of the neuron.</p></li>
+<li><p>Next 8 bits (bits 31-24) represent the yID of the neuron.</p></li>
+<li><p>Bit 23 represents the sign of spike event: 0=&gt;OFF event, 1=&gt;ON event.</p></li>
+<li><p>The last 23 bits (bits 22-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.read3Dspikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">read3Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#read3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.read3Dspikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads binary spike file for spike event in height, width and channel dimension and returns a TD event.</p>
+<dl class="simple">
+<dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
+<li><p>Each spike event is represented by a 56 bit number.</p></li>
+<li><p>First 12 bits (bits 56-44) represent the xID of the neuron.</p></li>
+<li><p>Next 12 bits (bits 43-32) represent the yID of the neuron.</p></li>
+<li><p>Next 8 bits (bits 31-24) represents the channel ID of the neuron.</p></li>
+<li><p>The last 24 bits (bits 23-0) represent the spike event timestamp in microseconds.</p></li>
+</ul>
+</dd>
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the binary file.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.readNpSpikes">
+<code class="descclassname">spikeFileIO.</code><code class="descname">readNpSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>fmt='xypt'</em>, <em>timeUnit=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#readNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.readNpSpikes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads numpy spike event and returns a TD event.
+The numpy array is assumed to be of nEvent x event diension.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): path to the file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fmt</span></code> (<code class="docutils literal notranslate"><span class="pre">string</span></code>): format of event. For e.g.’xypt’ means the event data is arrange in x data, y data, p data and time data.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">timeUnit</span></code> (<code class="docutils literal notranslate"><span class="pre">double</span></code>): factor to scale the time data to convert it into seconds. Default: 1e-3 (ms).</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.showTD">
+<code class="descclassname">spikeFileIO.</code><code class="descname">showTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#showTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.showTD" title="Permalink to this definition">¶</a></dt>
+<dd><p>Visualizes TD event.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">TD</span></code>: spike event to visualize.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fig</span></code>: figure to plot animation. Default is <code class="docutils literal notranslate"><span class="pre">None</span></code>, in which case a figure is created.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">frameRate</span></code>: framerate of visualization.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preComputeFrames</span></code>: flag to enable precomputation of frames for faster visualization. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">repeat</span></code>: flag to enable repeat of animation. Default is <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="spikeFileIO.spikeArrayToEvent">
+<code class="descclassname">spikeFileIO.</code><code class="descname">spikeArrayToEvent</code><span class="sig-paren">(</span><em>spikeMat</em>, <em>samplingTime=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#spikeArrayToEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.spikeArrayToEvent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns TD event from a numpy array (of dimension 3 or 4).
+The numpy array must be of dimension (channels, height, time) or``CHT`` for 1D data.
+The numpy array must be of dimension (channels, height, width, time) or``CHWT`` for 2D data.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spikeMat</span></code>: numpy array with spike information.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">samplingTime</span></code>: time width of each time bin.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">spikeArrayToEvent</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 </div>
 
 

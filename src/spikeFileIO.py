@@ -392,7 +392,7 @@ def readNpSpikes(filename, fmt='xypt', timeUnit=1e-3):
 	>>> TD = spikeFileIO.readNpSpikes(file_path, timeUnit=1e-6)
 	'''
 	npEvent = np.load(filename)
-	if fmt='xypt':
+	if fmt=='xypt':
 		if npEvnet.shape[1] == 3:
 			return event(npEvent[:, 0], None, npEvent[:, 1], npEvent[:, 2] * timeUnit * 1e3)
 		elif npEvent.shape[1] == 4:
@@ -416,7 +416,7 @@ def encodeNpSpikes(filename, TD, fmt='xypt', timeUnit=1e-3):
 	>>> spikeFileIO.write1Dspikes(file_path, TD)
 	>>> spikeFileIO.write1Dspikes(file_path, TD, fmt='xypt')
 	'''
-	if fmt='xypt':
+	if fmt=='xypt':
 		if TD.dim ==1:
 			npEvent = np.zeros((len(TD.x), 3))
 			npEvent[:, 0] = TD.x
