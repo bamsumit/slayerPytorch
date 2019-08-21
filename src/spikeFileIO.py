@@ -375,6 +375,65 @@ def encode1DnumSpikes(filename, nID, tSt, tEn, nSp):
 	with open(filename, 'wb') as outputFile:
 		outputFile.write(outputByteArray)
 
+def readNpSpikes(filename, fmt='xypt', timeUnit=1e-3):
+	'''
+	Reads numpy spike event and returns a TD event.
+	The numpy array is assumed to be of nEvent x event diension.
+	
+	Arguments:
+		* ``filename`` (``string``): path to the file.
+		* ``fmt`` (``string``): format of event. For e.g.'xypt' means the event data is arrange in x data, y data, p data and time data.
+		* ``timeUnit`` (``double``): factor to scale the time data to convert it into seconds. Default: 1e-3 (ms).
+
+	Usage:
+
+	>>> TD = spikeFileIO.readNpSpikes(file_path)
+	>>> TD = spikeFileIO.readNpSpikes(file_path, fmt='xypt')
+	>>> TD = spikeFileIO.readNpSpikes(file_path, timeUnit=1e-6)
+	'''
+	npEvent = np.load(filename)
+	if fmt='xypt':
+		if npEvnet.shape[1] == 3:
+			return event(npEvent[:, 0], None, npEvent[:, 1], npEvent[:, 2] * timeUnit * 1e3)
+		elif npEvent.shape[1] == 4:
+			return event(npEvent[:, 0], npEvent[:, 1], npEvent[:, 2], npEvent[:, 3] * timeUnit * 1e3)
+		else:
+			raise Exception('Numpy array format did not match. Ecpected it to be nEvents x eventDim.')
+	else:
+		raise Exception("fmt='%s' not implemented."%(fmt))
+
+
+def encodeNpSpikes(filename, TD, fmt='xypt', timeUnit=1e-3):
+	'''
+	Writes TD event into numpy file.
+
+	Arguments:
+		* ``filename`` (``string``): path to the binary file.
+		* ``TD`` (an ``spikeFileIO.event``): TD event.
+
+	Usage:
+
+	>>> spikeFileIO.write1Dspikes(file_path, TD)
+	>>> spikeFileIO.write1Dspikes(file_path, TD, fmt='xypt')
+	'''
+	if fmt='xypt':
+		if TD.dim ==1:
+			npEvent = np.zeros((len(TD.x), 3))
+			npEvent[:, 0] = TD.x
+			npEvent[:, 1] = TD.p
+			npEvent[:, 2] = TD.t
+		elif TD.dim==2:
+			npEvent = np.zeros((len(TD.x), 3))
+			npEvent[:, 0] = TD.x
+			npEvent[:, 1] = TD.y
+			npEvent[:, 2] = TD.p
+			npEvent[:, 3] = TD.t
+		else:
+			raise Exception('Numpy array format did not match. Ecpected it to be nEvents x eventDim.')
+	else:
+		raise Exception("fmt='%s' not implemented."%(fmt))
+	np.save(filename, npEvent)
+
 def _showTD1D(TD, fig=None, frameRate=24, preComputeFrames=True, repeat=False, plot=True):
 	if TD.dim !=1:	raise Exception('Expected Td dimension to be 1. It was: {}'.format(TD.dim))
 	if fig is None:	fig = plt.figure()
