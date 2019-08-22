@@ -102,14 +102,14 @@ class learningStat():
             return None
         elif accuracy is None: 
             if minloss is None: # accuracy and minloss stats is not available
-                return 'loss = %-12.5g'%(loss)
+                return 'loss = %-11.5g'%(loss)
             else:   # accuracy is not available but minloss is available
-                return 'loss = %-12.5g (min = %-12.5g)'%(loss, minloss)
+                return 'loss = %-11.5g (min = %-11.5g)'%(loss, minloss)
         else:
             if minloss is None and maxAccuracy is None: # minloss and maxAccuracy is available
-                return 'loss = %-12.5g        %-12s   \taccuracy = %-10.5g        %-10s '%(loss, ' ', accuracy, ' ')
+                return 'loss = %-11.5g        %-11s     accuracy = %-8.5g        %-8s '%(loss, ' ', accuracy, ' ')
             else:   # all stats are available
-                return 'loss = %-12.5g (min = %-12.5g)  \taccuracy = %-10.5g (max = %-10.5g)'%(loss, minloss, accuracy, maxAccuracy)
+                return 'loss = %-11.5g (min = %-11.5g)    accuracy = %-8.5g (max = %-8.5g)'%(loss, minloss, accuracy, maxAccuracy)
 
 class learningStats():
     '''

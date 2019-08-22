@@ -393,7 +393,7 @@ def readNpSpikes(filename, fmt='xypt', timeUnit=1e-3):
 	'''
 	npEvent = np.load(filename)
 	if fmt=='xypt':
-		if npEvnet.shape[1] == 3:
+		if npEvent.shape[1] == 3:
 			return event(npEvent[:, 0], None, npEvent[:, 1], npEvent[:, 2] * timeUnit * 1e3)
 		elif npEvent.shape[1] == 4:
 			return event(npEvent[:, 0], npEvent[:, 1], npEvent[:, 2], npEvent[:, 3] * timeUnit * 1e3)
