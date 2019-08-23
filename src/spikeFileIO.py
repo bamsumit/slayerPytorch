@@ -23,11 +23,15 @@ class event():
 		else:
 			self.dim = 2
 
-		self.x = xEvent if type(xEvent) is np.array else np.asarray(xEvent) # x spatial dimension
-		self.y = yEvent if type(yEvent) is np.array else np.asarray(yEvent) # y spatial dimension
-		self.p = pEvent if type(pEvent) is np.array else np.asarray(pEvent) # spike polarity
-		self.t = tEvent if type(tEvent) is np.array else np.asarray(tEvent) # time stamp in ms
+		self.x = xEvent if type(xEvent) is np.ndarray else np.asarray(xEvent) # x spatial dimension
+		self.y = yEvent if type(yEvent) is np.ndarray else np.asarray(yEvent) # y spatial dimension
+		self.p = pEvent if type(pEvent) is np.ndarray else np.asarray(pEvent) # spike polarity
+		self.t = tEvent if type(tEvent) is np.ndarray else np.asarray(tEvent) # time stamp in ms
 
+		if not issubclass(self.x.dtype.type, np.integer): self.x = self.x.astype('int')
+		if not issubclass(self.y.dtype.type, np.integer): self.y = self.y.astype('int')
+		if not issubclass(self.p.dtype.type, np.integer): self.p = self.p.astype('int')
+		
 		self.p -= self.p.min()
 
 	def toSpikeArray(self, samplingTime=1, dim=None):	# Sampling time in ms
@@ -394,7 +398,7 @@ def readNpSpikes(filename, fmt='xypt', timeUnit=1e-3):
 	npEvent = np.load(filename)
 	if fmt=='xypt':
 		if npEvent.shape[1] == 3:
-			return event(npEvent[:, 0], None, npEvent[:, 1], npEvent[:, 2] * timeUnit * 1e3)
+			return event(npEvent[:, 0].astype('int'), None, npEvent[:, 1], npEvent[:, 2] * timeUnit * 1e3)
 		elif npEvent.shape[1] == 4:
 			return event(npEvent[:, 0], npEvent[:, 1], npEvent[:, 2], npEvent[:, 3] * timeUnit * 1e3)
 		else:
@@ -423,7 +427,7 @@ def encodeNpSpikes(filename, TD, fmt='xypt', timeUnit=1e-3):
 			npEvent[:, 1] = TD.p
 			npEvent[:, 2] = TD.t
 		elif TD.dim==2:
-			npEvent = np.zeros((len(TD.x), 3))
+			npEvent = np.zeros((len(TD.x), 4))
 			npEvent[:, 0] = TD.x
 			npEvent[:, 1] = TD.y
 			npEvent[:, 2] = TD.p
