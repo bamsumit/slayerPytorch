@@ -29,8 +29,10 @@ class event():
 		self.t = tEvent if type(tEvent) is np.ndarray else np.asarray(tEvent) # time stamp in ms
 
 		if not issubclass(self.x.dtype.type, np.integer): self.x = self.x.astype('int')
-		if not issubclass(self.y.dtype.type, np.integer): self.y = self.y.astype('int')
 		if not issubclass(self.p.dtype.type, np.integer): self.p = self.p.astype('int')
+		
+		if self.dim == 2:	
+			if not issubclass(self.y.dtype.type, np.integer): self.y = self.y.astype('int')
 		
 		self.p -= self.p.min()
 
@@ -61,7 +63,7 @@ class event():
 			frame = np.zeros((dim[0], dim[1], dim[2], dim[3]))
 		return self.toSpikeTensor(frame, samplingTime).reshape(dim)
 
-	def toSpikeTensor(self, emptyTensor, samplingTime=1):	# Sampling time in ms
+	def toSpikeTensor(self, emptyTensor, samplingTime=1, randomShift=False):	# Sampling time in ms
 		'''
 		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.
 		The tensor is of dimension (channels, height, width, time) or``CHWT``.
@@ -69,31 +71,48 @@ class event():
 		Arguments:
 			* ``emptyTensor`` (``numpy or torch tensor``): an empty tensor to hold spike data 
 			* ``samplingTime``: the width of time bin to use.
+			* ``randomShift``: flag to shift the sample in time or not. Default: False.
 
 		Usage:
 
 		>>> spike = TD.toSpikeTensor( torch.zeros((2, 240, 180, 5000)) )
 		'''
+		
+		if randomShift is True:
+			tSt = np.random.randint(
+				max(int(self.t.min() / samplingTime), 
+					int(self.t.max() / samplingTime) - emptyTensor.shape[3])
+			)
+		else:
+			tSt = 0
+
+		xEvent = np.round(self.x).astype(int)
+		pEvent = np.round(self.p).astype(int)
+		tEvent = np.round(self.t/samplingTime).astype(int) - tSt
+
+		# print('shifted sequence by', tSt)
+
 		if self.dim == 1:
-			xEvent = np.round(self.x).astype(int)
-			pEvent = np.round(self.p).astype(int)
-			tEvent = np.round(self.t/samplingTime).astype(int)
 			validInd = np.argwhere((xEvent < emptyTensor.shape[2]) &
 								   (pEvent < emptyTensor.shape[0]) &
-								   (tEvent < emptyTensor.shape[3]))
+								   (tEvent < emptyTensor.shape[3]) &
+								   (xEvent >= 0) &
+								   (pEvent >= 0) &
+								   (tEvent >= 0))
 			emptyTensor[pEvent[validInd],
 						0, 
 				  		xEvent[validInd],
 				  		tEvent[validInd]] = 1/samplingTime
 		elif self.dim == 2:
-			xEvent = np.round(self.x).astype(int)
 			yEvent = np.round(self.y).astype(int)
-			pEvent = np.round(self.p).astype(int)
-			tEvent = np.round(self.t/samplingTime).astype(int)
 			validInd = np.argwhere((xEvent < emptyTensor.shape[2]) &
 								   (yEvent < emptyTensor.shape[1]) & 
 								   (pEvent < emptyTensor.shape[0]) &
-								   (tEvent < emptyTensor.shape[3]))
+								   (tEvent < emptyTensor.shape[3]) &
+								   (xEvent >= 0) &
+								   (yEvent >= 0) & 
+								   (pEvent >= 0) &
+								   (tEvent >= 0))
 			emptyTensor[pEvent[validInd], 
 				  		yEvent[validInd],
 				  		xEvent[validInd],
