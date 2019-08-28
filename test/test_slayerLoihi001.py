@@ -126,7 +126,7 @@ class testLoihiVoltage(unittest.TestCase):
 		error = torch.norm(uHid[0,24,0,0,:-1] - torch.FloatTensor(uGTHid).to(device)).item()
 		self.assertTrue(error<1e-3, 'Hidden voltage and ground truth must match.')
 
-	def testHidden(self):
+	def testOutput(self):
 		error = torch.norm(uOut[...,:-1] - torch.FloatTensor(uGTOut).to(device)).item()
 		self.assertTrue(error<1e-3, 'Hidden voltage and ground truth must match.')
 
