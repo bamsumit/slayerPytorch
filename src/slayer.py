@@ -103,10 +103,10 @@ class spikeLayer(torch.nn.Module):
         
     def calculateRefKernel(self):
         if self.fullRefKernel:
-            refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -2 * self.neuron['theta'], EPSILON = 0.0001)
+            refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -self.neuron['scaleRef'] * self.neuron['theta'], EPSILON = 0.0001)
             # This gives the high precision refractory kernel as MATLAB implementation, however, it is expensive
         else:
-            refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -2 * self.neuron['theta'])
+            refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -self.neuron['scaleRef'] * self.neuron['theta'])
         
         # TODO implement for different types of kernels
         return torch.tensor(refKernel)
