@@ -116,6 +116,28 @@ This should usually be done before the start of an epoch so that new statistics 
 </pre></div>
 </div>
 <dl class="method">
+<dt id="learningStats.learningStats.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>filename=''</em>, <em>numEpoch=None</em>, <em>modulo=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learningStats.html#learningStats.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learningStats.learningStats.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loads the learning statistics logs from saved files.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>: filename to save the logs. <code class="docutils literal notranslate"><span class="pre">accuracy.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">loss.txt</span></code> will be appended.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">numEpoch</span></code>: number of epochs of logs to load. Default: None. <code class="docutils literal notranslate"><span class="pre">numEpoch</span></code> will be automatically determined from saved files.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">modulo</span></code>: the gap in number of epoch before model was saved.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># save stats</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">epoch</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> 
+
+<span class="c1"># save stats filename specified</span>
+<span class="n">stats</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">filename</span><span class="o">=</span><span class="s1">&#39;Run101-0.001-&#39;</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span> <span class="c1"># Run101-0.001-accuracy.txt and Run101-0.001-loss.txt</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
 <dt id="learningStats.learningStats.plot">
 <code class="descname">plot</code><span class="sig-paren">(</span><em>figures=(1</em>, <em>2)</em>, <em>saveFig=False</em>, <em>path=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/learningStats.html#learningStats.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#learningStats.learningStats.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the available learning statistics.</p>
@@ -169,7 +191,7 @@ For Linux systems, prints the data on same terminal space (might not work proper
 <dd><p>Saves the learning satatistics logs.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>: filename to save the logs. <code class="docutils literal notranslate"><span class="pre">accuracy.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">loss.txt</span></code> will be appended</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">filename</span></code>: filename to save the logs. <code class="docutils literal notranslate"><span class="pre">accuracy.txt</span></code> and <code class="docutils literal notranslate"><span class="pre">loss.txt</span></code> will be appended.</p></li>
 </ul>
 </dd>
 </dl>
@@ -225,6 +247,7 @@ For Linux systems, prints the data on same terminal space (might not work proper
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">

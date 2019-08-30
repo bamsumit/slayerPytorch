@@ -1,3 +1,4 @@
+import numpy as np
 import matplotlib.pyplot as plt
 
 class learningStat():
@@ -249,7 +250,7 @@ class learningStats():
         Saves the learning satatistics logs.
 
         Arguments:
-            * ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended
+            * ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended.
 
         Usage:
 
@@ -272,3 +273,41 @@ class learningStats():
             if self.training.accuracyLog != [None]*len(self.training.accuracyLog):
                 for i in range(len(self.training.accuracyLog)): 
                     accuracy.write('%12.6g %12.6g \r\n'%(self.training.accuracyLog[i], self.testing.accuracyLog[i]))
+
+    def load(self, filename='', numEpoch=None, modulo=1):
+        '''
+        Loads the learning statistics logs from saved files.
+
+        Arguments:
+            * ``filename``: filename to save the logs. ``accuracy.txt`` and ``loss.txt`` will be appended.
+            * ``numEpoch``: number of epochs of logs to load. Default: None. ``numEpoch`` will be automatically determined from saved files.
+            * ``modulo``: the gap in number of epoch before model was saved.
+
+        Usage:
+
+        .. code-block:: python
+
+            # save stats
+            stats.load(epoch=10) 
+
+            # save stats filename specified
+            stats.save(filename='Run101-0.001-', epoch=50) # Run101-0.001-accuracy.txt and Run101-0.001-loss.txt
+        '''
+        saved = {}
+        saved['accuracy'] = np.loadtxt(filename + 'accuracy.txt')
+        saved['loss']     = np.loadtxt(filename + 'loss.txt')
+        if numEpoch is None:
+            saved['epoch'] = saved['loss'].shape[0] // modulo * modulo + 1
+        else:
+            saved['epoch'] = numEpoch
+
+        self.training.lossLog = saved['loss'][:saved['epoch'], 0].tolist()
+        self.testing .lossLog = saved['loss'][:saved['epoch'], 1].tolist()
+        self.training.minloss = saved['loss'][:saved['epoch'], 0].min()
+        self.testing .minloss = saved['loss'][:saved['epoch'], 1].min()
+        self.training.accuracyLog = saved['accuracy'][:saved['epoch'], 0].tolist()
+        self.testing .accuracyLog = saved['accuracy'][:saved['epoch'], 1].tolist()
+        self.training.maxAccuracy = saved['accuracy'][:saved['epoch'], 0].max()
+        self.testing .maxAccuracy = saved['accuracy'][:saved['epoch'], 1].max()
+
+        return saved['epoch']

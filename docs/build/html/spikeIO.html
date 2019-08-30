@@ -213,13 +213,14 @@ The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data
 
 <dl class="method">
 <dt id="spikeFileIO.event.toSpikeTensor">
-<code class="descname">toSpikeTensor</code><span class="sig-paren">(</span><em>emptyTensor</em>, <em>samplingTime=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
+<code class="descname">toSpikeTensor</code><span class="sig-paren">(</span><em>emptyTensor</em>, <em>samplingTime=1</em>, <em>randomShift=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
 The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">emptyTensor</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">or</span> <span class="pre">torch</span> <span class="pre">tensor</span></code>): an empty tensor to hold spike data</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">samplingTime</span></code>: the width of time bin to use.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">randomShift</span></code>: flag to shift the sample in time or not. Default: False.</p></li>
 </ul>
 </dd>
 </dl>
