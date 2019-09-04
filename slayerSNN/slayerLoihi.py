@@ -8,10 +8,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import slayer
+from . import slayer
 import slayerCuda
 import slayerLoihiCuda
-from quantizeParams import quantizeWeights
+from .quantizeParams import quantizeWeights
 
 class spikeLayer(slayer.spikeLayer):
     '''

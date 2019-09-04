@@ -1,6 +1,4 @@
-import sys, os
-CURRENT_TEST_DIR = os.getcwd()
-sys.path.append(CURRENT_TEST_DIR + "/../../src")
+import os
 
 from datetime import datetime
 import numpy as np
@@ -8,7 +6,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset, DataLoader
 import slayerSNN as snn
-from learningStats import learningStats
+from slayerSNN.learningStats import learningStats
 import zipfile
 
 netParams = snn.params('network.yaml')
