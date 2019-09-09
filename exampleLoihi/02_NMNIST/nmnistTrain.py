@@ -185,6 +185,7 @@ if __name__ == '__main__':
 
 	# Save training data
 	stats.save('Trained/')
+	net.load_state_dict(torch.load('Trained/nmnistNet.pt'))
 	genLoihiParams(net)
 
 	# Plot the results

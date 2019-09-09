@@ -80,8 +80,11 @@ class event():
 		
 		if randomShift is True:
 			tSt = np.random.randint(
-				max(int(self.t.min() / samplingTime), 
-					int(self.t.max() / samplingTime) - emptyTensor.shape[3])
+				max(
+					int(self.t.min() / samplingTime), 
+					int(self.t.max() / samplingTime) - emptyTensor.shape[3],
+					1,
+				)
 			)
 		else:
 			tSt = 0

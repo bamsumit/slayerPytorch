@@ -19,6 +19,8 @@ slayer = snn.layer(netParams['neuron'], netParams['simulation']).to(device)
 
 # (N, C, H, W, D) = (2, 5, 6, 7, 50)
 (N, C, H, W, D) = (5, 10, 20, 30, 500)
+# Uncomment this to test large neuron sizes
+# (N, C, H, W, D) = (5, 16, 128, 128, 500)
 
 delay = slayer.delay((C, H, W)).to(device)
 

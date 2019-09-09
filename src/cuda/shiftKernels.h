@@ -67,19 +67,32 @@ void shift( T* output,
 		    unsigned signalSize, unsigned nNeurons, float Ts)
 {
 	dim3 thread(128, 8, 1);
-	dim3 block( ceil( 1.0f * signalSize / thread.x ),
-				ceil( 1.0f * nNeurons / thread.y ),
-				1 );
-	if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
-	if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
+	int nGrid = ceil( 1.0f * nNeurons / thread.y / 65535 );
+	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
 
-	// std::cout << "Thread: (" << thread.x << ", " << thread.y << ", " << thread.z << ")" << std::endl;
-	// std::cout << "Block : (" << block.x << ", " << block.y << ", " << block.z << ")" << std::endl;
+	for(auto i=0; i<nGrid; ++i)
+	{
+		int startOffset = i * neuronsPerGrid;
+		int neuronsInGrid = (startOffset + neuronsPerGrid <= nNeurons) ? neuronsPerGrid : nNeurons - startOffset;
 
-	shiftKernel<T><<< block, thread >>>(output, 
-										input, 
-										shiftValue, 
-										signalSize, nNeurons, Ts);
+		if(neuronsInGrid < 0)	break;
+
+		dim3 block(	ceil( 1.0f * signalSize    /thread.x ), 
+					ceil( 1.0f * neuronsInGrid /thread.y ), 
+					1 );
+
+		// these should never be trigerred
+		if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
+		if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
+
+		// std::cout << "Thread: (" << thread.x << ", " << thread.y << ", " << thread.z << ")" << std::endl;
+		// std::cout << "Block : (" << block.x << ", " << block.y << ", " << block.z << ")" << std::endl;
+
+		shiftKernel<T><<< block, thread >>>(output + startOffset * signalSize, 
+											input  + startOffset * signalSize, 
+											shiftValue, 
+											signalSize, neuronsInGrid, Ts);
+	}
 
 	// cudaDeviceSynchronize();
 }
@@ -91,20 +104,33 @@ void shift( T* output,
 		    unsigned signalSize, unsigned nNeurons, unsigned nBatch, float Ts)
 {
 	dim3 thread(128, 8, 1);
-	dim3 block( ceil( 1.0f * signalSize / thread.x ),
-				ceil( 1.0f * nNeurons / thread.y ),
-				1 );
-	if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
-	if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
 
-	// std::cout << "Thread: (" << thread.x << ", " << thread.y << ", " << thread.z << ")" << std::endl;
-	// std::cout << "Block : (" << block.x << ", " << block.y << ", " << block.z << ")" << std::endl;
+	int nGrid = ceil( 1.0f * nNeurons / thread.y / 65535);
+	int neuronsPerGrid = ceil(1.0f * nNeurons / nGrid);
 
 	for(unsigned i=0; i<nBatch; ++i)
-		shiftKernel<T><<< block, thread >>>(output + i * nNeurons * signalSize, 
-											input + i * nNeurons * signalSize, 
-											shiftLUT, 
-											signalSize, nNeurons, Ts);
+	{
+		for(auto j=0; j<nGrid; ++j)
+		{	
+			int startOffset = j * neuronsPerGrid;
+			int neuronsInGrid = (startOffset + neuronsPerGrid <= nNeurons) ? neuronsPerGrid : nNeurons - startOffset;
+
+			if(neuronsInGrid < 0)	break;
+
+			dim3 block(	ceil( 1.0f * signalSize    /thread.x ), 
+						ceil( 1.0f * neuronsInGrid /thread.y ), 
+						1 );
+
+			// these should never be trigerred
+			if(block.y >= 65535)	AT_ERROR("maximum blockDim.y exceeded.");
+			if(block.z >= 65535)	AT_ERROR("maximum blockDim.z exceeded.");
+
+			shiftKernel<T><<< block, thread >>>(output + (i * nNeurons + startOffset) * signalSize, 
+												input  + (i * nNeurons + startOffset) * signalSize, 
+												shiftLUT + startOffset, 
+												signalSize, neuronsInGrid, Ts);
+		}
+	}
 
 	// cudaDeviceSynchronize();
 }

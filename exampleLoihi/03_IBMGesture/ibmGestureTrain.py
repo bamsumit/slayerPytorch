@@ -230,6 +230,7 @@ if __name__ == '__main__':
 
 	# Save training data
 	stats.save('Trained/')
+	net.load_state_dict(torch.load('Trained/ibmGestureNet.pt'))
 	genLoihiParams(net)
 
 	# Plot the results.
