@@ -1,5 +1,5 @@
 SLAYER module
 ===================
-.. automodule:: slayer
+.. automodule:: slayerSNN.slayer
    :members:
    

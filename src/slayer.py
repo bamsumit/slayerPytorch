@@ -606,7 +606,7 @@ class _spikeFunction(torch.autograd.Function):
         #                                                         refractoryResponse,
         #                                                         threshold,
         #                                                         Ts)
-        spikes = slayerCuda.getSpikes(membranePotential, refractoryResponse, threshold, Ts)
+        spikes = slayerCuda.getSpikes(membranePotential.contiguous(), refractoryResponse, threshold, Ts)
         
         pdfScale        = torch.autograd.Variable(torch.tensor(neuron['scaleRho']                 , device=device, dtype=dtype), requires_grad=False)
         # pdfTimeConstant = torch.autograd.Variable(torch.tensor(neuron['tauRho']                   , device=device, dtype=dtype), requires_grad=False) # needs to be scaled by theta
@@ -702,7 +702,7 @@ class _delayFunction(torch.autograd.Function):
         '''
         device = input.device
         dtype  = input.dtype
-        output = slayerCuda.shift(input, delay.data, Ts)
+        output = slayerCuda.shift(input.contiguous(), delay.data, Ts)
         Ts = torch.autograd.Variable(torch.tensor(Ts, device=device, dtype=dtype), requires_grad=False)
         ctx.save_for_backward(output, delay.data, Ts)
         return output
@@ -714,13 +714,13 @@ class _delayFunction(torch.autograd.Function):
         # autograd tested and verified
         (output, delay, Ts) = ctx.saved_tensors
         diffFilter = torch.tensor([-1, 1], dtype=gradOutput.dtype).to(gradOutput.device) / Ts
-        outputDiff = slayerCuda.conv(output, diffFilter, 1)
+        outputDiff = slayerCuda.conv(output.contiguous(), diffFilter, 1)
         # the conv operation should not be scaled by Ts. 
         # As such, the output is -( x[k+1]/Ts - x[k]/Ts ) which is what we want.
         gradDelay  = torch.sum(gradOutput * outputDiff, [0, -1], keepdim=True).reshape(gradOutput.shape[1:-1]) * Ts
         # no minus needed here, as it is included in diffFilter which is -1 * [1, -1]
 
-        return slayerCuda.shift(gradOutput, -delay, Ts), gradDelay, None
+        return slayerCuda.shift(gradOutput.contiguous(), -delay, Ts), gradDelay, None
 
 class _delayFunctionNoGradient(torch.autograd.Function):
     '''
@@ -731,7 +731,7 @@ class _delayFunctionNoGradient(torch.autograd.Function):
         '''
         device = input.device
         dtype  = input.dtype
-        output = slayerCuda.shift(input, delay, Ts)
+        output = slayerCuda.shift(input.contiguous(), delay, Ts)
         Ts     = torch.autograd.Variable(torch.tensor(Ts   , device=device, dtype=dtype), requires_grad=False)
         delay  = torch.autograd.Variable(torch.tensor(delay, device=device, dtype=dtype), requires_grad=False)
         ctx.save_for_backward(delay, Ts)
@@ -742,4 +742,4 @@ class _delayFunctionNoGradient(torch.autograd.Function):
         '''
         '''
         (delay, Ts) = ctx.saved_tensors
-        return slayerCuda.shift(gradOutput, -delay, Ts), None, None
+        return slayerCuda.shift(gradOutput.contiguous(), -delay, Ts), None, None

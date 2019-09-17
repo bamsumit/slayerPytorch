@@ -1,5 +1,5 @@
 Spike Input/Output
 ===================
-.. automodule:: spikeFileIO
+.. automodule:: slayerSNN.spikeFileIO
    :members:
    

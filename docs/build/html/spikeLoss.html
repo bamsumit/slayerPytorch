@@ -32,11 +32,11 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-spikeLoss">
-<span id="spike-loss"></span><h1>Spike Loss<a class="headerlink" href="#module-spikeLoss" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-slayerSNN.spikeLoss">
+<span id="spike-loss"></span><h1>Spike Loss<a class="headerlink" href="#module-slayerSNN.spikeLoss" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="spikeLoss.spikeLoss">
-<em class="property">class </em><code class="descclassname">spikeLoss.</code><code class="descname">spikeLoss</code><span class="sig-paren">(</span><em>networkDescriptor</em>, <em>slayerClass=&lt;class 'slayer.spikeLayer'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeLoss.html#spikeLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeLoss.spikeLoss" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.spikeLoss.spikeLoss">
+<em class="property">class </em><code class="descclassname">slayerSNN.spikeLoss.</code><code class="descname">spikeLoss</code><span class="sig-paren">(</span><em>networkDescriptor</em>, <em>slayerClass=&lt;class 'slayerSNN.slayer.spikeLayer'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines different spike based loss modules that can be used to optimize the SNN.</p>
 <p>NOTE: By default, this class uses the spike kernels from <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>).
 In some cases, you may want to explicitly use different spike kernels, for e.g. <code class="docutils literal notranslate"><span class="pre">slayerLoihi.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.loihi</span></code>).
@@ -48,8 +48,8 @@ In that scenario, you can explicitly pass the class name: <code class="docutils 
 </pre></div>
 </div>
 <dl class="method">
-<dt id="spikeLoss.spikeLoss.numSpikes">
-<code class="descname">numSpikes</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>desiredClass</em>, <em>numSpikesScale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeLoss.html#spikeLoss.numSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeLoss.spikeLoss.numSpikes" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.spikeLoss.spikeLoss.numSpikes">
+<code class="descname">numSpikes</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>desiredClass</em>, <em>numSpikesScale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.numSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.numSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates spike loss based on number of spikes within a <cite>target region</cite>.
 The <cite>target region</cite> and <cite>desired spike count</cite> is specified in <code class="docutils literal notranslate"><span class="pre">error.errorDescriptor['tgtSpikeRegion']</span></code>
 Any spikes outside the target region are penalized with <code class="docutils literal notranslate"><span class="pre">error.spikeTime</span></code> loss..</p>
@@ -75,8 +75,8 @@ E &amp;= \int_0^T e(t)^2 \text{d}t"/></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="spikeLoss.spikeLoss.spikeTime">
-<code class="descname">spikeTime</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>spikeDesired</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/spikeLoss.html#spikeLoss.spikeTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#spikeLoss.spikeLoss.spikeTime" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.spikeLoss.spikeLoss.spikeTime">
+<code class="descname">spikeTime</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>spikeDesired</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.spikeTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.spikeTime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates spike loss based on spike time.
 The loss is similar to van Rossum distance between output and desired spike train.</p>
 <div class="math">

@@ -6,8 +6,8 @@ sys.path.append(CURRENT_TEST_DIR + "/../src")
 import unittest
 import numpy as np
 import matplotlib.pyplot as plt
-from slayerLoihi import spikeLayer
-from slayerParams import yamlParams as SlayerParams
+from slayerSNN import loihi as spikeLayer
+from slayerSNN import params as SlayerParams
 import torch
 
 verbose = True if (('-v' in sys.argv) or ('--verbose' in sys.argv)) else False

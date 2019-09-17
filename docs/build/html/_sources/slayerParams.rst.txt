@@ -38,6 +38,6 @@ A typical yaml configuration file looks like this.
          test:    path_to_test_list
 
 
-.. automodule:: slayerParams
+.. automodule:: slayerSNN.slayerParams
    :members:
    

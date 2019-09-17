@@ -1,11 +1,11 @@
-from slayer import spikeLayer as layer
-from slayerLoihi import spikeLayer as loihi
+from .slayer import spikeLayer as layer
+from .slayerLoihi import spikeLayer as loihi
 # from slayer import yamlParams as params
-from slayerParams import yamlParams as params
-from spikeLoss import spikeLoss as loss
-from spikeClassifier import spikeClassifier as predict
-import spikeFileIO as io
-from quantizeParams import quantizeWeights as quantize
+from .slayerParams import yamlParams as params
+from .spikeLoss import spikeLoss as loss
+from .spikeClassifier import spikeClassifier as predict
+from . import spikeFileIO as io
+from .quantizeParams import quantizeWeights as quantize
 
 '''
 This modules bundles various SLAYER PyTorch modules as a single package.

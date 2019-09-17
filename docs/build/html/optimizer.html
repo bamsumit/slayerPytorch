@@ -14,6 +14,7 @@
     <script type="text/javascript" src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Quantize module" href="quantizeParams.html" />
     <link rel="prev" title="Learning statistics" href="learningStats.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
@@ -31,11 +32,11 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-optimizer">
-<span id="optimizer"></span><h1>Optimizer<a class="headerlink" href="#module-optimizer" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-slayerSNN.optimizer">
+<span id="optimizer"></span><h1>Optimizer<a class="headerlink" href="#module-slayerSNN.optimizer" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="optimizer.Nadam">
-<em class="property">class </em><code class="descclassname">optimizer.</code><code class="descname">Nadam</code><span class="sig-paren">(</span><em>params</em>, <em>lr=0.001</em>, <em>betas=(0.9</em>, <em>0.999)</em>, <em>eps=1e-08</em>, <em>weight_decay=0</em>, <em>amsgrad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optimizer.html#Nadam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#optimizer.Nadam" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.optimizer.Nadam">
+<em class="property">class </em><code class="descclassname">slayerSNN.optimizer.</code><code class="descname">Nadam</code><span class="sig-paren">(</span><em>params</em>, <em>lr=0.001</em>, <em>betas=(0.9</em>, <em>0.999)</em>, <em>eps=1e-08</em>, <em>weight_decay=0</em>, <em>amsgrad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements Nadam algorithm. (Modified Adam from <a class="reference external" href="https://pytorch.org/docs/stable/_modules/torch/optim/adam.html#Adam">PyTorch</a>)</p>
 <p>It has been proposed in <a class="reference external" href="https://openreview.net/pdf?id=OM0jvwB8jIp57ZJjtNEZ">Incorporating Nesterov Momentum into Adam</a>.</p>
 <dl class="simple">
@@ -54,8 +55,8 @@ algorithm from the paper <a class="reference external" href="https://openreview.
 </dd>
 </dl>
 <dl class="method">
-<dt id="optimizer.Nadam.step">
-<code class="descname">step</code><span class="sig-paren">(</span><em>closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/optimizer.html#Nadam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#optimizer.Nadam.step" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.optimizer.Nadam.step">
+<code class="descname">step</code><span class="sig-paren">(</span><em>closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -101,6 +102,7 @@ algorithm from the paper <a class="reference external" href="https://openreview.
 <li class="toctree-l1"><a class="reference internal" href="spikeIO.html">Spike Input/Output</a></li>
 <li class="toctree-l1"><a class="reference internal" href="learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">
@@ -108,6 +110,7 @@ algorithm from the paper <a class="reference external" href="https://openreview.
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
       <li>Previous: <a href="learningStats.html" title="previous chapter">Learning statistics</a></li>
+      <li>Next: <a href="quantizeParams.html" title="next chapter">Quantize module</a></li>
   </ul></li>
 </ul>
 </div>

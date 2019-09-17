@@ -32,11 +32,11 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-slayerLoihi">
-<span id="slayer-loihi-module"></span><h1>SLAYER Loihi module<a class="headerlink" href="#module-slayerLoihi" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-slayerSNN.slayerLoihi">
+<span id="slayer-loihi-module"></span><h1>SLAYER Loihi module<a class="headerlink" href="#module-slayerSNN.slayerLoihi" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
-<dt id="slayerLoihi.spikeLayer">
-<em class="property">class </em><code class="descclassname">slayerLoihi.</code><code class="descname">spikeLayer</code><span class="sig-paren">(</span><em>neuronDesc</em>, <em>simulationDesc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.slayerLoihi.spikeLayer">
+<em class="property">class </em><code class="descclassname">slayerSNN.slayerLoihi.</code><code class="descname">spikeLayer</code><span class="sig-paren">(</span><em>neuronDesc</em>, <em>simulationDesc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines the main engine of SLAYER Loihi module.
 It is derived from <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> with Loihi specific implementation for
 neuon model, weight quantization.
@@ -75,54 +75,54 @@ All of the routines available for <code class="docutils literal notranslate"><sp
 </pre></div>
 </div>
 <dl class="method">
-<dt id="slayerLoihi.spikeLayer.conv">
-<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a>. 
+<dt id="slayerSNN.slayerLoihi.spikeLayer.conv">
+<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
 <dl class="simple">
-<dt>Arguments:</dt><dd><p>The arguments that are different from <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a> are listed.
+<dt>Arguments:</dt><dd><p>The arguments that are different from <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code> are listed.
 * <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
 * <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
 </dd>
-<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.conv" title="slayer.spikeLayer.conv"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></a></p>
+<dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="slayerLoihi.spikeLayer.dense">
-<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a>. 
+<dt id="slayerSNN.slayerLoihi.spikeLayer.dense">
+<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=100</em>, <em>quantize=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
 <dl class="simple">
-<dt>Arguments:</dt><dd><p>The arguments that are different from <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a> are listed.
+<dt>Arguments:</dt><dd><p>The arguments that are different from <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code> are listed.
 * <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
 * <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
 </dd>
-<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.dense" title="slayer.spikeLayer.dense"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></a></p>
+<dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="slayerLoihi.spikeLayer.pool">
-<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function behaves similar to <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a>. 
+<dt id="slayerSNN.slayerLoihi.spikeLayer.pool">
+<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
 <dl class="simple">
-<dt>Arguments:</dt><dd><p>The arguments set is same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a>.</p>
+<dt>Arguments:</dt><dd><p>The arguments set is same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code>.</p>
 </dd>
-<dt>Usage:</dt><dd><p>Same as <a class="reference internal" href="slayer.html#slayer.spikeLayer.pool" title="slayer.spikeLayer.pool"><code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></a></p>
+<dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="slayerLoihi.spikeLayer.spikeLoihi">
-<code class="descname">spikeLoihi</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.spikeLoihi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.spikeLoihi" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.slayerLoihi.spikeLayer.spikeLoihi">
+<code class="descname">spikeLoihi</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.spikeLoihi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.spikeLoihi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Loihi neuron dynamics to weighted spike inputs and returns output spike tensor.
 The output tensor dimension is same as input.</p>
 <p>NOTE: This function is different than the default <code class="docutils literal notranslate"><span class="pre">spike</span></code> function which takes membrane potential (weighted spikes with psp filter applied).
@@ -140,8 +140,8 @@ Since the dynamics is modeled internally, it just takes in weightedSpikes (NOT F
 </dd></dl>
 
 <dl class="method">
-<dt id="slayerLoihi.spikeLayer.spikeLoihiFull">
-<code class="descname">spikeLoihiFull</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerLoihi.html#spikeLayer.spikeLoihiFull"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerLoihi.spikeLayer.spikeLoihiFull" title="Permalink to this definition">¶</a></dt>
+<dt id="slayerSNN.slayerLoihi.spikeLayer.spikeLoihiFull">
+<code class="descname">spikeLoihiFull</code><span class="sig-paren">(</span><em>weightedSpikes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.spikeLoihiFull"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.spikeLoihiFull" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies Loihi neuron dynamics to weighted spike inputs and returns output spike, voltage and current.
 The output tensor dimension is same as input.</p>
 <p>NOTE: This function does not have autograd routine in the computational graph.</p>

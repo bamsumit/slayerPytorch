@@ -2,7 +2,7 @@ import math
 import numpy as np
 import torch
 import torch.nn as nn
-from slayer import spikeLayer
+from .slayer import spikeLayer
 
 class spikeLoss(torch.nn.Module):   
     '''

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import torch
 from slayerParams import yamlParams as SlayerParams
 from slayer import spikeLayer
-from spikeLoss import spikeLoss
+from slayerSNN import loss as spikeLoss
 from spikeClassifier import spikeClassifier as predict
 
 ###############################################################################

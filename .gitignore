@@ -5,6 +5,7 @@
 build/*
 dist/*
 *.egg-info/*
+src/*.egg-info/*
 .ipynb_checkpoints/
 .idea/
 

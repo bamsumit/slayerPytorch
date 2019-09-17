@@ -1,5 +1,5 @@
 Learning statistics
 ===================
-.. automodule:: learningStats
+.. automodule:: slayerSNN.learningStats
    :members:
    

@@ -8,10 +8,14 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset, DataLoader
 import slayerSNN as snn
-from slayerLoihi import spikeLayer
-from quantizeParams import quantizeWeights
-from learningStats import learningStats
-import optimizer
+from slayerSNN import loihi as spikeLayer
+from slayerSNN import quantize as quantizeParams
+from slayerSNN.learningStats import learningStats
+import slayerSNN.optimizer as optimizer
+# from slayerLoihi import spikeLayer
+# from quantizeParams import quantizeWeights
+# from learningStats import learningStats
+# import optimizer
 
 # Define dataset module
 class IBMGestureDataset(Dataset):

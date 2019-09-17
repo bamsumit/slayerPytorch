@@ -6,10 +6,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import slayerSNN as snn
-from slayerLoihi import spikeLayer
-from quantizeParams import quantizeWeights
-from learningStats import learningStats
-import optimizer
+from slayerSNN import loihi as spikeLayer
+from slayerSNN import quantize as quantizeParams
+from slayerSNN import learningStats as learningStats
+from slayerSNN import optimizer as optimizer
+# from slayerLoihi import spikeLayer
+# from quantizeParams import quantizeWeights
+# from learningStats import learningStats
+# import optimizer
 
 # Read SNN configuration from yaml file
 netParams = snn.params('oxford.yaml')

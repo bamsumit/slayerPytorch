@@ -1,4 +1,4 @@
 Quantize module
 ================
-.. automodule:: quantizeParams
+.. automodule:: slayerSNN.quantizeParams
    :members:

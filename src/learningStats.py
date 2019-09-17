@@ -272,7 +272,10 @@ class learningStats():
             accuracy.write('#%11s %11s\r\n'%('Train', 'Test'))
             if self.training.accuracyLog != [None]*len(self.training.accuracyLog):
                 for i in range(len(self.training.accuracyLog)): 
-                    accuracy.write('%12.6g %12.6g \r\n'%(self.training.accuracyLog[i], self.testing.accuracyLog[i]))
+                    accuracy.write('%12.6g %12.6g \r\n'%(
+                        self.training.accuracyLog[i], 
+                        self.testing.accuracyLog[i] if self.testing.accuracyLog[i] is not None else 0,
+                    ))
 
     def load(self, filename='', numEpoch=None, modulo=1):
         '''

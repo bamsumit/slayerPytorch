@@ -1,4 +1,4 @@
 SLAYER Loihi module
 ====================
-.. automodule:: slayerLoihi
+.. automodule:: slayerSNN.slayerLoihi
    :members:

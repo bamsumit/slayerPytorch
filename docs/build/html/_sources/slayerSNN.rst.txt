@@ -16,6 +16,6 @@ The complete module can be imported as
 * The **quantize** module is available as ``snn.quantize``.
 
 
-.. automodule:: slayerSNN
+.. automodule:: slayerSNN.slayerSNN
    :members:
    

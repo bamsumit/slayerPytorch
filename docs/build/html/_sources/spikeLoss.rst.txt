@@ -1,5 +1,5 @@
 Spike Loss
 ===================
-.. automodule:: spikeLoss
+.. automodule:: slayerSNN.spikeLoss
    :members:
    

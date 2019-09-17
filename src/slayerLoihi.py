@@ -8,10 +8,10 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import slayer
+from . import slayer
 import slayerCuda
 import slayerLoihiCuda
-from quantizeParams import quantizeWeights
+from .quantizeParams import quantizeWeights
 
 class spikeLayer(slayer.spikeLayer):
     '''
@@ -220,7 +220,7 @@ class _spike(torch.autograd.Function):
         if weightedSpikes.dtype == torch.int32:
             Ts = 1
         
-        spike, voltage, current = slayerLoihiCuda.getSpikes(weightedSpikes * Ts, wgtExp, theta, iDecay, vDecay)
+        spike, voltage, current = slayerLoihiCuda.getSpikes((weightedSpikes * Ts).contiguous(), wgtExp, theta, iDecay, vDecay)
 
         return spike/Ts, voltage, current
 

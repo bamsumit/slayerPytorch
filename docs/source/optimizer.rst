@@ -1,5 +1,5 @@
 Optimizer
 ===================
-.. automodule:: optimizer
+.. automodule:: slayerSNN.optimizer
    :members:
    

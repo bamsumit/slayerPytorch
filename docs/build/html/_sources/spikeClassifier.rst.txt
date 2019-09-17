@@ -1,5 +1,5 @@
 Spike Classifier
 ===================
-.. automodule:: spikeClassifier
+.. automodule:: slayerSNN.spikeClassifier
    :members:
    

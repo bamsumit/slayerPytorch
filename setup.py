@@ -23,9 +23,6 @@ setup(
     cmdclass={'build_ext': BuildExtension}
 )
 
-from setuptools import setup
-from torch.utils.cpp_extension import BuildExtension, CUDAExtension
-
 setup(
     name='slayerLoihiCuda',
     ext_modules=[
@@ -44,4 +41,10 @@ setup(
         )
     ],
     cmdclass={'build_ext': BuildExtension}
+)
+
+setup(
+    name='slayerSNN',
+    packages = ['slayerSNN'],
+    package_dir = {'slayerSNN': 'src'},
 )

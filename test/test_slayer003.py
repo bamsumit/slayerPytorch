@@ -7,7 +7,8 @@ import unittest
 import numpy as np
 import matplotlib.pyplot as plt
 from slayer import spikeLayer
-from spikeLoss import spikeLoss
+# from spikeLoss import spikeLoss
+from slayerSNN import loss as spikeLoss
 from slayerParams import yamlParams as SlayerParams
 import torch
 
