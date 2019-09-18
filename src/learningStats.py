@@ -196,8 +196,8 @@ class learningStats():
         profileStr = '' if timeElapsed is None else ', %12.4f ms elapsed'%(timeElapsed * 1000)
 
         if header is not None:
-            for str in header:
-                print(str)
+            for h in header:
+                print('\033[2K'+str(h))
                 self.linesPrinted +=1
 
         print(epochStr + iterStr + profileStr)
@@ -208,8 +208,8 @@ class learningStats():
             self.linesPrinted += 1
 
         if footer is not None:
-            for str in footer:
-                print(str)
+            for f in footer:
+                print('\033[2K'+str(f))
                 self.linesPrinted +=1
                 
 
