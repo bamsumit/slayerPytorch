@@ -4,18 +4,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>spikeClassifier &#8212; SLAYER PyTorch 0.1 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <title>slayerSNN.spikeClassifier &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -30,16 +30,16 @@
 
           <div class="body" role="main">
             
-  <h1>Source code for spikeClassifier</h1><div class="highlight"><pre>
+  <h1>Source code for slayerSNN.spikeClassifier</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
  
-<div class="viewcode-block" id="spikeClassifier"><a class="viewcode-back" href="../spikeClassifier.html#spikeClassifier.spikeClassifier">[docs]</a><span class="k">class</span> <span class="nc">spikeClassifier</span><span class="p">:</span>
+<div class="viewcode-block" id="spikeClassifier"><a class="viewcode-back" href="../../spikeClassifier.html#slayerSNN.spikeClassifier.spikeClassifier">[docs]</a><span class="k">class</span> <span class="nc">spikeClassifier</span><span class="p">:</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	It provides classification modules for SNNs.</span>
 <span class="sd">	All the functions it supplies are static and can be called without making an instance of the class.</span>
 <span class="sd">	&#39;&#39;&#39;</span>
-<div class="viewcode-block" id="spikeClassifier.getClass"><a class="viewcode-back" href="../spikeClassifier.html#spikeClassifier.spikeClassifier.getClass">[docs]</a>	<span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="spikeClassifier.getClass"><a class="viewcode-back" href="../../spikeClassifier.html#slayerSNN.spikeClassifier.spikeClassifier.getClass">[docs]</a>	<span class="nd">@staticmethod</span>
 	<span class="k">def</span> <span class="nf">getClass</span><span class="p">(</span><span class="n">spike</span><span class="p">):</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns the predicted class label.</span>
@@ -61,7 +61,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+<h1 class="logo"><a href="../../index.html">SLAYER PyTorch</a></h1>
 
 
 
@@ -73,23 +73,23 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Module code</a><ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
   </ul></li>
   </ul></li>
 </ul>
@@ -97,7 +97,7 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
     </form>

@@ -162,7 +162,7 @@ class learningStats():
         self.testing.update()
         self.testing.reset()
 
-    def print(self, epoch, iter=None, timeElapsed=None):
+    def print(self, epoch, iter=None, timeElapsed=None, header=None, footer=None):
         '''
         Prints the available learning statistics from the current session on the console.
         For Linux systems, prints the data on same terminal space (might not work properly on other systems).
@@ -171,6 +171,8 @@ class learningStats():
             * ``epoch``: epoch counter to display (required).
             * ``iter``: iteration counter to display (not required).
             * ``timeElapsed``: runtime information (not required).
+            * ``header``: things to be printed before printing learning statistics. Default: ``None``.
+            * ``footer``: things to be printed after printing learning statistics. Default: ``None``.
 
         Usage:
 
@@ -193,12 +195,23 @@ class learningStats():
         iterStr    = '' if iter is None else '(i = %7d)'%(iter)
         profileStr = '' if timeElapsed is None else ', %12.4f ms elapsed'%(timeElapsed * 1000)
 
+        if header is not None:
+            for str in header:
+                print(str)
+                self.linesPrinted +=1
+
         print(epochStr + iterStr + profileStr)
         print(self.training.displayString())
         self.linesPrinted += 2
         if self.testing.displayString() is not None:
             print(self.testing.displayString())
             self.linesPrinted += 1
+
+        if footer is not None:
+            for str in footer:
+                print(str)
+                self.linesPrinted +=1
+                
 
     def plot(self, figures=(1, 2), saveFig=False, path=''):
         '''

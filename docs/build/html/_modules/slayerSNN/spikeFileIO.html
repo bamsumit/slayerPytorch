@@ -4,18 +4,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>spikeFileIO &#8212; SLAYER PyTorch 0.1 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <title>slayerSNN.spikeFileIO &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -30,13 +30,13 @@
 
           <div class="body" role="main">
             
-  <h1>Source code for spikeFileIO</h1><div class="highlight"><pre>
+  <h1>Source code for slayerSNN.spikeFileIO</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">animation</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">cm</span>
 
-<div class="viewcode-block" id="event"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event">[docs]</a><span class="k">class</span> <span class="nc">event</span><span class="p">():</span>
+<div class="viewcode-block" id="event"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.event">[docs]</a><span class="k">class</span> <span class="nc">event</span><span class="p">():</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	This class provides a way to store, read, write and visualize spike event.</span>
 
@@ -69,7 +69,7 @@
 		
 		<span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">-=</span> <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">.</span><span class="n">min</span><span class="p">()</span>
 
-<div class="viewcode-block" id="event.toSpikeArray"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event.toSpikeArray">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
+<div class="viewcode-block" id="event.toSpikeArray"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.event.toSpikeArray">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeArray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.</span>
 <span class="sd">		The array is of dimension (channels, height, time) or``CHT`` for 1D data.</span>
@@ -96,7 +96,7 @@
 			<span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
 		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">samplingTime</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="event.toSpikeTensor"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.event.toSpikeTensor">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeTensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emptyTensor</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">randomShift</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
+<div class="viewcode-block" id="event.toSpikeTensor"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.event.toSpikeTensor">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeTensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emptyTensor</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">randomShift</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.</span>
 <span class="sd">		The tensor is of dimension (channels, height, width, time) or``CHWT``.</span>
@@ -155,7 +155,7 @@
 				  		<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
 		<span class="k">return</span> <span class="n">emptyTensor</span></div></div>
 
-<div class="viewcode-block" id="spikeArrayToEvent"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.spikeArrayToEvent">[docs]</a><span class="k">def</span> <span class="nf">spikeArrayToEvent</span><span class="p">(</span><span class="n">spikeMat</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeArrayToEvent"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.spikeArrayToEvent">[docs]</a><span class="k">def</span> <span class="nf">spikeArrayToEvent</span><span class="p">(</span><span class="n">spikeMat</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Returns TD event from a numpy array (of dimension 3 or 4).</span>
 <span class="sd">	The numpy array must be of dimension (channels, height, time) or``CHT`` for 1D data.</span>
@@ -186,7 +186,7 @@
 
 	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span> <span class="o">*</span> <span class="n">samplingTime</span><span class="p">)</span> </div>
 
-<div class="viewcode-block" id="read1Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read1Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.read1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reads one dimensional binary spike file and returns a TD event.</span>
 <span class="sd">	</span>
@@ -211,7 +211,7 @@
 	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">])</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7FFFFF</span>
 	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
 
-<div class="viewcode-block" id="encode1Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+<div class="viewcode-block" id="encode1Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.encode1Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode1Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Writes one dimensional binary spike file from a TD event.</span>
 <span class="sd">	</span>
@@ -242,7 +242,7 @@
 	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
 		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="read2Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read2Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.read2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reads two dimensional binary spike file and returns a TD event.</span>
 <span class="sd">	It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</span>
@@ -270,7 +270,7 @@
 	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">3</span><span class="p">::</span><span class="mi">5</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">5</span><span class="p">])</span> <span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x7FFFFF</span>
 	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
 
-<div class="viewcode-block" id="encode2Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+<div class="viewcode-block" id="encode2Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.encode2Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode2Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Writes two dimensional binary spike file from a TD event.</span>
 <span class="sd">	It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</span>
@@ -304,7 +304,7 @@
 	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
 		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="read3Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read3Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.read3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">read3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reads binary spike file for spike event in height, width and channel dimension and returns a TD event.</span>
 <span class="sd">	</span>
@@ -331,7 +331,7 @@
 	<span class="n">tEvent</span> <span class="o">=</span><span class="p">(</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">4</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">5</span><span class="p">::</span><span class="mi">7</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">6</span><span class="p">::</span><span class="mi">7</span><span class="p">])</span> <span class="p">)</span>
 	<span class="k">return</span> <span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="o">/</span><span class="mi">1000</span><span class="p">)</span>	<span class="c1"># convert spike times to ms</span></div>
 
-<div class="viewcode-block" id="encode3Dspikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
+<div class="viewcode-block" id="encode3Dspikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.encode3Dspikes">[docs]</a><span class="k">def</span> <span class="nf">encode3Dspikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Writes binary spike file for TD event in height, width and channel dimension.</span>
 <span class="sd">	</span>
@@ -366,7 +366,7 @@
 	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
 		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="read1DnumSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.read1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">read1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+<div class="viewcode-block" id="read1DnumSpikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.read1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">read1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reads a tuple specifying neuron, start of spike region, end of spike region and number of spikes from binary spike file.</span>
 <span class="sd">	</span>
@@ -394,7 +394,7 @@
 	<span class="n">nSpikes</span>  <span class="o">=</span>  <span class="p">(</span><span class="n">inputAsInt</span><span class="p">[</span><span class="mi">8</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="mi">8</span><span class="p">)</span>  <span class="o">|</span>  <span class="n">inputAsInt</span><span class="p">[</span><span class="mi">9</span><span class="p">::</span><span class="mi">10</span><span class="p">]</span>
 	<span class="k">return</span> <span class="n">neuronID</span><span class="p">,</span> <span class="n">tStart</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tEnd</span><span class="o">/</span><span class="mi">1000</span><span class="p">,</span> <span class="n">nSpikes</span>	<span class="c1"># convert spike times to ms</span></div>
 
-<div class="viewcode-block" id="encode1DnumSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encode1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">encode1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">):</span>
+<div class="viewcode-block" id="encode1DnumSpikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.encode1DnumSpikes">[docs]</a><span class="k">def</span> <span class="nf">encode1DnumSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.</span>
 <span class="sd">	</span>
@@ -434,7 +434,7 @@
 	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">outputFile</span><span class="p">:</span>
 		<span class="n">outputFile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">outputByteArray</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="readNpSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.readNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">readNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+<div class="viewcode-block" id="readNpSpikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.readNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">readNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reads numpy spike event and returns a TD event.</span>
 <span class="sd">	The numpy array is assumed to be of nEvent x event diension.</span>
@@ -462,7 +462,7 @@
 		<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;fmt=&#39;</span><span class="si">%s</span><span class="s2">&#39; not implemented.&quot;</span><span class="o">%</span><span class="p">(</span><span class="n">fmt</span><span class="p">))</span></div>
 
 
-<div class="viewcode-block" id="encodeNpSpikes"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.encodeNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">encodeNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
+<div class="viewcode-block" id="encodeNpSpikes"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.encodeNpSpikes">[docs]</a><span class="k">def</span> <span class="nf">encodeNpSpikes</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">TD</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Writes TD event into numpy file.</span>
 
@@ -585,7 +585,7 @@
 	<span class="k">if</span> <span class="n">plot</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>	<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 	<span class="k">return</span> <span class="n">anim</span>
 
-<div class="viewcode-block" id="showTD"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.showTD">[docs]</a><span class="k">def</span> <span class="nf">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="showTD"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.showTD">[docs]</a><span class="k">def</span> <span class="nf">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Visualizes TD event.</span>
 
@@ -607,7 +607,7 @@
 	<span class="k">else</span><span class="p">:</span>
 		<span class="n">_showTD2D</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="n">frameRate</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="n">preComputeFrames</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">repeat</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="animTD"><a class="viewcode-back" href="../spikeIO.html#spikeFileIO.animTD">[docs]</a><span class="k">def</span> <span class="nf">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="animTD"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.animTD">[docs]</a><span class="k">def</span> <span class="nf">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">,</span> <span class="n">fig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">frameRate</span><span class="o">=</span><span class="mi">24</span><span class="p">,</span> <span class="n">preComputeFrames</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 	<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">	Reutrn animation object for TD event.</span>
 
@@ -644,7 +644,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+<h1 class="logo"><a href="../../index.html">SLAYER PyTorch</a></h1>
 
 
 
@@ -656,23 +656,23 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Module code</a><ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
   </ul></li>
   </ul></li>
 </ul>
@@ -680,7 +680,7 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
     </form>

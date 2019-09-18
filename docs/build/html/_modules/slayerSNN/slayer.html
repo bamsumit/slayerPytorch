@@ -4,18 +4,18 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>slayer &#8212; SLAYER PyTorch 0.1 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../_static/jquery.js"></script>
-    <script type="text/javascript" src="../_static/underscore.js"></script>
-    <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="../_static/language_data.js"></script>
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
+    <title>slayerSNN.slayer &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
    
-  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
   
   
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
@@ -30,7 +30,7 @@
 
           <div class="body" role="main">
             
-  <h1>Source code for slayer</h1><div class="highlight"><pre>
+  <h1>Source code for slayerSNN.slayer</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">torch</span>
@@ -77,7 +77,7 @@
 <span class="c1">#           yaml.dump(self.parameters, f)</span>
 
 <span class="c1"># class spikeLayer():</span>
-<div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    This class defines the main engine of SLAYER.</span>
 <span class="sd">    It provides necessary functions for describing a SNN layer.</span>
@@ -160,7 +160,7 @@
         <span class="n">prependedZeros</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span> <span class="p">(</span><span class="n">prependedZeros</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span> <span class="p">)</span> <span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
         
-<div class="viewcode-block" id="spikeLayer.psp"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.psp">[docs]</a>    <span class="k">def</span> <span class="nf">psp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.psp"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.psp">[docs]</a>    <span class="k">def</span> <span class="nf">psp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Applies psp filtering to spikes.</span>
 <span class="sd">        The output tensor dimension is same as input.</span>
@@ -174,7 +174,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_pspFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="spikeLayer.pspLayer"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pspLayer">[docs]</a>    <span class="k">def</span> <span class="nf">pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.pspLayer"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.pspLayer">[docs]</a>    <span class="k">def</span> <span class="nf">pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply psp filtering to spikes.</span>
 <span class="sd">        The output tensor dimension is same as input.</span>
@@ -189,7 +189,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_pspLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">srmKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="spikeLayer.pspFilter"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pspFilter">[docs]</a>    <span class="k">def</span> <span class="nf">pspFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.pspFilter"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.pspFilter">[docs]</a>    <span class="k">def</span> <span class="nf">pspFilter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply a bank of temporal filters.</span>
 <span class="sd">        The output tensor is of same dimension as input except the channel dimension is scaled by number of filters.</span>
@@ -217,7 +217,7 @@
             <span class="n">output</span> <span class="o">=</span> <span class="n">F</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;nearest&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span>
     
-<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>   <span class="c1"># default weight scaling of 10</span>
+<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>   <span class="c1"># default weight scaling of 10</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply dense layer mapping to input tensor per time instance.</span>
 <span class="sd">        It behaves similar to ``torch.nn.Linear`` applied for each time instance.</span>
@@ -236,7 +236,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>    </div>
         
-<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.conv">[docs]</a>    <span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>    <span class="c1"># default weight scaling of 100</span>
+<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.conv">[docs]</a>    <span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>    <span class="c1"># default weight scaling of 100</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply conv layer mapping to input tensor per time instance.</span>
 <span class="sd">        It behaves same as ``torch.nn.conv2d`` applied for each time instance.</span>
@@ -264,7 +264,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span> </div>
         
-<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.pool">[docs]</a>    <span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.pool">[docs]</a>    <span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply pool layer mapping to input tensor per time instance.</span>
 <span class="sd">        It behaves same as ``torch.nn.``:sum pooling applied for each time instance.</span>
@@ -288,7 +288,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_poolLayer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="spikeLayer.dropout"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.dropout">[docs]</a>    <span class="k">def</span> <span class="nf">dropout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.dropout"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.dropout">[docs]</a>    <span class="k">def</span> <span class="nf">dropout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply dropout layer to the input tensor.</span>
 <span class="sd">        It behaves similar to ``torch.nn.Dropout``.</span>
@@ -306,7 +306,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_dropoutLayer</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">inplace</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="spikeLayer.delayShift"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.delayShift">[docs]</a>    <span class="k">def</span> <span class="nf">delayShift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.delayShift"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.delayShift">[docs]</a>    <span class="k">def</span> <span class="nf">delayShift</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Applies delay in time dimension (assumed to be the last dimension of the tensor) of the input tensor.</span>
 <span class="sd">        The autograd backward link is established as well.</span>
@@ -324,7 +324,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_delayFunctionNoGradient</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="n">Ts</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="spikeLayer.delay"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.delay">[docs]</a>    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.delay"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.delay">[docs]</a>    <span class="k">def</span> <span class="nf">delay</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.</span>
 <span class="sd">        The delay parameter is available as ``delay.delay`` and is initialized uniformly between 0ms  and 1ms.</span>
@@ -351,7 +351,7 @@
     <span class="c1"># def applySpikeFunction(self, membranePotential):</span>
     <span class="c1">#   return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation[&#39;Ts&#39;])</span>
 
-<div class="viewcode-block" id="spikeLayer.spike"><a class="viewcode-back" href="../slayer.html#slayer.spikeLayer.spike">[docs]</a>    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.spike"><a class="viewcode-back" href="../../slayer.html#slayerSNN.slayer.spikeLayer.spike">[docs]</a>    <span class="k">def</span> <span class="nf">spike</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Applies spike function and refractory response.</span>
 <span class="sd">        The output tensor dimension is same as input.</span>
@@ -784,7 +784,7 @@
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+<h1 class="logo"><a href="../../index.html">SLAYER PyTorch</a></h1>
 
 
 
@@ -796,23 +796,23 @@
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quantizeParams.html">Quantize module</a></li>
 </ul>
 
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
-  <li><a href="../index.html">Documentation overview</a><ul>
-  <li><a href="index.html">Module code</a><ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
   </ul></li>
   </ul></li>
 </ul>
@@ -820,7 +820,7 @@
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
-    <form class="search" action="../search.html" method="get">
+    <form class="search" action="../../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
     </form>
