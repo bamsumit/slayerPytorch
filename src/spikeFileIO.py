@@ -83,6 +83,7 @@ class event():
 				max(
 					int(self.t.min() / samplingTime), 
 					int(self.t.max() / samplingTime) - emptyTensor.shape[3],
+					emptyTensor.shape[3] - int(self.t.max() / samplingTime),
 					1,
 				)
 			)
