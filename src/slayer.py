@@ -428,7 +428,7 @@ class _convLayer(nn.Conv3d):
             self.weight = torch.nn.Parameter(weightScale * self.weight) # scale the weight if needed
             # print('In conv, using weightScale of', weightScale)
 
-    def foward(self, input):
+    def forward(self, input):
         '''
         '''
         return F.conv3d(input, 
