@@ -1,3 +1,10 @@
+###############################################################################
+# This is an example for training to produce Oxford spikes. The task is to
+# train a multilayer SNN to produce spike raster that resembles Oxford house.
+# The input and output both consists of 200 neurons each and the spkes span
+# approximately 1900ms. The input and output spike pair are taken from
+# SuperSpike repository (https://github.com/fzenke/pub2018superspike).
+###############################################################################
 import sys, os
 CURRENT_TEST_DIR = os.getcwd()
 sys.path.append(CURRENT_TEST_DIR + "/../../src")
