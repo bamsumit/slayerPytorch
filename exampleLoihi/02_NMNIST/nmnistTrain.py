@@ -85,8 +85,8 @@ def genLoihiParams(net):
 	fc1Weights = quantizeWeights.apply(net.fc1.weight, 2).flatten().cpu().data.numpy()
 	fc2Weights = quantizeWeights.apply(net.fc2.weight, 2).flatten().cpu().data.numpy()
 
-	np.savetxt('Trained/NMNISTFc1.txt', fc1Weights, fmt='%g')
-	np.savetxt('Trained/NMNISTFc2.txt', fc2Weights, fmt='%g')
+	np.save('Trained/NMNISTFc1.txt', fc1Weights)
+	np.save('Trained/NMNISTFc2.txt', fc2Weights)
 
 	plt.figure(11)
 	plt.hist(fc1Weights, 256)
