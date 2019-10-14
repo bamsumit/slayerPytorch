@@ -1,4 +1,4 @@
-from .slayerSNN import layer, loihi, params, loss, predict, io, quantize
+from .slayerSNN import layer, loihi, params, loss, predict, io, quantize, learningStats
 
 # from .slayer import spikeLayer as layer
 # from .slayerLoihi import spikeLayer as loihi
