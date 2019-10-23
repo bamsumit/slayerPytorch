@@ -33,6 +33,24 @@
             
   <div class="section" id="module-slayerSNN.quantizeParams">
 <span id="quantize-module"></span><h1>Quantize module<a class="headerlink" href="#module-slayerSNN.quantizeParams" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="slayerSNN.quantizeParams.quantize">
+<code class="descclassname">slayerSNN.quantizeParams.</code><code class="descname">quantize</code><span class="sig-paren">(</span><em>weights</em>, <em>step=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantize" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function provides a wrapper around quantizeWeights.</p>
+<dl class="simple">
+<dt>Arguments;</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">weights</span></code>: full precision weight tensor.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">step</span></code>: quantization step size. Default: 1</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stepWeights</span> <span class="o">=</span> <span class="n">quantize</span><span class="p">(</span><span class="n">fullWeights</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="class">
 <dt id="slayerSNN.quantizeParams.quantizeWeights">
 <em class="property">class </em><code class="descclassname">slayerSNN.quantizeParams.</code><code class="descname">quantizeWeights</code><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights" title="Permalink to this definition">¶</a></dt>
@@ -47,7 +65,7 @@ The backward propagation pipeline passes the gradient as it it, without any modi
 </dl>
 <p>Usage:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
-<span class="gp">&gt;&gt;&gt; </span><span class="n">stepWeights</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">fullWeights</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">stepWeights</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">fullWeights</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 <dl class="staticmethod">

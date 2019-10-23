@@ -12,7 +12,7 @@ class quantizeWeights(torch.autograd.Function):
     Usage:
 
     >>> # Quantize weights in step of 0.5
-    >>> stepWeights = quantizeWeights.apply(fullWeights, step=0.5)
+    >>> stepWeights = quantizeWeights.apply(fullWeights, 0.5)
     '''
     @staticmethod
     def forward(ctx, weights, step=1):
@@ -27,3 +27,18 @@ class quantizeWeights(torch.autograd.Function):
         '''
         '''
         return gradOutput, None
+
+def quantize(weights, step=1):
+    '''
+    This function provides a wrapper around quantizeWeights.
+
+    Arguments;
+        * ``weights``: full precision weight tensor.
+        * ``step``: quantization step size. Default: 1
+
+    Usage:
+
+    >>> # Quantize weights in step of 0.5
+    >>> stepWeights = quantize(fullWeights, step=0.5)
+    '''
+    return quantizeWeights.apply(weights, step)
