@@ -5,7 +5,7 @@ from .slayerParams import yamlParams as params
 from .spikeLoss import spikeLoss as loss
 from .spikeClassifier import spikeClassifier as predict
 from . import spikeFileIO as io
-from .quantizeParams import quantizeWeights as quantize
+from . import utils
 
 '''
 This modules bundles various SLAYER PyTorch modules as a single package.

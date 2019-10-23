@@ -13,7 +13,9 @@ The complete module can be imported as
 * The **spike-loss** module is available as ``snn.loss``.
 * The **spike-classifier** module is available as ``snn.predict``.
 * The **spike-IO** module is available as ``snn.io``.
-* The **quantize** module is available as ``snn.quantize``.
+* The **quantize** module is available as ``snn.utils.quantize``.
+* The **learningStats** module is available as ``snn.utils.stats``.
+* The **optimizer** module is available as ``snn.utils.optim``.
 
 
 .. automodule:: slayerSNN.slayerSNN

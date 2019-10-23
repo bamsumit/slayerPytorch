@@ -204,6 +204,8 @@
 <span class="sd">            * ``epoch``: epoch counter to display (required).</span>
 <span class="sd">            * ``iter``: iteration counter to display (not required).</span>
 <span class="sd">            * ``timeElapsed``: runtime information (not required).</span>
+<span class="sd">            * ``header``: things to be printed before printing learning statistics. Default: ``None``.</span>
+<span class="sd">            * ``footer``: things to be printed after printing learning statistics. Default: ``None``.</span>
 
 <span class="sd">        Usage:</span>
 
@@ -227,8 +229,8 @@
         <span class="n">profileStr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">timeElapsed</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;, </span><span class="si">%12.4f</span><span class="s1"> ms elapsed&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">timeElapsed</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="nb">str</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[2K&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">h</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span><span class="mi">1</span>
 
         <span class="nb">print</span><span class="p">(</span><span class="n">epochStr</span> <span class="o">+</span> <span class="n">iterStr</span> <span class="o">+</span> <span class="n">profileStr</span><span class="p">)</span>
@@ -239,9 +241,10 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span> <span class="mi">1</span>
 
         <span class="k">if</span> <span class="n">footer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">for</span> <span class="nb">str</span> <span class="ow">in</span> <span class="n">footer</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">footer</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\033</span><span class="s1">[2K&#39;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">linesPrinted</span> <span class="o">+=</span><span class="mi">1</span></div>
+                
 
 <div class="viewcode-block" id="learningStats.plot"><a class="viewcode-back" href="../../learningStats.html#slayerSNN.learningStats.learningStats.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">saveFig</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
