@@ -83,7 +83,7 @@ dimension one.</em></p>
 </div>
 <dl class="method">
 <dt id="slayerSNN.slayer.spikeLayer.conv">
-<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
 It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.conv2d</span></code> applied for each time instance.</p>
 <dl class="simple">
@@ -162,7 +162,7 @@ If the Torch tensor has size more than 1, its dimension  must match the dimensio
 
 <dl class="method">
 <dt id="slayerSNN.slayer.spikeLayer.dense">
-<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply dense layer mapping to input tensor per time instance.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> applied for each time instance.</p>
 <dl class="simple">
@@ -205,7 +205,7 @@ if a neuron is dropped, it remains dropped for entire time duration.</p>
 
 <dl class="method">
 <dt id="slayerSNN.slayer.spikeLayer.pool">
-<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
+<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply pool layer mapping to input tensor per time instance.
 It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.</span></code>:sum pooling applied for each time instance.</p>
 <dl class="simple">
