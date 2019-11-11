@@ -184,7 +184,7 @@ class spikeLayer(torch.nn.Module):
             output = F.interpolate(input.reshape(N, C, H, W, 1), size=(H, W, Ns), mode='nearest')
         return output
     
-    def dense(self, inFeatures, outFeatures, weightScale=10):   # default weight scaling of 10
+    def dense(self, inFeatures, outFeatures, weightScale=10, preHookFx=None):   # default weight scaling of 10
         '''
         Returns a function that can be called to apply dense layer mapping to input tensor per time instance.
         It behaves similar to ``torch.nn.Linear`` applied for each time instance.
@@ -194,6 +194,7 @@ class spikeLayer(torch.nn.Module):
               dimension of input features (Width, Height, Channel) that represents the number of input neurons.
             * ``outFeatures`` (``int``): number of output neurons.
             * ``weightScale``: sale factor of default initialized weights. Default: 10
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.
 
         Usage:
         
@@ -201,9 +202,9 @@ class spikeLayer(torch.nn.Module):
         >>> fcl = snnLayer.dense((128, 128, 2), 512) # takes (N, 2, 128, 128, T) tensor
         >>> output = fcl(input)                      # output will be (N, 512, 1, 1, T) tensor
         '''
-        return _denseLayer(inFeatures, outFeatures, weightScale)    
+        return _denseLayer(inFeatures, outFeatures, weightScale, preHookFx)    
         
-    def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100):    # default weight scaling of 100
+    def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, preHookFx=None):    # default weight scaling of 100
         '''
         Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
         It behaves same as ``torch.nn.conv2d`` applied for each time instance.
@@ -217,6 +218,7 @@ class spikeLayer(torch.nn.Module):
             * ``dilation`` (``int`` or tuple of two ints): spacing between kernel elements. Default: 1
             * ``groups`` (``int`` or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1
             * ``weightScale``: sale factor of default initialized weights. Default: 100
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.
 
         The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:
 
@@ -229,9 +231,9 @@ class spikeLayer(torch.nn.Module):
         >>> conv = snnLayer.conv(2, 32, 5) # 32C5 flter
         >>> output = conv(input)           # must have 2 channels
         '''
-        return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale) 
+        return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, preHookFx) 
         
-    def pool(self, kernelSize, stride=None, padding=0, dilation=1):
+    def pool(self, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
         '''
         Returns a function that can be called to apply pool layer mapping to input tensor per time instance.
         It behaves same as ``torch.nn.``:sum pooling applied for each time instance.
@@ -241,6 +243,7 @@ class spikeLayer(torch.nn.Module):
             * ``stride`` (``int`` or tuple of two ints): stride of the window. Default: `kernelSize`
             * ``padding`` (``int`` or tuple of two ints): implicit zero padding to be added on both sides. Default: 0
             * ``dilation`` (``int`` or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.
             
         The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:
 
@@ -253,7 +256,7 @@ class spikeLayer(torch.nn.Module):
         >>> pool = snnLayer.pool(4) # 4x4 pooling
         >>> output = pool(input)
         '''
-        return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation)
+        return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation, preHookFx)
 
     def dropout(self, p=0.5, inplace=False):
         '''
@@ -334,7 +337,7 @@ class spikeLayer(torch.nn.Module):
         return _spikeFunction.apply(membranePotential, self.refKernel, self.neuron, self.simulation['Ts'])
 
 class _denseLayer(nn.Conv3d):
-    def __init__(self, inFeatures, outFeatures, weightScale=1):
+    def __init__(self, inFeatures, outFeatures, weightScale=1, preHookFx=None):
         '''
         '''
         # extract information for kernel and inChannels
@@ -364,18 +367,25 @@ class _denseLayer(nn.Conv3d):
             self.weight = torch.nn.Parameter(weightScale * self.weight) # scale the weight if needed
             # print('In dense, using weightScale of', weightScale)
 
+        self.preHookFx = preHookFx
+
     
     def forward(self, input):
         '''
         '''
-        return F.conv3d(input, 
-                        self.weight, self.bias, 
-                        self.stride, self.padding, self.dilation, self.groups)
+        if self.preHookFx is None:
+            return F.conv3d(input, 
+                            self.weight, self.bias, 
+                            self.stride, self.padding, self.dilation, self.groups)
+        else:
+            return F.conv3d(input, 
+                            self.preHookFx(self.weight), self.bias, 
+                            self.stride, self.padding, self.dilation, self.groups)
 
 class _convLayer(nn.Conv3d):
     '''
     '''
-    def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1):
+    def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, preHookFx=None):
         inChannels = inFeatures
         outChannels = outFeatures
         
@@ -428,17 +438,24 @@ class _convLayer(nn.Conv3d):
             self.weight = torch.nn.Parameter(weightScale * self.weight) # scale the weight if needed
             # print('In conv, using weightScale of', weightScale)
 
+        self.preHookFx = preHookFx
+
     def forward(self, input):
         '''
         '''
-        return F.conv3d(input, 
-                        self.weight, self.bias, 
-                        self.stride, self.padding, self.dilation, self.groups)
+        if self.preHookFx is None:
+            return F.conv3d(input, 
+                            self.weight, self.bias, 
+                            self.stride, self.padding, self.dilation, self.groups)
+        else:
+            return F.conv3d(input, 
+                            self.preHookFx(self.weight), self.bias, 
+                            self.stride, self.padding, self.dilation, self.groups)
 
 class _poolLayer(nn.Conv3d):
     '''
     '''
-    def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1):
+    def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
         # kernel
         if type(kernelSize) == int:
             kernel = (kernelSize, kernelSize, 1)
@@ -485,6 +502,8 @@ class _poolLayer(nn.Conv3d):
         self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad = False)
         # print('In pool layer, weight =', self.weight.cpu().data.numpy().flatten(), theta)
 
+        self.preHookFx = preHookFx
+
 
     def forward(self, input):
         '''
@@ -504,8 +523,13 @@ class _poolLayer(nn.Conv3d):
 
         dataShape = input.shape
 
-        result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
-                          self.weight, self.bias, 
+        if self.preHookFx is None:
+            result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
+                              self.weight, self.bias, 
+                              self.stride, self.padding, self.dilation)
+        else:
+            result = F.conv3d(input.reshape((dataShape[0], 1, dataShape[1] * dataShape[2], dataShape[3], dataShape[4])), 
+                          self.preHooFx(self.weight), self.bias, 
                           self.stride, self.padding, self.dilation)
         # print(result.shape)
         return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
