@@ -72,14 +72,16 @@ fc2.weight = torch.nn.Parameter(torch.FloatTensor(W2.reshape((Nout, Nhid, 1, 1, 
 wSpikeIn = fc1(spikeIn)
 # spikeHid, uHid = slayer.spikeSVI(wSpikeIn)[0:2]
 spikeHid, uHid = slayer.spikeLoihiFull(wSpikeIn)[0:2]
-spikeHid[...,1:Ns] = spikeHid[...,0:Ns-1]	# shift spike by one to simulate axonal delay of 1
+# spikeHid[...,1:Ns] = spikeHid[...,0:Ns-1]	# shift spike by one to simulate axonal delay of 1
+spikeHid = slayer.delayShift(spikeHid, 1)	# shift spike by one to simulate axonal delay of 1
 
 # wSpikeHid = torch.IntTensor( np.dot( W2.astype(int), spikeHid.cpu().data.numpy().reshape((-1, Ns)) )
 # 						   ).to(device).reshape((1, -1, 1, 1, Ns))
 wSpikeHid = fc2(spikeHid)
 # spikeOut, uOut = slayer.spikeSVI(wSpikeHid)[0:2]
 spikeOut, uOut = slayer.spikeLoihiFull(wSpikeHid)[0:2]
-spikeOut[...,1:Ns] = spikeOut[...,0:Ns-1]	# shift spike by one to simulate axonal delay of 1
+# spikeOut[...,1:Ns] = spikeOut[...,0:Ns-1]	# shift spike by one to simulate axonal delay of 1
+spikeOut = slayer.delayShift(spikeOut, 1)	# shift spike by one to simulate axonal delay of 1
 
 if verbose is True: print(fc2.weight.flatten())
 
