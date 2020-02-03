@@ -715,7 +715,7 @@ class _delayLayer(nn.Module):
         if input.numel() != self.delay.numel() * input.shape[-1] * input.shape[0]:
             return _delayFunction.apply(input, self.delay.repeat((1, H, W)), self.Ts) # different delay per channel
         else:
-            return _delayFunction.apply(input, self.delay, self.Ts)
+            return _delayFunction.apply(input, self.delay, self.Ts) #different delay per neuron
 
 class _delayFunction(torch.autograd.Function):
     '''
