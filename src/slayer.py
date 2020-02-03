@@ -712,7 +712,7 @@ class _delayLayer(nn.Module):
 
     def forward(self, input):
         N, C, H, W, Ns = input.shape
-        if input.numel() != self.delay.numel() * input.shape[-1]:
+        if input.numel() != self.delay.numel() * input.shape[-1] * input.shape[0]:
             return _delayFunction.apply(input, self.delay.repeat((1, H, W)), self.Ts) # different delay per channel
         else:
             return _delayFunction.apply(input, self.delay, self.Ts)
