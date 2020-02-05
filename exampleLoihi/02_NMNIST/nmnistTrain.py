@@ -8,14 +8,6 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import Dataset, DataLoader
 import slayerSNN as snn
-from slayerSNN import loihi as spikeLayer
-from slayerSNN import quantize as quantizeParams
-from slayerSNN.learningStats import learningStats
-import slayerSNN.optimizer as optimizer
-# from slayerLoihi import spikeLayer
-# from quantizeParams import quantizeWeights
-# from learningStats import learningStats
-# import optimizer
 import zipfile
 
 # Read SNN configuration from yaml file
@@ -66,7 +58,7 @@ class Network(torch.nn.Module):
     def __init__(self, netParams):
         super(Network, self).__init__()
         # initialize slayer
-        slayer = spikeLayer(netParams['neuron'], netParams['simulation'])
+        slayer = snn.loihi(netParams['neuron'], netParams['simulation'])
         self.slayer = slayer
         # define network functions
         self.fc1   = slayer.dense((34*34*2), 512)
@@ -82,8 +74,8 @@ class Network(torch.nn.Module):
 
 # Define Loihi parameter generator
 def genLoihiParams(net):
-	fc1Weights = quantizeWeights.apply(net.fc1.weight, 2).flatten().cpu().data.numpy()
-	fc2Weights = quantizeWeights.apply(net.fc2.weight, 2).flatten().cpu().data.numpy()
+	fc1Weights = snn.uitls.quantize(net.fc1.weight, 2).flatten().cpu().data.numpy()
+	fc2Weights = snn.uitls.quantize(net.fc2.weight, 2).flatten().cpu().data.numpy()
 
 	np.save('Trained/NMNISTFc1.npy', fc1Weights)
 	np.save('Trained/NMNISTFc2.npy', fc2Weights)
@@ -104,11 +96,11 @@ if __name__ == '__main__':
 	net = Network(netParams).to(device)
 
 	# Create snn loss instance.
-	error = snn.loss(netParams, spikeLayer).to(device)
+	error = snn.loss(netParams, snn.loihi).to(device)
 
 	# Define optimizer module.
 	# optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
-	optimizer = optimizer.Nadam(net.parameters(), lr = 0.01, amsgrad = True)
+	optimizer = snn.utils.optim.Nadam(net.parameters(), lr = 0.01, amsgrad = True)
 
 	# Dataset and dataLoader instances.
 	trainingSet = nmnistDataset(datasetPath =netParams['training']['path']['in'], 
@@ -124,7 +116,7 @@ if __name__ == '__main__':
 	testLoader = DataLoader(dataset=testingSet, batch_size=12, shuffle=False, num_workers=4)
 
 	# Learning stats instance.
-	stats = learningStats()
+	stats = snn.utils.stats()
 	
 	# Visualize the input spikes (first five samples).
 	for i in range(5):

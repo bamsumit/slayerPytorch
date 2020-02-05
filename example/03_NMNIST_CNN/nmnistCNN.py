@@ -61,116 +61,117 @@ class Network(torch.nn.Module):
 
         return spikeOut
 
-# Extract NMNIST samples
-with zipfile.ZipFile('NMNISTsmall.zip') as zip_file:
-    for member in zip_file.namelist():
-        if not os.path.exists('./' + member):
-            zip_file.extract(member, './')
-    
-# Define the cuda device to run the code on.
-# device = torch.device('cuda')
-# Use multiple GPU's if available
-device = torch.device('cuda:2') # should be the first GPU of deviceIDs
-deviceIds = [2, 3, 1]
-
-# Create network instance.
-# net = Network(netParams).to(device)
-# Split the network to run over multiple GPUs
-net = torch.nn.DataParallel(Network(netParams).to(device), device_ids=deviceIds)
-
-# Create snn loss instance.
-error = snn.loss(netParams).to(device)
-
-# Define optimizer module.
-optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
-
-# Dataset and dataLoader instances.
-trainingSet = nmnistDataset(datasetPath =netParams['training']['path']['in'], 
-                            sampleFile  =netParams['training']['path']['train'],
-                            samplingTime=netParams['simulation']['Ts'],
-                            sampleLength=netParams['simulation']['tSample'])
-trainLoader = DataLoader(dataset=trainingSet, batch_size=12, shuffle=False, num_workers=4)
-
-testingSet = nmnistDataset(datasetPath  =netParams['training']['path']['in'], 
-                            sampleFile  =netParams['training']['path']['test'],
-                            samplingTime=netParams['simulation']['Ts'],
-                            sampleLength=netParams['simulation']['tSample'])
-testLoader = DataLoader(dataset=testingSet, batch_size=12, shuffle=False, num_workers=4)
-
-# Learning stats instance.
-stats = learningStats()
-
-# # Visualize the network.
-# for i in range(5):
-#   input, target, label = trainingSet[i]
-#   snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
-
-# training loop
-for epoch in range(100):
-    tSt = datetime.now()
-    
-    # Training loop.
-    for i, (input, target, label) in enumerate(trainLoader, 0):
-        # Move the input and target to correct GPU.
-        input  = input.to(device)
-        target = target.to(device) 
+if __name__ == '__main__':
+    # Extract NMNIST samples
+    with zipfile.ZipFile('NMNISTsmall.zip') as zip_file:
+        for member in zip_file.namelist():
+            if not os.path.exists('./' + member):
+                zip_file.extract(member, './')
         
-        # Forward pass of the network.
-        output = net.forward(input)
+    # Define the cuda device to run the code on.
+    device = torch.device('cuda')
+    # Use multiple GPU's if available
+    # device = torch.device('cuda:2') # should be the first GPU of deviceIDs
+    # deviceIds = [2, 3, 1]
+
+    # Create network instance.
+    net = Network(netParams).to(device)
+    # Split the network to run over multiple GPUs
+    # net = torch.nn.DataParallel(Network(netParams).to(device), device_ids=deviceIds)
+
+    # Create snn loss instance.
+    error = snn.loss(netParams).to(device)
+
+    # Define optimizer module.
+    optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
+
+    # Dataset and dataLoader instances.
+    trainingSet = nmnistDataset(datasetPath =netParams['training']['path']['in'], 
+                                sampleFile  =netParams['training']['path']['train'],
+                                samplingTime=netParams['simulation']['Ts'],
+                                sampleLength=netParams['simulation']['tSample'])
+    trainLoader = DataLoader(dataset=trainingSet, batch_size=12, shuffle=False, num_workers=4)
+
+    testingSet = nmnistDataset(datasetPath  =netParams['training']['path']['in'], 
+                                sampleFile  =netParams['training']['path']['test'],
+                                samplingTime=netParams['simulation']['Ts'],
+                                sampleLength=netParams['simulation']['tSample'])
+    testLoader = DataLoader(dataset=testingSet, batch_size=12, shuffle=False, num_workers=4)
+
+    # Learning stats instance.
+    stats = learningStats()
+
+    # # Visualize the network.
+    # for i in range(5):
+    #   input, target, label = trainingSet[i]
+    #   snn.io.showTD(snn.io.spikeArrayToEvent(input.reshape((2, 34, 34, -1)).cpu().data.numpy()))
+
+    # training loop
+    for epoch in range(100):
+        tSt = datetime.now()
         
-        # Gather the training stats.
-        stats.training.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-        stats.training.numSamples     += len(label)
+        # Training loop.
+        for i, (input, target, label) in enumerate(trainLoader, 0):
+            # Move the input and target to correct GPU.
+            input  = input.to(device)
+            target = target.to(device) 
+            
+            # Forward pass of the network.
+            output = net.forward(input)
+            
+            # Gather the training stats.
+            stats.training.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
+            stats.training.numSamples     += len(label)
+            
+            # Calculate loss.
+            loss = error.numSpikes(output, target)
+            
+            # Reset gradients to zero.
+            optimizer.zero_grad()
+            
+            # Backward pass of the network.
+            loss.backward()
+            
+            # Update weights.
+            optimizer.step()
+
+            # Gather training loss stats.
+            stats.training.lossSum += loss.cpu().data.item()
+
+            # Display training stats.
+            stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
+
+        # Testing loop.
+        # Same steps as Training loops except loss backpropagation and weight update.
+        for i, (input, target, label) in enumerate(testLoader, 0):
+            input  = input.to(device)
+            target = target.to(device) 
+            
+            output = net.forward(input)
+
+            stats.testing.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
+            stats.testing.numSamples     += len(label)
+
+            loss = error.numSpikes(output, target)
+            stats.testing.lossSum += loss.cpu().data.item()
+            stats.print(epoch, i)
         
-        # Calculate loss.
-        loss = error.numSpikes(output, target)
-        
-        # Reset gradients to zero.
-        optimizer.zero_grad()
-        
-        # Backward pass of the network.
-        loss.backward()
-        
-        # Update weights.
-        optimizer.step()
+        # Update stats.
+        stats.update()
 
-        # Gather training loss stats.
-        stats.training.lossSum += loss.cpu().data.item()
+    # Plot the results.
+    plt.figure(1)
+    plt.semilogy(stats.training.lossLog, label='Training')
+    plt.semilogy(stats.testing .lossLog, label='Testing')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.legend()
 
-        # Display training stats.
-        stats.print(epoch, i, (datetime.now() - tSt).total_seconds())
+    plt.figure(2)
+    plt.plot(stats.training.accuracyLog, label='Training')
+    plt.plot(stats.testing .accuracyLog, label='Testing')
+    plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
+    plt.legend()
 
-    # Testing loop.
-    # Same steps as Training loops except loss backpropagation and weight update.
-    for i, (input, target, label) in enumerate(testLoader, 0):
-        input  = input.to(device)
-        target = target.to(device) 
-        
-        output = net.forward(input)
-
-        stats.testing.correctSamples += torch.sum( snn.predict.getClass(output) == label ).data.item()
-        stats.testing.numSamples     += len(label)
-
-        loss = error.numSpikes(output, target)
-        stats.testing.lossSum += loss.cpu().data.item()
-        stats.print(epoch, i)
-    
-    # Update stats.
-    stats.update()
-
-# Plot the results.
-plt.figure(1)
-plt.semilogy(stats.training.lossLog, label='Training')
-plt.semilogy(stats.testing .lossLog, label='Testing')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
-plt.legend()
-
-plt.figure(2)
-plt.plot(stats.training.accuracyLog, label='Training')
-plt.plot(stats.testing .accuracyLog, label='Testing')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
-plt.legend()
-
-plt.show()
+    plt.show()

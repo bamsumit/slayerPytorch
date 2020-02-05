@@ -13,14 +13,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import slayerSNN as snn
-from slayerSNN import loihi as spikeLayer
-from slayerSNN import quantize as quantizeParams
-from slayerSNN import learningStats as learningStats
-from slayerSNN import optimizer as optimizer
-# from slayerLoihi import spikeLayer
-# from quantizeParams import quantizeWeights
-# from learningStats import learningStats
-# import optimizer
 
 # Read SNN configuration from yaml file
 netParams = snn.params('oxford.yaml')
@@ -36,7 +28,7 @@ class Network(torch.nn.Module):
     def __init__(self, netParams):
         super(Network, self).__init__()
         # initialize slayer
-        slayer = spikeLayer(netParams['neuron'], netParams['simulation'])
+        slayer = snn.loihi(netParams['neuron'], netParams['simulation'])
         self.slayer = slayer
         # define network functions
         self.fc1   = slayer.dense(Nin, Nhid)
@@ -52,8 +44,8 @@ class Network(torch.nn.Module):
 
 # Define Loihi parameter generator
 def genLoihiParams(net):
-    fc1Weights = quantizeWeights.apply(net.fc1.weight, 2).flatten().cpu().data.numpy()
-    fc2Weights = quantizeWeights.apply(net.fc2.weight, 2).flatten().cpu().data.numpy()
+    fc1Weights = snn.utils.quantize(net.fc1.weight, 2).flatten().cpu().data.numpy()
+    fc2Weights = snn.utils.quantize(net.fc2.weight, 2).flatten().cpu().data.numpy()
 
     np.save('Trained/OxfordFc1.npy', fc1Weights)
     np.save('Trained/OxfordFc2.npy', fc2Weights)
@@ -74,12 +66,12 @@ if __name__ == '__main__':
 	net = Network(netParams).to(device)
 
 	# create snn loss instance
-	error = snn.loss(netParams, spikeLayer).to(device)
+	error = snn.loss(netParams, snn.loihi).to(device)
 
 	# define optimizer module
 	# optimizer = torch.optim.SGD(snn.parameters(), lr = 0.001)
 	# optimizer = torch.optim.Adam(net.parameters(), lr = 0.01, amsgrad = True)
-	optimizer = optimizer.Nadam(net.parameters(), lr = 0.01, amsgrad = True)
+	optimizer = snn.utils.optim.Nadam(net.parameters(), lr = 0.01, amsgrad = True)
 
 	# Read input spikes and load it to torch tensor
 	inTD  = snn.io.read1Dspikes('Spikes/input.bs1')
@@ -94,7 +86,7 @@ if __name__ == '__main__':
 	snn.io.showTD(snn.io.spikeArrayToEvent(desired.reshape((1, Nout, -1)).cpu().data.numpy()))
 
 	# Run the network
-	stats = learningStats()
+	stats = snn.utils.stats()
 
 	for epoch in range(10000):
 	    output = net.forward(input)
