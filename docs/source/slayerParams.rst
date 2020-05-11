@@ -1,3 +1,5 @@
+.. _slayerParamsref:
+
 SLAYER Parameter
 ================
 
@@ -11,13 +13,15 @@ A typical yaml configuration file looks like this.
       Ts: 1.0
       tSample: 1450
    neuron:
-      type:     SRMALPHA
-      theta:    10
-      tauSr:    1.0
-      tauRef:   1.0
-      scaleRef: 2     # relative to theta
-      tauRho:   1     # relative to theta 
-      scaleRho: 1
+
+   neuron:
+      type:     SRMALPHA   # neuron type (available SRMALPHA, LOIHI)
+      theta:    10         # neuron threshold
+      tauSr:    1.0        # neuron time constant
+      tauRef:   1.0        # neuron refractory time constant
+      scaleRef: 2          # neuron refractory response scaling (relative to theta)
+      tauRho:   1          # spike function derivative time constant (relative to theta)
+      scaleRho: 1          # spike function derivative scale factor
    layer:
       - {dim: 34x34x2, wScale: 0.5}
       - {dim: 16c5z}
@@ -37,6 +41,7 @@ A typical yaml configuration file looks like this.
          train:   path_to_train_list
          test:    path_to_test_list
 
+For the neuron type ``LOIHI``, more information is provided in :ref:`SLAYER Loihi module <SLAYERLoihimoduleref>`.
 
 .. automodule:: slayerSNN.slayerParams
    :members:

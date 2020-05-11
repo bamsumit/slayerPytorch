@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Learning statistics &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Optimizer" href="optimizer.html" />
@@ -34,61 +34,61 @@
             
   <div class="section" id="module-slayerSNN.learningStats">
 <span id="learning-statistics"></span><h1>Learning statistics<a class="headerlink" href="#module-slayerSNN.learningStats" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.learningStats.learningStat">
-<em class="property">class </em><code class="descclassname">slayerSNN.learningStats.</code><code class="descname">learningStat</code><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.learningStats.</code><code class="sig-name descname">learningStat</code><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class collect the learning statistics over the epoch.</p>
 <p>Usage:</p>
 <p>This class is designed to be used with learningStats instance although it can be used separately.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span> <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span> <span class="o">=</span> <span class="n">learningStat</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStat.accuracy">
-<code class="descname">accuracy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.accuracy" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">accuracy</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.accuracy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.accuracy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the average accuracy calculated from the point the stats was reset.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">trainingStat</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">accuracy</span> <span class="o">=</span> <span class="n">trainingStat</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStat.loss">
-<code class="descname">loss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.loss" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">loss</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.loss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.loss" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the average loss calculated from the point the stats was reset.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">trainingStat</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">trainingStat</span><span class="o">.</span><span class="n">loss</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStat.reset">
-<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.reset" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.reset" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reset the learning staistics. 
 This should usually be done before the start of an epoch so that new statistics counts can be accumulated.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStat.update">
-<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStat.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStat.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the stats of the current session and resets the measures for next session.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">trainingStat</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.learningStats.learningStats">
-<em class="property">class </em><code class="descclassname">slayerSNN.learningStats.</code><code class="descname">learningStats</code><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.learningStats.</code><code class="sig-name descname">learningStats</code><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides mechanism to collect learning stats for training and testing, and displaying them efficiently.</p>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">stats</span> <span class="o">=</span> <span class="n">learningStats</span><span class="p">()</span>
@@ -102,7 +102,7 @@ This should usually be done before the start of an epoch so that new statistics 
         <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
         <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
         <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
-        <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">())</span>
     <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 
     <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -111,13 +111,13 @@ This should usually be done before the start of an epoch so that new statistics 
         <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">numberOfCorrectClassification</span>
         <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">numberOfSamplesProcessed</span>
         <span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span>        <span class="o">+=</span> <span class="n">currentLoss</span>
-        <span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+        <span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
     <span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStats.load">
-<code class="descname">load</code><span class="sig-paren">(</span><em>filename=''</em>, <em>numEpoch=None</em>, <em>modulo=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.load" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">load</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">''</span></em>, <em class="sig-param"><span class="n">numEpoch</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">modulo</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.load"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.load" title="Permalink to this definition">¶</a></dt>
 <dd><p>Loads the learning statistics logs from saved files.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -137,9 +137,9 @@ This should usually be done before the start of an epoch so that new statistics 
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStats.plot">
-<code class="descname">plot</code><span class="sig-paren">(</span><em>figures=(1</em>, <em>2)</em>, <em>saveFig=False</em>, <em>path=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">figures</span><span class="o">=</span><span class="default_value">1, 2</span></em>, <em class="sig-param"><span class="n">saveFig</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">path</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plots the available learning statistics.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -154,14 +154,14 @@ This should usually be done before the start of an epoch so that new statistics 
 <span class="n">stats</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span> 
 
 <span class="c1"># plot stats figures specified</span>
-<span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span> 
+<span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">figures</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">))</span> 
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStats.print">
-<code class="descname">print</code><span class="sig-paren">(</span><em>epoch</em>, <em>iter=None</em>, <em>timeElapsed=None</em>, <em>header=None</em>, <em>footer=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.print" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">print</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">epoch</span></em>, <em class="sig-param"><span class="n">iter</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">timeElapsed</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">header</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">footer</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints the available learning statistics from the current session on the console.
 For Linux systems, prints the data on same terminal space (might not work properly on other systems).</p>
 <dl class="simple">
@@ -176,20 +176,20 @@ For Linux systems, prints the data on same terminal space (might not work proper
 </dl>
 <p>Usage:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># prints stats with epoch index provided</span>
-<span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> 
+<span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">)</span> 
 
 <span class="c1"># prints stats with epoch index and iteration index provided</span>
-<span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">i</span><span class="p">)</span> 
+<span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">i</span><span class="p">)</span> 
 
 <span class="c1"># prints stats with epoch index, iteration index and time elapsed information provided</span>
-<span class="n">stats</span><span class="o">.</span><span class="k">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="n">time</span><span class="p">)</span> 
+<span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="n">epoch</span><span class="p">,</span> <span class="nb">iter</span><span class="o">=</span><span class="n">i</span><span class="p">,</span> <span class="n">timeElapsed</span><span class="o">=</span><span class="n">time</span><span class="p">)</span> 
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStats.save">
-<code class="descname">save</code><span class="sig-paren">(</span><em>filename=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.save" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">save</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span><span class="o">=</span><span class="default_value">''</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.save" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saves the learning satatistics logs.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -207,12 +207,12 @@ For Linux systems, prints the data on same terminal space (might not work proper
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.learningStats.learningStats.update">
-<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.update" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/learningStats.html#learningStats.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.learningStats.learningStats.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Updates the stats for training and testing and resets the measures for next session.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">stats</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -262,15 +262,15 @@ For Linux systems, prints the data on same terminal space (might not work proper
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -287,7 +287,7 @@ For Linux systems, prints the data on same terminal space (might not work proper
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

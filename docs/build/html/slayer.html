@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>SLAYER module &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="SLAYER Loihi module" href="slayerLoihi.html" />
@@ -34,9 +34,9 @@
             
   <div class="section" id="module-slayerSNN.slayer">
 <span id="slayer-module"></span><h1>SLAYER module<a class="headerlink" href="#module-slayerSNN.slayer" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.slayer.spikeLayer">
-<em class="property">class </em><code class="descclassname">slayerSNN.slayer.</code><code class="descname">spikeLayer</code><span class="sig-paren">(</span><em>neuronDesc</em>, <em>simulationDesc</em>, <em>fullRefKernel=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.slayer.</code><code class="sig-name descname">spikeLayer</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">neuronDesc</span></em>, <em class="sig-param"><span class="n">simulationDesc</span></em>, <em class="sig-param"><span class="n">fullRefKernel</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines the main engine of SLAYER.
 It provides necessary functions for describing a SNN layer.
 The input to output connection can be fully-connected, convolutional, or aggregation (pool)
@@ -78,12 +78,12 @@ dimension one.</em></p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">snnLayer</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">(</span><span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">snnLayer</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">(</span><span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.conv">
-<code class="descname">conv</code><span class="sig-paren">(</span><em>inChannels</em>, <em>outChannels</em>, <em>kernelSize</em>, <em>stride=1</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>groups=1</em>, <em>weightScale=100</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">conv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inChannels</span></em>, <em class="sig-param"><span class="n">outChannels</span></em>, <em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">weightScale</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
 It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.conv2d</span></code> applied for each time instance.</p>
 <dl class="simple">
@@ -96,6 +96,7 @@ It behaves same as <code class="docutils literal notranslate"><span class="pre">
 <li><p><code class="docutils literal notranslate"><span class="pre">dilation</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): spacing between kernel elements. Default: 1</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">groups</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</p></li>
 </ul>
 </dd>
 </dl>
@@ -106,15 +107,15 @@ It behaves same as <code class="docutils literal notranslate"><span class="pre">
 and the second <cite>int</cite> for the width dimension</p></li>
 </ul>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1"># 32C5 flter</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">conv</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1"># 32C5 flter</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">conv</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>           <span class="c1"># must have 2 channels</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.delay">
-<code class="descname">delay</code><span class="sig-paren">(</span><em>inputSize</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.delay" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputSize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.
 The delay parameter is available as <code class="docutils literal notranslate"><span class="pre">delay.delay</span></code> and is initialized uniformly between 0ms  and 1ms.
 The delay parameter is stored as float values, however, it is floored during actual delay applicaiton internally.
@@ -128,20 +129,20 @@ If integer value is supplied, it refers to the number of neurons in channel dime
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">delay</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">delay</span><span class="p">((</span><span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">))</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">delayedSignal</span> <span class="o">=</span> <span class="n">delay</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Always clamp the delay after <code class="docutils literal notranslate"><span class="pre">optimizer.step()</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">delay</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.delayShift">
-<code class="descname">delayShift</code><span class="sig-paren">(</span><em>input</em>, <em>delay</em>, <em>Ts=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.delayShift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.delayShift" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">delayShift</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">input</span></em>, <em class="sig-param"><span class="n">delay</span></em>, <em class="sig-param"><span class="n">Ts</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.delayShift"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.delayShift" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies delay in time dimension (assumed to be the last dimension of the tensor) of the input tensor.
 The autograd backward link is established as well.</p>
 <dl class="simple">
@@ -155,14 +156,14 @@ If the Torch tensor has size more than 1, its dimension  must match the dimensio
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delayedInput</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">delayedInput</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.dense">
-<code class="descname">dense</code><span class="sig-paren">(</span><em>inFeatures</em>, <em>outFeatures</em>, <em>weightScale=10</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inFeatures</span></em>, <em class="sig-param"><span class="n">outFeatures</span></em>, <em class="sig-param"><span class="n">weightScale</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply dense layer mapping to input tensor per time instance.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Linear</span></code> applied for each time instance.</p>
 <dl class="simple">
@@ -171,20 +172,21 @@ It behaves similar to <code class="docutils literal notranslate"><span class="pr
 dimension of input features (Width, Height, Channel) that represents the number of input neurons.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">outFeatures</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of output neurons.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 10</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</p></li>
 </ul>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fcl</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>          <span class="c1"># takes (N, 2048, 1, 1, T) tensor</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fcl</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="mi">2048</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>          <span class="c1"># takes (N, 2048, 1, 1, T) tensor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fcl</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dense</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="mi">512</span><span class="p">)</span> <span class="c1"># takes (N, 2, 128, 128, T) tensor</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">fcl</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>                      <span class="c1"># output will be (N, 512, 1, 1, T) tensor</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.dropout">
-<code class="descname">dropout</code><span class="sig-paren">(</span><em>p=0.5</em>, <em>inplace=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dropout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dropout" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">dropout</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">p</span><span class="o">=</span><span class="default_value">0.5</span></em>, <em class="sig-param"><span class="n">inplace</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.dropout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.dropout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply dropout layer to the input tensor.
 It behaves similar to <code class="docutils literal notranslate"><span class="pre">torch.nn.Dropout</span></code>.
 However, dropout over time dimension is preserved, i.e.
@@ -197,15 +199,15 @@ if a neuron is dropped, it remains dropped for entire time duration.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">drop</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">drop</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">dropout</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">drop</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.pool">
-<code class="descname">pool</code><span class="sig-paren">(</span><em>kernelSize</em>, <em>stride=None</em>, <em>padding=0</em>, <em>dilation=1</em>, <em>preHookFx=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply pool layer mapping to input tensor per time instance.
 It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.</span></code>:sum pooling applied for each time instance.</p>
 <dl class="simple">
@@ -214,6 +216,7 @@ It behaves same as <code class="docutils literal notranslate"><span class="pre">
 <li><p><code class="docutils literal notranslate"><span class="pre">stride</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): stride of the window. Default: <cite>kernelSize</cite></p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): implicit zero padding to be added on both sides. Default: 0</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">dilation</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</p></li>
 </ul>
 </dd>
 </dl>
@@ -224,15 +227,15 @@ It behaves same as <code class="docutils literal notranslate"><span class="pre">
 and the second <cite>int</cite> for the width dimension</p></li>
 </ul>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pool</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># 4x4 pooling</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pool</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="c1"># 4x4 pooling</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">pool</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.psp">
-<code class="descname">psp</code><span class="sig-paren">(</span><em>spike</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.psp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.psp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">psp</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.psp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.psp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies psp filtering to spikes.
 The output tensor dimension is same as input.</p>
 <dl class="simple">
@@ -242,14 +245,14 @@ The output tensor dimension is same as input.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">psp</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.pspFilter">
-<code class="descname">pspFilter</code><span class="sig-paren">(</span><em>nFilter</em>, <em>filterLength</em>, <em>filterScale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pspFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pspFilter" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pspFilter</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nFilter</span></em>, <em class="sig-param"><span class="n">filterLength</span></em>, <em class="sig-param"><span class="n">filterScale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pspFilter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pspFilter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply a bank of temporal filters.
 The output tensor is of same dimension as input except the channel dimension is scaled by number of filters.
 The initial filters are initialized using default PyTorch initializaion for conv layer.
@@ -264,30 +267,30 @@ NOTE: the learned psp filter must be reversed because PyTorch performs conrrelat
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspFilter</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspFilter</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspFilter</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspFilter</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">pspFilter</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.pspLayer">
-<code class="descname">pspLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pspLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pspLayer" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pspLayer</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.pspLayer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.pspLayer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply psp filtering to spikes.
 The output tensor dimension is same as input.
 The initial psp filter corresponds to the neuron psp filter.
 The psp filter is learnable.
 NOTE: the learned psp filter must be reversed because PyTorch performs conrrelation operation.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspLayer</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspLayer</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pspLayer</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">pspLayer</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">filteredSpike</span> <span class="o">=</span> <span class="n">pspLayer</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.spike">
-<code class="descname">spike</code><span class="sig-paren">(</span><em>membranePotential</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.spike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.spike" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">spike</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">membranePotential</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.spike"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.spike" title="Permalink to this definition">¶</a></dt>
 <dd><p>Applies spike function and refractory response.
 The output tensor dimension is same as input.
 <code class="docutils literal notranslate"><span class="pre">membranePotential</span></code> will reflect spike and refractory behaviour as well.</p>
@@ -298,7 +301,7 @@ The output tensor dimension is same as input.
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -348,15 +351,15 @@ The output tensor dimension is same as input.
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -373,7 +376,7 @@ The output tensor dimension is same as input.
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

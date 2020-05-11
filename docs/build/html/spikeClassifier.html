@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Spike Classifier &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spike Loss" href="spikeLoss.html" />
@@ -34,18 +34,18 @@
             
   <div class="section" id="module-slayerSNN.spikeClassifier">
 <span id="spike-classifier"></span><h1>Spike Classifier<a class="headerlink" href="#module-slayerSNN.spikeClassifier" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.spikeClassifier.spikeClassifier">
-<em class="property">class </em><code class="descclassname">slayerSNN.spikeClassifier.</code><code class="descname">spikeClassifier</code><a class="reference internal" href="_modules/slayerSNN/spikeClassifier.html#spikeClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeClassifier.spikeClassifier" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.spikeClassifier.</code><code class="sig-name descname">spikeClassifier</code><a class="reference internal" href="_modules/slayerSNN/spikeClassifier.html#spikeClassifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeClassifier.spikeClassifier" title="Permalink to this definition">¶</a></dt>
 <dd><p>It provides classification modules for SNNs.
 All the functions it supplies are static and can be called without making an instance of the class.</p>
-<dl class="staticmethod">
+<dl class="py method">
 <dt id="slayerSNN.spikeClassifier.spikeClassifier.getClass">
-<em class="property">static </em><code class="descname">getClass</code><span class="sig-paren">(</span><em>spike</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeClassifier.html#spikeClassifier.getClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeClassifier.spikeClassifier.getClass" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">getClass</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeClassifier.html#spikeClassifier.getClass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeClassifier.spikeClassifier.getClass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the predicted class label.
 It assignes single class for the SNN output for the whole simulation runtime.</p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">predictedClass</span> <span class="o">=</span> <span class="n">spikeClassifier</span><span class="o">.</span><span class="n">getClass</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">predictedClass</span> <span class="o">=</span> <span class="n">spikeClassifier</span><span class="o">.</span><span class="n">getClass</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -95,15 +95,15 @@ It assignes single class for the SNN output for the whole simulation runtime.</p
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -120,7 +120,7 @@ It assignes single class for the SNN output for the whole simulation runtime.</p
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
