@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Spike Input/Output &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Learning statistics" href="learningStats.html" />
@@ -34,9 +34,9 @@
             
   <div class="section" id="module-slayerSNN.spikeFileIO">
 <span id="spike-input-output"></span><h1>Spike Input/Output<a class="headerlink" href="#module-slayerSNN.spikeFileIO" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.animTD">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">animTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#animTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.animTD" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">animTD</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">TD</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frameRate</span><span class="o">=</span><span class="default_value">24</span></em>, <em class="sig-param"><span class="n">preComputeFrames</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">repeat</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#animTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.animTD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reutrn animation object for TD event.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -49,14 +49,14 @@
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">anim</span> <span class="o">=</span> <span class="n">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">anim</span> <span class="o">=</span> <span class="n">animTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.encode1DnumSpikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">encode1DnumSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>nID</em>, <em>tSt</em>, <em>tEn</em>, <em>nSp</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode1DnumSpikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">encode1DnumSpikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">nID</span></em>, <em class="sig-param"><span class="n">tSt</span></em>, <em class="sig-param"><span class="n">tEn</span></em>, <em class="sig-param"><span class="n">nSp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode1DnumSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes binary spike file given a tuple specifying neuron, start of spike region, end of spike region and number of spikes.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -77,14 +77,14 @@
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">encode1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">encode1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.encode1Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">encode1Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode1Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">encode1Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">TD</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode1Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes one dimensional binary spike file from a TD event.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -101,14 +101,14 @@
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.encode2Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">encode2Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode2Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">encode2Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">TD</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode2Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes two dimensional binary spike file from a TD event.
 It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p>
 <dl class="simple">
@@ -127,14 +127,14 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.encode3Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">encode3Dspikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode3Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">encode3Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">TD</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encode3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encode3Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes binary spike file for TD event in height, width and channel dimension.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -152,14 +152,14 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.encodeNpSpikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">encodeNpSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>TD</em>, <em>fmt='xypt'</em>, <em>timeUnit=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encodeNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encodeNpSpikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">encodeNpSpikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">TD</span></em>, <em class="sig-param"><span class="n">fmt</span><span class="o">=</span><span class="default_value">'xypt'</span></em>, <em class="sig-param"><span class="n">timeUnit</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#encodeNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.encodeNpSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Writes TD event into numpy file.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -169,15 +169,15 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">spikeFileIO</span><span class="o">.</span><span class="n">write1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">TD</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.spikeFileIO.event">
-<em class="property">class </em><code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">event</code><span class="sig-paren">(</span><em>xEvent</em>, <em>yEvent</em>, <em>pEvent</em>, <em>tEvent</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">event</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">xEvent</span></em>, <em class="sig-param"><span class="n">yEvent</span></em>, <em class="sig-param"><span class="n">pEvent</span></em>, <em class="sig-param"><span class="n">tEvent</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides a way to store, read, write and visualize spike event.</p>
 <dl class="simple">
 <dt>Members:</dt><dd><ul class="simple">
@@ -189,12 +189,12 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">event</span><span class="p">(</span><span class="n">xEvent</span><span class="p">,</span> <span class="n">yEvent</span><span class="p">,</span> <span class="n">pEvent</span><span class="p">,</span> <span class="n">tEvent</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.spikeFileIO.event.toSpikeArray">
-<code class="descname">toSpikeArray</code><span class="sig-paren">(</span><em>samplingTime=1</em>, <em>dim=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeArray" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">toSpikeArray</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">samplingTime</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeArray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeArray" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
 The array is of dimension (channels, height, time) or``CHT`` for 1D data.
 The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data.</p>
@@ -206,14 +206,14 @@ The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeArray</span><span class="p">()</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeArray</span><span class="p">()</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.spikeFileIO.event.toSpikeTensor">
-<code class="descname">toSpikeTensor</code><span class="sig-paren">(</span><em>emptyTensor</em>, <em>samplingTime=1</em>, <em>randomShift=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">toSpikeTensor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">emptyTensor</span></em>, <em class="sig-param"><span class="n">samplingTime</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">randomShift</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
 The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 <dl class="simple">
@@ -225,16 +225,16 @@ The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span> <span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">spike</span> <span class="o">=</span> <span class="n">TD</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">240</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="mi">5000</span><span class="p">))</span> <span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.read1DnumSpikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">read1DnumSpikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read1DnumSpikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">read1DnumSpikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read1DnumSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read1DnumSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads a tuple specifying neuron, start of spike region, end of spike region and number of spikes from binary spike file.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -251,15 +251,15 @@ The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nID</span><span class="p">,</span> <span class="n">tSt</span><span class="p">,</span> <span class="n">tEn</span><span class="p">,</span> <span class="n">nSp</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1DnumSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 <span class="go">``tSt`` and ``tEn`` are returned in milliseconds</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.read1Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">read1Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read1Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">read1Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read1Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read1Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads one dimensional binary spike file and returns a TD event.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -275,14 +275,14 @@ The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read1Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.read2Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">read2Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read2Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">read2Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read2Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read2Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads two dimensional binary spike file and returns a TD event.
 It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p>
 <dl class="simple">
@@ -300,14 +300,14 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read2Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.read3Dspikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">read3Dspikes</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read3Dspikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">read3Dspikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#read3Dspikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.read3Dspikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads binary spike file for spike event in height, width and channel dimension and returns a TD event.</p>
 <dl class="simple">
 <dt>The binary file is encoded as follows:</dt><dd><ul class="simple">
@@ -324,14 +324,14 @@ It is the same format used in neuromorphic datasets NMNIST &amp; NCALTECH101.</p
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">read3Dspikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.readNpSpikes">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">readNpSpikes</code><span class="sig-paren">(</span><em>filename</em>, <em>fmt='xypt'</em>, <em>timeUnit=0.001</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#readNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.readNpSpikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">readNpSpikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">filename</span></em>, <em class="sig-param"><span class="n">fmt</span><span class="o">=</span><span class="default_value">'xypt'</span></em>, <em class="sig-param"><span class="n">timeUnit</span><span class="o">=</span><span class="default_value">0.001</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#readNpSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.readNpSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reads numpy spike event and returns a TD event.
 The numpy array is assumed to be of nEvent x event diension.</p>
 <dl class="simple">
@@ -343,16 +343,16 @@ The numpy array is assumed to be of nEvent x event diension.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s1">&#39;xypt&#39;</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">readNpSpikes</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">timeUnit</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.showTD">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">showTD</code><span class="sig-paren">(</span><em>TD</em>, <em>fig=None</em>, <em>frameRate=24</em>, <em>preComputeFrames=True</em>, <em>repeat=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#showTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.showTD" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">showTD</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">TD</span></em>, <em class="sig-param"><span class="n">fig</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">frameRate</span><span class="o">=</span><span class="default_value">24</span></em>, <em class="sig-param"><span class="n">preComputeFrames</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">repeat</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#showTD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.showTD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Visualizes TD event.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -365,14 +365,14 @@ The numpy array is assumed to be of nEvent x event diension.</p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">showTD</span><span class="p">(</span><span class="n">TD</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.spikeFileIO.spikeArrayToEvent">
-<code class="descclassname">slayerSNN.spikeFileIO.</code><code class="descname">spikeArrayToEvent</code><span class="sig-paren">(</span><em>spikeMat</em>, <em>samplingTime=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#spikeArrayToEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.spikeArrayToEvent" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.spikeFileIO.</code><code class="sig-name descname">spikeArrayToEvent</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spikeMat</span></em>, <em class="sig-param"><span class="n">samplingTime</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#spikeArrayToEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.spikeArrayToEvent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns TD event from a numpy array (of dimension 3 or 4).
 The numpy array must be of dimension (channels, height, time) or``CHT`` for 1D data.
 The numpy array must be of dimension (channels, height, width, time) or``CHWT`` for 2D data.</p>
@@ -384,7 +384,7 @@ The numpy array must be of dimension (channels, height, width, time) or``CHWT`` 
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">spikeArrayToEvent</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">TD</span> <span class="o">=</span> <span class="n">spikeFileIO</span><span class="o">.</span><span class="n">spikeArrayToEvent</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -432,15 +432,15 @@ The numpy array must be of dimension (channels, height, width, time) or``CHWT`` 
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -457,7 +457,7 @@ The numpy array must be of dimension (channels, height, width, time) or``CHWT`` 
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

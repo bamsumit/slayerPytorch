@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Welcome to SLAYER PyTorch’s documentation! &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="SLAYER PyTorch main" href="slayerSNN.html" />
@@ -58,7 +58,7 @@
 </ul>
 <div class="section" id="usage">
 <h2>Usage:<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="k">as</span> <span class="nn">snn</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="k">as</span> <span class="nn">snn</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -74,7 +74,7 @@
 <div class="section" id="example">
 <h2>Example:<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>The SNN parameters are stored in a yaml file.
-The structure of the yaml file follows the same hierarchy as the
+The structure of the yaml file is defined in <a class="reference internal" href="slayerParams.html#slayerparamsref"><span class="std std-ref">SLAYER Parameter</span></a> and follows the same hierarchy as the
 <a class="reference external" href="https://bitbucket.org/bamsumit/slayer">C++ SLAYER framework</a> (see Network Description)</p>
 <p>A set of working example for SLAYER are available at <a class="reference external" href="https://github.com/bamsumit/slayerPytorch/tree/master/example">SLAYER PyTorch repo: examples</a></p>
 <p>A set of working example for SLAYER Loihi are available at <a class="reference external" href="https://github.com/bamsumit/slayerPytorch/tree/master/exampleLoihi">SLAYER PyTorch repo: examplesLoihi</a></p>
@@ -112,7 +112,7 @@ The structure of the yaml file follows the same hierarchy as the
 32
 33
 34
-35</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="kn">as</span> <span class="nn">snn</span>
+35</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="k">as</span> <span class="nn">snn</span>
 <span class="c1"># other imports and definitions</span>
 
 <span class="k">class</span> <span class="nc">Network</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
@@ -199,15 +199,15 @@ dimension one.</em></p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -224,7 +224,7 @@ dimension one.</em></p>
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

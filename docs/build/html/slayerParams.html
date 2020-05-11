@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>SLAYER Parameter &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spike Classifier" href="spikeClassifier.html" />
@@ -33,7 +33,7 @@
           <div class="body" role="main">
             
   <div class="section" id="slayer-parameter">
-<h1>SLAYER Parameter<a class="headerlink" href="#slayer-parameter" title="Permalink to this headline">¶</a></h1>
+<span id="slayerparamsref"></span><h1>SLAYER Parameter<a class="headerlink" href="#slayer-parameter" title="Permalink to this headline">¶</a></h1>
 <p>This module provides a way to read the SLAYER configuration parameters from yaml file with dictionary like access.
 A typical yaml configuration file looks like this.</p>
 <div class="highlight-python notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
@@ -64,17 +64,21 @@ A typical yaml configuration file looks like this.</p>
 26
 27
 28
-29</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">simulation</span><span class="p">:</span>
+29
+30
+31</pre></div></td><td class="code"><div class="highlight"><pre><span></span><span class="n">simulation</span><span class="p">:</span>
    <span class="n">Ts</span><span class="p">:</span> <span class="mf">1.0</span>
    <span class="n">tSample</span><span class="p">:</span> <span class="mi">1450</span>
 <span class="n">neuron</span><span class="p">:</span>
-   <span class="nb">type</span><span class="p">:</span>     <span class="n">SRMALPHA</span>
-   <span class="n">theta</span><span class="p">:</span>    <span class="mi">10</span>
-   <span class="n">tauSr</span><span class="p">:</span>    <span class="mf">1.0</span>
-   <span class="n">tauRef</span><span class="p">:</span>   <span class="mf">1.0</span>
-   <span class="n">scaleRef</span><span class="p">:</span> <span class="mi">2</span>     <span class="c1"># relative to theta</span>
-   <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>     <span class="c1"># relative to theta</span>
-   <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>
+
+<span class="n">neuron</span><span class="p">:</span>
+   <span class="nb">type</span><span class="p">:</span>     <span class="n">SRMALPHA</span>   <span class="c1"># neuron type (available SRMALPHA, LOIHI)</span>
+   <span class="n">theta</span><span class="p">:</span>    <span class="mi">10</span>         <span class="c1"># neuron threshold</span>
+   <span class="n">tauSr</span><span class="p">:</span>    <span class="mf">1.0</span>        <span class="c1"># neuron time constant</span>
+   <span class="n">tauRef</span><span class="p">:</span>   <span class="mf">1.0</span>        <span class="c1"># neuron refractory time constant</span>
+   <span class="n">scaleRef</span><span class="p">:</span> <span class="mi">2</span>          <span class="c1"># neuron refractory response scaling (relative to theta)</span>
+   <span class="n">tauRho</span><span class="p">:</span>   <span class="mi">1</span>          <span class="c1"># spike function derivative time constant (relative to theta)</span>
+   <span class="n">scaleRho</span><span class="p">:</span> <span class="mi">1</span>          <span class="c1"># spike function derivative scale factor</span>
 <span class="n">layer</span><span class="p">:</span>
    <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">34</span><span class="n">x34x2</span><span class="p">,</span> <span class="n">wScale</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">}</span>
    <span class="o">-</span> <span class="p">{</span><span class="n">dim</span><span class="p">:</span> <span class="mi">16</span><span class="n">c5z</span><span class="p">}</span>
@@ -95,19 +99,20 @@ A typical yaml configuration file looks like this.</p>
       <span class="n">test</span><span class="p">:</span>    <span class="n">path_to_test_list</span>
 </pre></div>
 </td></tr></table></div>
-<span class="target" id="module-slayerSNN.slayerParams"></span><dl class="class">
+<p>For the neuron type <code class="docutils literal notranslate"><span class="pre">LOIHI</span></code>, more information is provided in <a class="reference internal" href="slayerLoihi.html#slayerloihimoduleref"><span class="std std-ref">SLAYER Loihi module</span></a>.</p>
+<span class="target" id="module-slayerSNN.slayerParams"></span><dl class="py class">
 <dt id="slayerSNN.slayerParams.yamlParams">
-<em class="property">class </em><code class="descclassname">slayerSNN.slayerParams.</code><code class="descname">yamlParams</code><span class="sig-paren">(</span><em>parameter_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerParams.html#yamlParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerParams.yamlParams" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.slayerParams.</code><code class="sig-name descname">yamlParams</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">parameter_file_path</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerParams.html#yamlParams"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerParams.yamlParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class reads yaml parameter file and allows dictionary like access to the members.</p>
 <p>Usage:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="kn">as</span> <span class="nn">snn</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">slayerSNN</span> <span class="k">as</span> <span class="nn">snn</span>
 <span class="n">netParams</span> <span class="o">=</span> <span class="n">snn</span><span class="o">.</span><span class="n">params</span><span class="p">(</span><span class="s1">&#39;path_to_yaml_file&#39;</span><span class="p">)</span>     <span class="c1"># OR</span>
 <span class="n">netParams</span> <span class="o">=</span> <span class="n">yamlParams</span><span class="p">(</span><span class="s1">&#39;path_to_yaml_file&#39;</span><span class="p">)</span>
 
 <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">][</span><span class="s1">&#39;learning&#39;</span><span class="p">][</span><span class="s1">&#39;etaW&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.01</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Simulation step size        &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">][</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron time constant&#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;tauSr&#39;</span><span class="p">])</span>
-<span class="k">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron threshold    &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Simulation step size        &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">][</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron time constant&#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;tauSr&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Spiking neuron threshold    &#39;</span><span class="p">,</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">][</span><span class="s1">&#39;theta&#39;</span><span class="p">])</span>
 
 <span class="n">netParams</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;filename.yaml&#39;</span><span class="p">)</span>
 </pre></div>
@@ -157,15 +162,15 @@ A typical yaml configuration file looks like this.</p>
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -182,7 +187,7 @@ A typical yaml configuration file looks like this.</p>
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

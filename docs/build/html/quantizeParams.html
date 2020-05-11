@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Quantize module &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Optimizer" href="optimizer.html" />
@@ -33,9 +33,9 @@
             
   <div class="section" id="module-slayerSNN.quantizeParams">
 <span id="quantize-module"></span><h1>Quantize module<a class="headerlink" href="#module-slayerSNN.quantizeParams" title="Permalink to this headline">¶</a></h1>
-<dl class="function">
+<dl class="py function">
 <dt id="slayerSNN.quantizeParams.quantize">
-<code class="descclassname">slayerSNN.quantizeParams.</code><code class="descname">quantize</code><span class="sig-paren">(</span><em>weights</em>, <em>step=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantize" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">slayerSNN.quantizeParams.</code><code class="sig-name descname">quantize</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">weights</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantize" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function provides a wrapper around quantizeWeights.</p>
 <dl class="simple">
 <dt>Arguments;</dt><dd><ul class="simple">
@@ -45,15 +45,15 @@
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stepWeights</span> <span class="o">=</span> <span class="n">quantize</span><span class="p">(</span><span class="n">fullWeights</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.quantizeParams.quantizeWeights">
-<em class="property">class </em><code class="descclassname">slayerSNN.quantizeParams.</code><code class="descname">quantizeWeights</code><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.quantizeParams.</code><code class="sig-name descname">quantizeWeights</code><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class provides routine to quantize the weights during forward propagation pipeline.
 The backward propagation pipeline passes the gradient as it it, without any modification.</p>
 <dl class="simple">
@@ -64,18 +64,18 @@ The backward propagation pipeline passes the gradient as it it, without any modi
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Quantize weights in step of 0.5</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">stepWeights</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">fullWeights</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="staticmethod">
+<dl class="py method">
 <dt id="slayerSNN.quantizeParams.quantizeWeights.backward">
-<em class="property">static </em><code class="descname">backward</code><span class="sig-paren">(</span><em>ctx</em>, <em>gradOutput</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights.backward" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">backward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">gradOutput</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights.backward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights.backward" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="staticmethod">
+<dl class="py method">
 <dt id="slayerSNN.quantizeParams.quantizeWeights.forward">
-<em class="property">static </em><code class="descname">forward</code><span class="sig-paren">(</span><em>ctx</em>, <em>weights</em>, <em>step=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights.forward" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">ctx</span></em>, <em class="sig-param"><span class="n">weights</span></em>, <em class="sig-param"><span class="n">step</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/quantizeParams.html#quantizeWeights.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.quantizeParams.quantizeWeights.forward" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
@@ -122,15 +122,15 @@ The backward propagation pipeline passes the gradient as it it, without any modi
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -147,7 +147,7 @@ The backward propagation pipeline passes the gradient as it it, without any modi
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

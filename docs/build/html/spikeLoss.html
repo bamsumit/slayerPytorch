@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Spike Loss &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Spike Input/Output" href="spikeIO.html" />
@@ -34,33 +34,33 @@
             
   <div class="section" id="module-slayerSNN.spikeLoss">
 <span id="spike-loss"></span><h1>Spike Loss<a class="headerlink" href="#module-slayerSNN.spikeLoss" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.spikeLoss.spikeLoss">
-<em class="property">class </em><code class="descclassname">slayerSNN.spikeLoss.</code><code class="descname">spikeLoss</code><span class="sig-paren">(</span><em>networkDescriptor</em>, <em>slayerClass=&lt;class 'slayerSNN.slayer.spikeLayer'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.spikeLoss.</code><code class="sig-name descname">spikeLoss</code><span class="sig-paren">(</span><em class="sig-param">networkDescriptor</em>, <em class="sig-param">slayerClass=&lt;class 'slayerSNN.slayer.spikeLayer'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss" title="Permalink to this definition">¶</a></dt>
 <dd><p>This class defines different spike based loss modules that can be used to optimize the SNN.</p>
 <p>NOTE: By default, this class uses the spike kernels from <code class="docutils literal notranslate"><span class="pre">slayer.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.layer</span></code>).
 In some cases, you may want to explicitly use different spike kernels, for e.g. <code class="docutils literal notranslate"><span class="pre">slayerLoihi.spikeLayer</span></code> (<code class="docutils literal notranslate"><span class="pre">snn.loihi</span></code>).
 In that scenario, you can explicitly pass the class name: <code class="docutils literal notranslate"><span class="pre">slayerClass=snn.loihi</span></code></p>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">networkDescriptor</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">networkDescriptor</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">errorDescriptor</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">error</span> <span class="o">=</span> <span class="n">spikeLoss</span><span class="o">.</span><span class="n">spikeLoss</span><span class="p">(</span><span class="n">netParams</span><span class="p">,</span> <span class="n">slayerClass</span><span class="o">=</span><span class="n">slayerLoihi</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.spikeLoss.spikeLoss.numSpikes">
-<code class="descname">numSpikes</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>desiredClass</em>, <em>numSpikesScale=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.numSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.numSpikes" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">numSpikes</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spikeOut</span></em>, <em class="sig-param"><span class="n">desiredClass</span></em>, <em class="sig-param"><span class="n">numSpikesScale</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.numSpikes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.numSpikes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates spike loss based on number of spikes within a <cite>target region</cite>.
 The <cite>target region</cite> and <cite>desired spike count</cite> is specified in <code class="docutils literal notranslate"><span class="pre">error.errorDescriptor['tgtSpikeRegion']</span></code>
 Any spikes outside the target region are penalized with <code class="docutils literal notranslate"><span class="pre">error.spikeTime</span></code> loss..</p>
 <div class="math">
-<p><img src="_images/math/8a55df1acbe5de9b6b8131840954b5da16796978.png" alt="e(t) &amp;= 
+<p><span class="math">e(t) &amp;= 
 \begin{cases}
 \frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} &amp; \text{for }t \in targetRegion\\
 \left(\varepsilon * (output - desired)\right)(t) &amp; \text{otherwise}
 \end{cases}
 
-E &amp;= \int_0^T e(t)^2 \text{d}t"/></p>
+E &amp;= \int_0^T e(t)^2 \text{d}t</span></p>
 </div><dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">spikeOut</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code>): spike tensor</p></li>
@@ -69,18 +69,18 @@ E &amp;= \int_0^T e(t)^2 \text{d}t"/></p>
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">numSpikes</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">numSpikes</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
 
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.spikeLoss.spikeLoss.spikeTime">
-<code class="descname">spikeTime</code><span class="sig-paren">(</span><em>spikeOut</em>, <em>spikeDesired</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.spikeTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.spikeTime" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">spikeTime</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spikeOut</span></em>, <em class="sig-param"><span class="n">spikeDesired</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeLoss.html#spikeLoss.spikeTime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeLoss.spikeLoss.spikeTime" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculates spike loss based on spike time.
 The loss is similar to van Rossum distance between output and desired spike train.</p>
 <div class="math">
-<p><img src="_images/math/59b7202ad5b157fa4d4e003c59d1020daa3117d9.png" alt="E = \int_0^T \left( \varepsilon * (output -desired) \right)(t)^2\ \text{d}t"/></p>
+<p><span class="math">E = \int_0^T \left( \varepsilon * (output -desired) \right)(t)^2\ \text{d}t</span></p>
 </div><dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">spikeOut</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code>): spike tensor</p></li>
@@ -89,7 +89,7 @@ The loss is similar to van Rossum distance between output and desired spike trai
 </dd>
 </dl>
 <p>Usage:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">spikeTime</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDes</span><span class="p">)</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">loss</span> <span class="o">=</span> <span class="n">error</span><span class="o">.</span><span class="n">spikeTime</span><span class="p">(</span><span class="n">spikeOut</span><span class="p">,</span> <span class="n">spikeDes</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -139,15 +139,15 @@ The loss is similar to van Rossum distance between output and desired spike trai
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -164,7 +164,7 @@ The loss is similar to van Rossum distance between output and desired spike trai
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

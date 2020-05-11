@@ -46,7 +46,7 @@ Usage:
 Example:
 --------
 The SNN parameters are stored in a yaml file. 
-The structure of the yaml file follows the same hierarchy as the 
+The structure of the yaml file is defined in :ref:`SLAYER Parameter <slayerParamsref>` and follows the same hierarchy as the 
 `C++ SLAYER framework
 <https://bitbucket.org/bamsumit/slayer>`_ (see Network Description)
 

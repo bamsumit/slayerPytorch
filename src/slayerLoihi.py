@@ -17,7 +17,7 @@ class spikeLayer(slayer.spikeLayer):
     '''
     This class defines the main engine of SLAYER Loihi module.
     It is derived from ``slayer.spikeLayer`` with Loihi specific implementation for
-    neuon model, weight quantization.
+    neuron model, weight quantization.
     All of the routines available for ``slayer.spikeLayer`` are applicable.
 
     Arguments:

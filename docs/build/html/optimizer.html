@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>Optimizer &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Quantize module" href="quantizeParams.html" />
@@ -34,9 +34,9 @@
             
   <div class="section" id="module-slayerSNN.optimizer">
 <span id="optimizer"></span><h1>Optimizer<a class="headerlink" href="#module-slayerSNN.optimizer" title="Permalink to this headline">¶</a></h1>
-<dl class="class">
+<dl class="py class">
 <dt id="slayerSNN.optimizer.Nadam">
-<em class="property">class </em><code class="descclassname">slayerSNN.optimizer.</code><code class="descname">Nadam</code><span class="sig-paren">(</span><em>params</em>, <em>lr=0.001</em>, <em>betas=(0.9</em>, <em>0.999)</em>, <em>eps=1e-08</em>, <em>weight_decay=0</em>, <em>amsgrad=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.optimizer.</code><code class="sig-name descname">Nadam</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">params</span></em>, <em class="sig-param"><span class="n">lr</span><span class="o">=</span><span class="default_value">0.001</span></em>, <em class="sig-param"><span class="n">betas</span><span class="o">=</span><span class="default_value">0.9, 0.999</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">1e-08</span></em>, <em class="sig-param"><span class="n">weight_decay</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">amsgrad</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam" title="Permalink to this definition">¶</a></dt>
 <dd><p>Implements Nadam algorithm. (Modified Adam from <a class="reference external" href="https://pytorch.org/docs/stable/_modules/torch/optim/adam.html#Adam">PyTorch</a>)</p>
 <p>It has been proposed in <a class="reference external" href="https://openreview.net/pdf?id=OM0jvwB8jIp57ZJjtNEZ">Incorporating Nesterov Momentum into Adam</a>.</p>
 <dl class="simple">
@@ -54,9 +54,9 @@ algorithm from the paper <a class="reference external" href="https://openreview.
 </ul>
 </dd>
 </dl>
-<dl class="method">
+<dl class="py method">
 <dt id="slayerSNN.optimizer.Nadam.step">
-<code class="descname">step</code><span class="sig-paren">(</span><em>closure=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam.step" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">step</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">closure</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/optimizer.html#Nadam.step"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.optimizer.Nadam.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs a single optimization step.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
@@ -115,15 +115,15 @@ algorithm from the paper <a class="reference external" href="https://openreview.
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -140,7 +140,7 @@ algorithm from the paper <a class="reference external" href="https://openreview.
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

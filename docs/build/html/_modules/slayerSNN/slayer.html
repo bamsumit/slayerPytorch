@@ -1,17 +1,17 @@
 
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
     <title>slayerSNN.slayer &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-    <script type="text/javascript" src="../../_static/jquery.js"></script>
-    <script type="text/javascript" src="../../_static/underscore.js"></script>
-    <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
    
@@ -117,7 +117,7 @@
 
 <span class="sd">    &gt;&gt;&gt; snnLayer = slayer.spikeLayer(neuronDesc, simulationDesc)</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">,</span> <span class="n">fullRefKernel</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neuronDesc</span><span class="p">,</span> <span class="n">simulationDesc</span><span class="p">,</span> <span class="n">fullRefKernel</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span> <span class="o">=</span> <span class="n">neuronDesc</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulationDesc</span>
@@ -227,6 +227,7 @@
 <span class="sd">              dimension of input features (Width, Height, Channel) that represents the number of input neurons.</span>
 <span class="sd">            * ``outFeatures`` (``int``): number of output neurons.</span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 10</span>
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.</span>
 
 <span class="sd">        Usage:</span>
 <span class="sd">        </span>
@@ -250,6 +251,7 @@
 <span class="sd">            * ``dilation`` (``int`` or tuple of two ints): spacing between kernel elements. Default: 1</span>
 <span class="sd">            * ``groups`` (``int`` or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1</span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.</span>
 
 <span class="sd">        The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:</span>
 
@@ -274,6 +276,7 @@
 <span class="sd">            * ``stride`` (``int`` or tuple of two ints): stride of the window. Default: `kernelSize`</span>
 <span class="sd">            * ``padding`` (``int`` or tuple of two ints): implicit zero padding to be added on both sides. Default: 0</span>
 <span class="sd">            * ``dilation`` (``int`` or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1</span>
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.</span>
 <span class="sd">            </span>
 <span class="sd">        The parameters ``kernelSize``, ``stride``, ``padding``, ``dilation`` can either be:</span>
 
@@ -367,7 +370,7 @@
         <span class="k">return</span> <span class="n">_spikeFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">refKernel</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div></div>
 
 <span class="k">class</span> <span class="nc">_denseLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="c1"># extract information for kernel and inChannels</span>
@@ -415,7 +418,7 @@
 <span class="k">class</span> <span class="nc">_convLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="n">inChannels</span> <span class="o">=</span> <span class="n">inFeatures</span>
         <span class="n">outChannels</span> <span class="o">=</span> <span class="n">outFeatures</span>
         
@@ -485,7 +488,7 @@
 <span class="k">class</span> <span class="nc">_poolLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="c1"># kernel</span>
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
             <span class="n">kernel</span> <span class="o">=</span> <span class="p">(</span><span class="n">kernelSize</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
@@ -580,7 +583,7 @@
 <span class="k">class</span> <span class="nc">_pspLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
         <span class="n">inChannels</span>  <span class="o">=</span> <span class="mi">1</span>
         <span class="n">outChannels</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">kernel</span>      <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">numel</span><span class="p">(</span><span class="nb">filter</span><span class="p">))</span>
@@ -613,7 +616,7 @@
 <span class="k">class</span> <span class="nc">_pspFilter</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Conv3d</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">Ts</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nFilter</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">,</span> <span class="n">Ts</span><span class="p">,</span> <span class="n">filterScale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="n">inChannels</span>  <span class="o">=</span> <span class="mi">1</span>
         <span class="n">outChannels</span> <span class="o">=</span> <span class="n">nFilter</span>
         <span class="n">kernel</span>      <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">filterLength</span><span class="p">)</span>
@@ -721,7 +724,7 @@
 <span class="k">class</span> <span class="nc">_delayLayer</span><span class="p">(</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputSize</span><span class="p">,</span> <span class="n">Ts</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">_delayLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
         <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">inputSize</span><span class="p">)</span> <span class="o">==</span> <span class="nb">int</span><span class="p">:</span>
@@ -742,10 +745,10 @@
 
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
         <span class="n">N</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">Ns</span> <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span>
-        <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="nb">input</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="o">*</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
             <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">repeat</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="n">H</span><span class="p">,</span> <span class="n">W</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span> <span class="c1"># different delay per channel</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_delayFunction</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">Ts</span><span class="p">)</span> <span class="c1">#different delay per neuron</span>
 
 <span class="k">class</span> <span class="nc">_delayFunction</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -839,15 +842,15 @@
 </ul>
 </div>
 <div id="searchbox" style="display: none" role="search">
-  <h3>Quick search</h3>
+  <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" aria-labelledby="searchlabel" />
       <input type="submit" value="Go" />
     </form>
     </div>
 </div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
+<script>$('#searchbox').show(0);</script>
 
 
 
@@ -864,7 +867,7 @@
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
