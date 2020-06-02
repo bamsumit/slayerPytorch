@@ -177,7 +177,7 @@ class spikeLayer(slayer.spikeLayer):
 
 class _denseLayer(slayer._denseLayer):
     def __init__(self, inFeatures, outFeatures, weightScale=1, quantize=True):
-        self.quantize=True
+        self.quantize = quantize
         super(_denseLayer, self).__init__(inFeatures, outFeatures, weightScale)
 
     def forward(self, input):
@@ -192,7 +192,7 @@ class _denseLayer(slayer._denseLayer):
 
 class _convLayer(slayer._convLayer):
     def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, quantize=True):
-        self.quantize=True
+        self.quantize = quantize
         super(_convLayer, self).__init__(inFeatures, outFeatures, kernelSize, stride, padding, dilation, groups, weightScale)
  
     def forward(self, input):
