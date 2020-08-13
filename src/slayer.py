@@ -98,8 +98,8 @@ class spikeLayer(torch.nn.Module):
     def calculateSrmKernel(self):
         srmKernel = self._calculateAlphaKernel(self.neuron['tauSr'])
         # TODO implement for different types of kernels
-        return torch.tensor(srmKernel)
-        # return torch.tensor( self._zeroPadAndFlip(srmKernel)) # to be removed later when custom cuda code is implemented
+        return torch.FloatTensor(srmKernel)
+        # return torch.FloatTensor( self._zeroPadAndFlip(srmKernel)) # to be removed later when custom cuda code is implemented
         
     def calculateRefKernel(self):
         if self.fullRefKernel:
@@ -109,7 +109,7 @@ class spikeLayer(torch.nn.Module):
             refKernel = self._calculateAlphaKernel(tau=self.neuron['tauRef'], mult = -self.neuron['scaleRef'] * self.neuron['theta'])
         
         # TODO implement for different types of kernels
-        return torch.tensor(refKernel)
+        return torch.FloatTensor(refKernel)
         
     def _calculateAlphaKernel(self, tau, mult = 1, EPSILON = 0.01):
         # could be made faster... NOT A PRIORITY NOW
@@ -257,6 +257,55 @@ class spikeLayer(torch.nn.Module):
         >>> output = pool(input)
         '''
         return _poolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation, preHookFx)
+
+    def convTranspose(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, preHookFx=None):
+        '''
+        Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
+        It behaves the same as ``torch.nn.ConvTranspose3d`` applied for each time instance.
+
+        Arguments:
+            * ``inChannels`` (``int``): number of channels in input
+            * ``outChannels`` (``int``): number of channels produced by transposed convolution
+            * ``kernelSize`` (``int`` or tuple of two ints): size of ransposed convolution kernel
+            * ``stride`` (``int`` or tuple of two ints): stride of the transposed convolution. Default: 1
+            * ``padding`` (``int`` or tuple of two ints): amount of implicit zero-padding added to both sides of the input. Default: 0
+            * ``dilation`` (``int`` or tuple of two ints): spacing between kernel elements. Default: 1
+            * ``groups`` (``int`` or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1
+            * ``weightScale`` : scale factor of default initialized weights. Default: 100
+            * ``preHookFx``: a function that operates on weights before applying it. Could be used for quantization etc.
+        
+        The parameters kernelSize, stride, padding, dilation can either be:
+
+        - a single ``int`` -- in which case the same value is used for the height and width dimension
+        - a `tuple` of two ints -- in which case, the first `int` is used for the height dimension,
+          and the second is used for the width dimension
+        '''
+        return _convTransposeLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, preHookFx)
+
+    def unpool(self, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
+        '''
+        Returns a function that can be called to apply unpool layer mapping to input tensor per time instance.
+        It behaves same as ``torch.nn.`` unpool layers.
+
+        Arguments:
+            * ``kernelSize`` (``int`` or tuple of two ints): the size of the window to unpool over
+            * ``stride`` (``int`` or tuple of two ints): stride of the window. Default: `kernelSize`
+            * ``padding`` (``int`` or tuple of two ints): implicit zero padding to be added on both sides. Default: 0
+            * ``dilation`` (``int`` or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc.
+
+        The parameters ``kernelSize``, ``stride``, ``padding``, ``dialtion`` can either be:
+
+        - a single ``int`` -- in which case the same value is used for the height and width dimension
+        - a ``tuple`` of two ints -- in which case, the first `int` is used for the height dimension,
+          and the second `int` for the width dimension
+
+        Usage:
+
+        >>> unpool = snnLayer.unpool(2) # 2x2 unpooling
+        >>> output = unpool(input)
+        '''
+        return _unpoolLayer(self.neuron['theta'], kernelSize, stride, padding, dilation, preHookFx)
 
     def dropout(self, p=0.5, inplace=False):
         '''
@@ -534,6 +583,162 @@ class _poolLayer(nn.Conv3d):
         # print(result.shape)
         return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
 
+class _convTransposeLayer(nn.ConvTranspose3d):
+    '''
+    '''
+    def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, preHookFx=None):
+        inChannels = inFeatures
+        outChannels = outFeatures
+
+        # kernel
+        if type(kernelSize) == int:
+            kernel = (kernelSize, kernelSize, 1)
+        elif len(kernelSize) == 2:
+            kernel = (kernelSize[0], kernelSize[1], 1)
+        else:
+            raise Exception('kernelSize can only be of 1 or 2 dimension. It was: {}'.format(kernelSize.shape))
+
+        # stride
+        if type(stride) == int:
+            stride = (stride, stride, 1)
+        elif len(stride) == 2:
+            stride = (stride[0], stride[1], 1)
+        else:
+            raise Exception('stride can be either int or tuple of size 2. It was: {}'.format(stride.shape))
+
+        # padding
+        if type(padding) == int:
+            padding = (padding, padding, 0)
+        elif len(padding) == 2:
+            padding = (padding[0], padding[1], 0)
+        else:
+            raise Exception('padding can be either int or tuple of size 2. It was: {}'.format(padding.shape))
+
+        # dilation
+        if type(dilation) == int:
+            dilation = (dilation, dilation, 1)
+        elif len(dilation) == 2:
+            dilation = (dilation[0], dilation[1], 1)
+        else:
+            raise Exception('dilation can be either int or tuple of size 2. It was: {}'.format(dilation.shape))
+
+        # groups
+        # no need to check for groups. It can only be int
+
+        super(_convTransposeLayer, self).__init__(inChannels, outChannels, kernel, stride, padding, 0, groups, False, dilation)
+
+        if weightScale != 1:
+            self.weight = torch.nn.Parameter(weightScale * self.weight) # scale the weight if needed
+
+        self.preHookFx = preHookFx
+
+    def forward(self, input):
+        '''
+        '''
+        if self.preHookFx is None:
+            return F.conv_transpose3d(
+                input,
+                self.weight, self.bias,
+                self.stride, self.padding, self.output_padding, self.groups, self.dilation,
+            )
+        else:
+            return F.conv_transpose3d(
+                input,
+                self.preHookFx(self.weight), self.bias,
+                self.stride, self.padding, self.output_padding, self.groups, self.dilation,
+            )
+
+class _unpoolLayer(nn.ConvTranspose3d):
+    '''
+    '''
+    def __init__(self, theta, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
+        # kernel
+        if type(kernelSize) == int:
+            kernel = (kernelSize, kernelSize, 1)
+        elif len(kernelSize) == 2:
+            kernel = (kernelSize[0], kernelSize[1], 1)
+        else:
+            raise Exception('kernelSize can only be of 1 or 2 dimension. It was: {}'.format(kernelSize.shape))
+        
+        # stride
+        if stride is None:
+            stride = kernel
+        elif type(stride) == int:
+            stride = (stride, stride, 1)
+        elif len(stride) == 2:
+            stride = (stride[0], stride[1], 1)
+        else:
+            raise Exception('stride can be either int or tuple of size 2. It was: {}'.format(stride.shape))
+
+        # padding
+        if type(padding) == int:
+            padding = (padding, padding, 0)
+        elif len(padding) == 2:
+            padding = (padding[0], padding[1], 0)
+        else:
+            raise Exception('padding can be either int or tuple of size 2. It was: {}'.format(padding.shape))
+
+        # dilation
+        if type(dilation) == int:
+            dilation = (dilation, dilation, 1)
+        elif len(dilation) == 2:
+            dilation = (dilation[0], dilation[1], 1)
+        else:
+            raise Exception('dilation can be either int or tuple of size 2. It was: {}'.format(dilation.shape))
+        
+        super(_unpoolLayer, self).__init__(1, 1, kernel, stride, padding, 0, 1, False, dilation)
+
+        self.weight = torch.nn.Parameter(torch.FloatTensor(1.1 * theta * np.ones((self.weight.shape))).to(self.weight.device), requires_grad=False)
+
+        self.preHookFx = preHookFx
+
+    def forward(self, input):
+        '''
+        '''
+        # device = input.device
+        # dtype  = input.dtype
+        # # add necessary padding for odd spatial dimension
+        # This is not needed as unpool multiplies the spatial dimension, hence it is always fine
+        # if input.shape[2]%self.weight.shape[2] != 0:
+        #     input = torch.cat(
+        #         (
+        #             input, 
+        #             torch.zeros(
+        #                 (input.shape[0], input.shape[1], input.shape[2]%self.weight.shape[2], input.shape[3], input.shape[4]),
+        #                 dtype=dtype
+        #             ).to(device)
+        #         ),
+        #         dim=2,
+        #     )
+        # if input.shape[3]%self.weight.shape[3] != 0:
+        #     input = torch.cat(
+        #         (
+        #             input,
+        #             torch.zeros(
+        #                 (input.shape[0], input.shape[1], input.shape[2], input.shape[3]%self.weight.shape[3], input.shape[4]),
+        #                 dtype=dtype
+        #             ),
+        #             dim=3,
+        #         )
+        #     )
+
+        dataShape = input.shape
+
+        if self.preHookFx is None:
+            result = F.conv_transpose3d(
+                input.reshape((dataShape[0], 1, -1, dataShape[3], dataShape[4])),
+                self.weight, self.bias, 
+                self.stride, self.padding, self.output_padding, self.groups, self.dilation,
+            )
+        else:
+            result = F.conv_transpose3d(
+                input.reshape((dataShape[0], 1, -1, dataShape[3], dataShape[4])),
+                self.preHookFx(self.weight), self.bias, 
+                self.stride, self.padding, self.output_padding, self.groups, self.dilation,
+            )
+
+        return result.reshape((result.shape[0], dataShape[1], -1, result.shape[3], result.shape[4]))
+
 class _dropoutLayer(nn.Dropout3d):
     '''
     '''
@@ -561,9 +766,9 @@ class _pspLayer(nn.Conv3d):
 
         # print(filter)
         # print(np.flip(filter.cpu().data.numpy()).reshape(self.weight.shape)) 
-        # print(torch.tensor(np.flip(filter.cpu().data.numpy()).copy()))
+        # print(torch.FloatTensor(np.flip(filter.cpu().data.numpy()).copy()))
 
-        flippedFilter = torch.tensor(np.flip(filter.cpu().data.numpy()).copy()).reshape(self.weight.shape)
+        flippedFilter = torch.FloatTensor(np.flip(filter.cpu().data.numpy()).copy()).reshape(self.weight.shape)
 
         self.weight = torch.nn.Parameter(flippedFilter.to(self.weight.device), requires_grad = True)
 
