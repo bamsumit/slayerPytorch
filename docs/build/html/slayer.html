@@ -114,6 +114,38 @@ and the second <cite>int</cite> for the width dimension</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt id="slayerSNN.slayer.spikeLayer.convTranspose">
+<code class="sig-name descname">convTranspose</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inChannels</span></em>, <em class="sig-param"><span class="n">outChannels</span></em>, <em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">weightScale</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.convTranspose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.convTranspose" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply conv layer mapping to input tensor per time instance.
+It behaves the same as <code class="docutils literal notranslate"><span class="pre">torch.nn.ConvTranspose3d</span></code> applied for each time instance.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">inChannels</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of channels in input</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outChannels</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code>): number of channels produced by transposed convolution</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernelSize</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): size of ransposed convolution kernel</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stride</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): stride of the transposed convolution. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): amount of implicit zero-padding added to both sides of the input. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dilation</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): spacing between kernel elements. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groups</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): number of blocked connections from input channels to output channels. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code> : scale factor of default initialized weights. Default: 100</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weights before applying it. Could be used for quantization etc.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The parameters kernelSize, stride, padding, dilation can either be:</p>
+<ul class="simple">
+<li><p>a single <code class="docutils literal notranslate"><span class="pre">int</span></code> – in which case the same value is used for the height and width dimension</p></li>
+<li><p>a <cite>tuple</cite> of two ints – in which case, the first <cite>int</cite> is used for the height dimension,
+and the second is used for the width dimension</p></li>
+</ul>
+<p>Usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">convT</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">convTranspose</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="c1"># 2T5 flter, the opposite of 32C5 filter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">convT</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt id="slayerSNN.slayer.spikeLayer.delay">
 <code class="sig-name descname">delay</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inputSize</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.delay"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.delay" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a function that can be called to apply delay opeartion in time dimension of the input tensor.
@@ -302,6 +334,34 @@ The output tensor dimension is same as input.
 </dl>
 <p>Usage:</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spike</span><span class="p">(</span><span class="n">membranePotential</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.slayer.spikeLayer.unpool">
+<code class="sig-name descname">unpool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayer.html#spikeLayer.unpool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayer.spikeLayer.unpool" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can be called to apply unpool layer mapping to input tensor per time instance.
+It behaves same as <code class="docutils literal notranslate"><span class="pre">torch.nn.</span></code> unpool layers.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">kernelSize</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): the size of the window to unpool over</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stride</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): stride of the window. Default: <cite>kernelSize</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): implicit zero padding to be added on both sides. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dilation</span></code> (<code class="docutils literal notranslate"><span class="pre">int</span></code> or tuple of two ints): a parameter that controls the stride of elements in the window. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</p></li>
+</ul>
+</dd>
+</dl>
+<p>The parameters <code class="docutils literal notranslate"><span class="pre">kernelSize</span></code>, <code class="docutils literal notranslate"><span class="pre">stride</span></code>, <code class="docutils literal notranslate"><span class="pre">padding</span></code>, <code class="docutils literal notranslate"><span class="pre">dialtion</span></code> can either be:</p>
+<ul class="simple">
+<li><p>a single <code class="docutils literal notranslate"><span class="pre">int</span></code> – in which case the same value is used for the height and width dimension</p></li>
+<li><p>a <code class="docutils literal notranslate"><span class="pre">tuple</span></code> of two ints – in which case, the first <cite>int</cite> is used for the height dimension,
+and the second <cite>int</cite> for the width dimension</p></li>
+</ul>
+<p>Usage:</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">unpool</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">unpool</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># 2x2 unpooling</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">output</span> <span class="o">=</span> <span class="n">unpool</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd></dl>

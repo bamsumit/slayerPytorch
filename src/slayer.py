@@ -279,6 +279,11 @@ class spikeLayer(torch.nn.Module):
         - a single ``int`` -- in which case the same value is used for the height and width dimension
         - a `tuple` of two ints -- in which case, the first `int` is used for the height dimension,
           and the second is used for the width dimension
+
+        Usage:
+
+        >>> convT = snnLayer.convTranspose(32, 2, 5) # 2T5 flter, the opposite of 32C5 filter
+        >>> output = convT(input)
         '''
         return _convTransposeLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, preHookFx)
 
