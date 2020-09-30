@@ -63,7 +63,7 @@ class event():
 			frame = np.zeros((dim[0], dim[1], dim[2], dim[3]))
 		return self.toSpikeTensor(frame, samplingTime).reshape(dim)
 
-	def toSpikeTensor(self, emptyTensor, samplingTime=1, randomShift=False):	# Sampling time in ms
+	def toSpikeTensor(self, emptyTensor, samplingTime=1, randomShift=False, binningMode='OR'):	# Sampling time in ms
 		'''
 		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.
 		The tensor is of dimension (channels, height, width, time) or``CHWT``.
@@ -72,6 +72,7 @@ class event():
 			* ``emptyTensor`` (``numpy or torch tensor``): an empty tensor to hold spike data 
 			* ``samplingTime``: the width of time bin to use.
 			* ``randomShift``: flag to shift the sample in time or not. Default: False.
+			* ``binningMode``: the way spikes are binned. 'SUM' or 'OR' are supported. Default: 'OR'
 
 		Usage:
 
@@ -103,10 +104,19 @@ class event():
 								   (xEvent >= 0) &
 								   (pEvent >= 0) &
 								   (tEvent >= 0))
-			emptyTensor[pEvent[validInd],
-						0, 
-				  		xEvent[validInd],
-				  		tEvent[validInd]] = 1/samplingTime
+			if binningMode.upper() == 'OR':
+				emptyTensor[pEvent[validInd],
+							0, 
+							xEvent[validInd],
+							tEvent[validInd]] = 1/samplingTime
+			elif binningMode.upper() == 'SUM':
+				emptyTensor[pEvent[validInd],
+							0, 
+							xEvent[validInd],
+							tEvent[validInd]] += 1/samplingTime
+			else:
+				raise Exception('Unsupported binningMode. It was {}'.format(binningMode))
+
 		elif self.dim == 2:
 			yEvent = np.round(self.y).astype(int)
 			validInd = np.argwhere((xEvent < emptyTensor.shape[2]) &
@@ -117,10 +127,20 @@ class event():
 								   (yEvent >= 0) & 
 								   (pEvent >= 0) &
 								   (tEvent >= 0))
-			emptyTensor[pEvent[validInd], 
-				  		yEvent[validInd],
-				  		xEvent[validInd],
-				  		tEvent[validInd]] = 1/samplingTime
+
+			if binningMode.upper() == 'OR':
+				emptyTensor[pEvent[validInd], 
+							yEvent[validInd],
+							xEvent[validInd],
+							tEvent[validInd]] = 1/samplingTime
+			elif binningMode.upper() == 'SUM':
+				emptyTensor[pEvent[validInd], 
+							yEvent[validInd],
+							xEvent[validInd],
+							tEvent[validInd]] += 1/samplingTime
+			else:
+				raise Exception('Unsupported binningMode. It was {}'.format(binningMode))
+			
 		return emptyTensor
 
 def spikeArrayToEvent(spikeMat, samplingTime=1):

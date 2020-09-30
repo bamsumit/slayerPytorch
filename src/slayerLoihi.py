@@ -11,7 +11,7 @@ import torch.nn.functional as F
 from . import slayer
 import slayerCuda
 import slayerLoihiCuda
-from .quantizeParams import quantizeWeights
+from .quantizeParams import quantizeWeights, quantize
 
 class spikeLayer(slayer.spikeLayer):
     '''
@@ -121,7 +121,7 @@ class spikeLayer(slayer.spikeLayer):
         '''
         return _spike.loihi(weightedSpikes, self.neuron, self.simulation['Ts'])
 
-    def dense(self, inFeatures, outFeatures, weightScale=100, quantize=True):
+    def dense(self, inFeatures, outFeatures, weightScale=100, preHookFx = lambda x: quantize(x, step=2)):
         '''
         This function behaves similar to :meth:`slayer.spikeLayer.dense`. 
         The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
@@ -130,14 +130,14 @@ class spikeLayer(slayer.spikeLayer):
         Arguments:
             The arguments that are different from :meth:`slayer.spikeLayer.dense` are listed.
             * ``weightScale``: sale factor of default initialized weights. Default: 100
-            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True
-
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
         Usage:
             Same as :meth:`slayer.spikeLayer.dense`
         '''
-        return _denseLayer(inFeatures, outFeatures, weightScale, quantize)
+        # return _denseLayer(inFeatures, outFeatures, weightScale, quantize)
+        return super(spikeLayer, self).dense(inFeatures, outFeatures, weightScale, preHookFx)
 
-    def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, quantize=True):
+    def conv(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, preHookFx = lambda x: quantize(x, step=2)):
         '''
         This function behaves similar to :meth:`slayer.spikeLayer.conv`. 
         The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
@@ -146,14 +146,14 @@ class spikeLayer(slayer.spikeLayer):
         Arguments:
             The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.
             * ``weightScale``: sale factor of default initialized weights. Default: 100
-            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True
-
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
         Usage:
             Same as :meth:`slayer.spikeLayer.conv`
         '''
-        return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, quantize)
+        # return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, quantize)
+        return super(spikeLayer, self).conv(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, preHookFx)
     
-    def pool(self, kernelSize, stride=None, padding=0, dilation=1):
+    def pool(self, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
         '''
         This function behaves similar to :meth:`slayer.spikeLayer.pool`. 
         The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
@@ -168,42 +168,73 @@ class spikeLayer(slayer.spikeLayer):
         requiredWeight = quantizeWeights.apply(torch.tensor(1.1 * self.neuron['theta'] / self.maxPspKernel), 2).cpu().data.item()
         # print('Required pool layer weight =', requiredWeight)
         return slayer._poolLayer(requiredWeight/ 1.1, # to compensate for maxPsp
-                          kernelSize, stride, padding, dilation)
+                          kernelSize, stride, padding, dilation, preHookFx)
+
+    def convTranspose(self, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, preHookFx=lambda x: quantize(x, step=2)):
+        '''
+        This function behaves similar to :meth:`slayer.spikeLayer.convTranspose`. 
+        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+        One can, however, skip the quantization step altogether as well.
+
+        Arguments:
+            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.
+            * ``weightScale``: sale factor of default initialized weights. Default: 100
+            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
+        Usage:
+            Same as :meth:`slayer.spikeLayer.convTranspose`
+        '''
+        return super(spikeLayer, self).convTranspose(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, preHookFx)
+
+    def unpool(self, kernelSize, stride=None, padding=0, dilation=1, preHookFx=None):
+        '''
+        This function behaves similar to :meth:`slayer.spikeLayer.unpool`. 
+        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+        One can, however, skip the quantization step altogether as well.
+
+        Arguments:
+            The arguments set is same as :meth:`slayer.spikeLayer.unpool`.
+
+        Usage:
+            Same as :meth:`slayer.spikeLayer.pool`
+        '''
+        requiredWeight = quantizeWeights.apply(torch.tensor(1.1 * self.neuron['theta'] / self.maxPspKernel), 2).cpu().data.item()
+        return slayer._unpoolLayer(requiredWeight/ 1.1, # to compensate for maxPsp
+                          kernelSize, stride, padding, dilation, preHookFx)
 
     def getVoltage(self, membranePotential):
         Ns = int(self.simulation['tSample'] / self.simulation['Ts'])
         voltage = membranePotential.reshape((-1, Ns)).cpu().data.numpy()
         return np.where(voltage <= -500*self.neuron['theta'], self.neuron['theta'] + 1, voltage)
 
-class _denseLayer(slayer._denseLayer):
-    def __init__(self, inFeatures, outFeatures, weightScale=1, quantize=True):
-        self.quantize = quantize
-        super(_denseLayer, self).__init__(inFeatures, outFeatures, weightScale)
+# class _denseLayer(slayer._denseLayer):
+#     def __init__(self, inFeatures, outFeatures, weightScale=1, quantize=True):
+#         self.quantize = quantize
+#         super(_denseLayer, self).__init__(inFeatures, outFeatures, weightScale)
 
-    def forward(self, input):
-        if self.quantize is True:
-            return F.conv3d(input, 
-                            quantizeWeights.apply(self.weight, 2), self.bias,
-                            self.stride, self.padding, self.dilation, self.groups)
-        else:
-            return F.conv3d(input, 
-                            self.weight, self.bias,
-                            self.stride, self.padding, self.dilation, self.groups)
+#     def forward(self, input):
+#         if self.quantize is True:
+#             return F.conv3d(input, 
+#                             quantizeWeights.apply(self.weight, 2), self.bias,
+#                             self.stride, self.padding, self.dilation, self.groups)
+#         else:
+#             return F.conv3d(input, 
+#                             self.weight, self.bias,
+#                             self.stride, self.padding, self.dilation, self.groups)
 
-class _convLayer(slayer._convLayer):
-    def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, quantize=True):
-        self.quantize = quantize
-        super(_convLayer, self).__init__(inFeatures, outFeatures, kernelSize, stride, padding, dilation, groups, weightScale)
+# class _convLayer(slayer._convLayer):
+#     def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, quantize=True):
+#         self.quantize = quantize
+#         super(_convLayer, self).__init__(inFeatures, outFeatures, kernelSize, stride, padding, dilation, groups, weightScale)
  
-    def forward(self, input):
-        if self.quantize is True:
-            return F.conv3d(input, 
-                            quantizeWeights.apply(self.weight, 2), self.bias,
-                            self.stride, self.padding, self.dilation, self.groups)
-        else:
-            return F.conv3d(input, 
-                            self.weight, self.bias, 
-                            self.stride, self.padding, self.dilation, self.groups)
+#     def forward(self, input):
+#         if self.quantize is True:
+#             return F.conv3d(input, 
+#                             quantizeWeights.apply(self.weight, 2), self.bias,
+#                             self.stride, self.padding, self.dilation, self.groups)
+#         else:
+#             return F.conv3d(input, 
+#                             self.weight, self.bias, 
+#                             self.stride, self.padding, self.dilation, self.groups)
 
 
 class _spike(torch.autograd.Function):

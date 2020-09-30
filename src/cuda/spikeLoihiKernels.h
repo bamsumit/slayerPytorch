@@ -23,41 +23,30 @@ __global__ void getSpikesKernel(
 	
 	if(neuronID >= nNeurons)	return;
 	
-	int uOld, vOld;
+	int uOld = 0;
+	int vOld = 0;
 	
 	for(unsigned i=0; i<Ns; ++i)
 	{
 		unsigned linearID = i + neuronID * Ns;
 		
-		if(i==0)
+		int uSign = (uOld >= 0) ? 1 : -1 ;
+		int vSign = (vOld >= 0) ? 1 : -1 ;
+
+		int uTemp = uSign * ( ( uSign * uOld * ( (1<<12) - iDecay ) ) >> 12 ) + weightScale * int(weightedSpikes[linearID]);
+		int vTemp = vSign * ( ( vSign * vOld * ( (1<<12) - vDecay ) ) >> 12 ) + uTemp;
+		
+		s[linearID] = 0;
+		u[linearID] = uOld = uTemp;
+
+		if( vTemp > theta )
 		{
-			uOld = weightScale * int(weightedSpikes[linearID]);
-			vOld = uOld;
-			
-			u[linearID] = uOld;
-			v[linearID] = uOld;
-			s[linearID] = 0;
+			s[linearID] = 1;
+			v[linearID] = vDecay;
+			vOld = 0;
 		}
 		else
-		{
-			int uSign = (uOld >= 0) ? 1 : -1 ;
-			int vSign = (vOld >= 0) ? 1 : -1 ;
-
-			int uTemp = uSign * ( ( uSign * uOld * ( (1<<12) - iDecay ) ) >> 12 ) + weightScale * int(weightedSpikes[linearID]);
-			int vTemp = vSign * ( ( vSign * vOld * ( (1<<12) - vDecay ) ) >> 12 ) + uTemp;
-			
-			s[linearID] = 0;
-			u[linearID] = uOld = uTemp;
-
-			if( vTemp > theta )
-			{
-				s[linearID] = 1;
-				v[linearID] = vDecay;
-				vOld = 0;
-			}
-			else
-				v[linearID] = vOld = vTemp;
-		}
+			v[linearID] = vOld = vTemp;
 	}
 }
 
