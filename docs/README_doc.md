@@ -19,4 +19,13 @@ If you made any change, you can update the documentation with the following
 $ cd <path_to_slayerPytorch>/docs
 $ make html
 ```
+To build pdf documentation,
+```
+$ make latexpdf
+```
+Sphinx pdf build uses `latexmk`. If it is not installed in your system, install using
+```
+$ sudo apt-get update -y
+$ sudo apt-get install -y latexmk
+```
 
