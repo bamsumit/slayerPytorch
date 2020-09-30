@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>slayerSNN.slayerLoihi &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -44,7 +45,7 @@
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">slayer</span>
 <span class="kn">import</span> <span class="nn">slayerCuda</span>
 <span class="kn">import</span> <span class="nn">slayerLoihiCuda</span>
-<span class="kn">from</span> <span class="nn">.quantizeParams</span> <span class="kn">import</span> <span class="n">quantizeWeights</span>
+<span class="kn">from</span> <span class="nn">.quantizeParams</span> <span class="kn">import</span> <span class="n">quantizeWeights</span><span class="p">,</span> <span class="n">quantize</span>
 
 <div class="viewcode-block" id="spikeLayer"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer">[docs]</a><span class="k">class</span> <span class="nc">spikeLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">spikeLayer</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
@@ -154,7 +155,7 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="n">_spike</span><span class="o">.</span><span class="n">loihi</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span></div>
 
-<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.dense"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.dense">[docs]</a>    <span class="k">def</span> <span class="nf">dense</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">preHookFx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.dense`. </span>
 <span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
@@ -163,14 +164,14 @@
 <span class="sd">        Arguments:</span>
 <span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.dense` are listed.</span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
-<span class="sd">            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True</span>
-
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
 <span class="sd">        Usage:</span>
 <span class="sd">            Same as :meth:`slayer.spikeLayer.dense`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">_denseLayer</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">quantize</span><span class="p">)</span></div>
+        <span class="c1"># return _denseLayer(inFeatures, outFeatures, weightScale, quantize)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.conv">[docs]</a>    <span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.conv"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.conv">[docs]</a>    <span class="k">def</span> <span class="nf">conv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">preHookFx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.conv`. </span>
 <span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
@@ -179,14 +180,14 @@
 <span class="sd">        Arguments:</span>
 <span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.</span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
-<span class="sd">            * ``qunatize`` (``bool``): flag to quatize the weights or not. Default: True</span>
-
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
 <span class="sd">        Usage:</span>
 <span class="sd">            Same as :meth:`slayer.spikeLayer.conv`</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="n">_convLayer</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">quantize</span><span class="p">)</span></div>
+        <span class="c1"># return _convLayer(inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale, quantize)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span></div>
     
-<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.pool">[docs]</a>    <span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<div class="viewcode-block" id="spikeLayer.pool"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.pool">[docs]</a>    <span class="k">def</span> <span class="nf">pool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.pool`. </span>
 <span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
@@ -201,42 +202,73 @@
         <span class="n">requiredWeight</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
         <span class="c1"># print(&#39;Required pool layer weight =&#39;, requiredWeight)</span>
         <span class="k">return</span> <span class="n">slayer</span><span class="o">.</span><span class="n">_poolLayer</span><span class="p">(</span><span class="n">requiredWeight</span><span class="o">/</span> <span class="mf">1.1</span><span class="p">,</span> <span class="c1"># to compensate for maxPsp</span>
-                          <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span></div>
+                          <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="spikeLayer.convTranspose"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.convTranspose">[docs]</a>    <span class="k">def</span> <span class="nf">convTranspose</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">)):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.convTranspose`. </span>
+<span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
+<span class="sd">        One can, however, skip the quantization step altogether as well.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.</span>
+<span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
+<span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
+<span class="sd">        Usage:</span>
+<span class="sd">            Same as :meth:`slayer.spikeLayer.convTranspose`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">spikeLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">convTranspose</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="spikeLayer.unpool"><a class="viewcode-back" href="../../slayerLoihi.html#slayerSNN.slayerLoihi.spikeLayer.unpool">[docs]</a>    <span class="k">def</span> <span class="nf">unpool</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function behaves similar to :meth:`slayer.spikeLayer.unpool`. </span>
+<span class="sd">        The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).</span>
+<span class="sd">        One can, however, skip the quantization step altogether as well.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            The arguments set is same as :meth:`slayer.spikeLayer.unpool`.</span>
+
+<span class="sd">        Usage:</span>
+<span class="sd">            Same as :meth:`slayer.spikeLayer.pool`</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">requiredWeight</span> <span class="o">=</span> <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="mf">1.1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">maxPspKernel</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">slayer</span><span class="o">.</span><span class="n">_unpoolLayer</span><span class="p">(</span><span class="n">requiredWeight</span><span class="o">/</span> <span class="mf">1.1</span><span class="p">,</span> <span class="c1"># to compensate for maxPsp</span>
+                          <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">getVoltage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">membranePotential</span><span class="p">):</span>
         <span class="n">Ns</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;tSample&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">[</span><span class="s1">&#39;Ts&#39;</span><span class="p">])</span>
         <span class="n">voltage</span> <span class="o">=</span> <span class="n">membranePotential</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">Ns</span><span class="p">))</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">voltage</span> <span class="o">&lt;=</span> <span class="o">-</span><span class="mi">500</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">voltage</span><span class="p">)</span></div>
 
-<span class="k">class</span> <span class="nc">_denseLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">_denseLayer</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="o">=</span> <span class="n">quantize</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_denseLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>
+<span class="c1"># class _denseLayer(slayer._denseLayer):</span>
+<span class="c1">#     def __init__(self, inFeatures, outFeatures, weightScale=1, quantize=True):</span>
+<span class="c1">#         self.quantize = quantize</span>
+<span class="c1">#         super(_denseLayer, self).__init__(inFeatures, outFeatures, weightScale)</span>
 
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
-                            <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
-                            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+<span class="c1">#     def forward(self, input):</span>
+<span class="c1">#         if self.quantize is True:</span>
+<span class="c1">#             return F.conv3d(input, </span>
+<span class="c1">#                             quantizeWeights.apply(self.weight, 2), self.bias,</span>
+<span class="c1">#                             self.stride, self.padding, self.dilation, self.groups)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             return F.conv3d(input, </span>
+<span class="c1">#                             self.weight, self.bias,</span>
+<span class="c1">#                             self.stride, self.padding, self.dilation, self.groups)</span>
 
-<span class="k">class</span> <span class="nc">_convLayer</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">_convLayer</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">quantize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="o">=</span> <span class="n">quantize</span>
-        <span class="nb">super</span><span class="p">(</span><span class="n">_convLayer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">)</span>
+<span class="c1"># class _convLayer(slayer._convLayer):</span>
+<span class="c1">#     def __init__(self, inFeatures, outFeatures, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=1, quantize=True):</span>
+<span class="c1">#         self.quantize = quantize</span>
+<span class="c1">#         super(_convLayer, self).__init__(inFeatures, outFeatures, kernelSize, stride, padding, dilation, groups, weightScale)</span>
  
-    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantize</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
-                            <span class="n">quantizeWeights</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">F</span><span class="o">.</span><span class="n">conv3d</span><span class="p">(</span><span class="nb">input</span><span class="p">,</span> 
-                            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">bias</span><span class="p">,</span> 
-                            <span class="bp">self</span><span class="o">.</span><span class="n">stride</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">padding</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dilation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">groups</span><span class="p">)</span>
+<span class="c1">#     def forward(self, input):</span>
+<span class="c1">#         if self.quantize is True:</span>
+<span class="c1">#             return F.conv3d(input, </span>
+<span class="c1">#                             quantizeWeights.apply(self.weight, 2), self.bias,</span>
+<span class="c1">#                             self.stride, self.padding, self.dilation, self.groups)</span>
+<span class="c1">#         else:</span>
+<span class="c1">#             return F.conv3d(input, </span>
+<span class="c1">#                             self.weight, self.bias, </span>
+<span class="c1">#                             self.stride, self.padding, self.dilation, self.groups)</span>
 
 
 <span class="k">class</span> <span class="nc">_spike</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">autograd</span><span class="o">.</span><span class="n">Function</span><span class="p">):</span>
@@ -346,7 +378,7 @@
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

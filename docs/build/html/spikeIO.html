@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Spike Input/Output &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -213,7 +214,7 @@ The array is of dimension (channels, height, width, time) or``CHWT`` for 2D data
 
 <dl class="py method">
 <dt id="slayerSNN.spikeFileIO.event.toSpikeTensor">
-<code class="sig-name descname">toSpikeTensor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">emptyTensor</span></em>, <em class="sig-param"><span class="n">samplingTime</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">randomShift</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">toSpikeTensor</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">emptyTensor</span></em>, <em class="sig-param"><span class="n">samplingTime</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">randomShift</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">binningMode</span><span class="o">=</span><span class="default_value">'OR'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/spikeFileIO.html#event.toSpikeTensor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.spikeFileIO.event.toSpikeTensor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a numpy tensor that contains the spike events sampled in bins of <cite>samplingTime</cite>.
 The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 <dl class="simple">
@@ -221,6 +222,7 @@ The tensor is of dimension (channels, height, width, time) or``CHWT``.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">emptyTensor</span></code> (<code class="docutils literal notranslate"><span class="pre">numpy</span> <span class="pre">or</span> <span class="pre">torch</span> <span class="pre">tensor</span></code>): an empty tensor to hold spike data</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">samplingTime</span></code>: the width of time bin to use.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">randomShift</span></code>: flag to shift the sample in time or not. Default: False.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">binningMode</span></code>: the way spikes are binned. ‘SUM’ or ‘OR’ are supported. Default: ‘OR’</p></li>
 </ul>
 </dd>
 </dl>
@@ -457,7 +459,7 @@ The numpy array must be of dimension (channels, height, width, time) or``CHWT`` 
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

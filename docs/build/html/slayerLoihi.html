@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SLAYER Loihi module &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -76,14 +77,14 @@ All of the routines available for <code class="docutils literal notranslate"><sp
 </div>
 <dl class="py method">
 <dt id="slayerSNN.slayerLoihi.spikeLayer.conv">
-<code class="sig-name descname">conv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inChannels</span></em>, <em class="sig-param"><span class="n">outChannels</span></em>, <em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">groups</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">weightScale</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">quantize</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">conv</code><span class="sig-paren">(</span><em class="sig-param">inChannels</em>, <em class="sig-param">outChannels</em>, <em class="sig-param">kernelSize</em>, <em class="sig-param">stride=1</em>, <em class="sig-param">padding=0</em>, <em class="sig-param">dilation=1</em>, <em class="sig-param">groups=1</em>, <em class="sig-param">weightScale=100</em>, <em class="sig-param">preHookFx=&lt;function spikeLayer.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.conv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.conv" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><p>The arguments that are different from <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code> are listed.
 * <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
-* <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
+* <code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</p>
 </dd>
 <dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code></p>
 </dd>
@@ -91,15 +92,31 @@ One can, however, skip the quantization step altogether as well.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt id="slayerSNN.slayerLoihi.spikeLayer.convTranspose">
+<code class="sig-name descname">convTranspose</code><span class="sig-paren">(</span><em class="sig-param">inChannels</em>, <em class="sig-param">outChannels</em>, <em class="sig-param">kernelSize</em>, <em class="sig-param">stride=1</em>, <em class="sig-param">padding=0</em>, <em class="sig-param">dilation=1</em>, <em class="sig-param">groups=1</em>, <em class="sig-param">weightScale=100</em>, <em class="sig-param">preHookFx=&lt;function spikeLayer.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.convTranspose"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.convTranspose" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.convTranspose()</span></code>. 
+The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+One can, however, skip the quantization step altogether as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>The arguments that are different from <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.conv()</span></code> are listed.
+* <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
+* <code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</p>
+</dd>
+<dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.convTranspose()</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="slayerSNN.slayerLoihi.spikeLayer.dense">
-<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">inFeatures</span></em>, <em class="sig-param"><span class="n">outFeatures</span></em>, <em class="sig-param"><span class="n">weightScale</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">quantize</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">dense</code><span class="sig-paren">(</span><em class="sig-param">inFeatures</em>, <em class="sig-param">outFeatures</em>, <em class="sig-param">weightScale=100</em>, <em class="sig-param">preHookFx=&lt;function spikeLayer.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.dense"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.dense" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
 <dl class="simple">
 <dt>Arguments:</dt><dd><p>The arguments that are different from <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code> are listed.
 * <code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: sale factor of default initialized weights. Default: 100
-* <code class="docutils literal notranslate"><span class="pre">qunatize</span></code> (<code class="docutils literal notranslate"><span class="pre">bool</span></code>): flag to quatize the weights or not. Default: True</p>
+* <code class="docutils literal notranslate"><span class="pre">preHookFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</p>
 </dd>
 <dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.dense()</span></code></p>
 </dd>
@@ -108,7 +125,7 @@ One can, however, skip the quantization step altogether as well.</p>
 
 <dl class="py method">
 <dt id="slayerSNN.slayerLoihi.spikeLayer.pool">
-<code class="sig-name descname">pool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">pool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.pool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.pool" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code>. 
 The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
 One can, however, skip the quantization step altogether as well.</p>
@@ -155,6 +172,20 @@ The output tensor dimension is same as input.</p>
 <div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">outSpike</span><span class="p">,</span> <span class="n">outVoltage</span><span class="p">,</span> <span class="n">outCurrent</span> <span class="o">=</span> <span class="n">snnLayer</span><span class="o">.</span><span class="n">spikeLoihiFull</span><span class="p">(</span><span class="n">weightedSpikes</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.slayerLoihi.spikeLayer.unpool">
+<code class="sig-name descname">unpool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">preHookFx</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/slayerSNN/slayerLoihi.html#spikeLayer.unpool"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.slayerLoihi.spikeLayer.unpool" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function behaves similar to <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.unpool()</span></code>. 
+The only difference is that the weights are qunatized with step of 2 (as is the case for signed weights in Loihi).
+One can, however, skip the quantization step altogether as well.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><p>The arguments set is same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.unpool()</span></code>.</p>
+</dd>
+<dt>Usage:</dt><dd><p>Same as <code class="xref py py-meth docutils literal notranslate"><span class="pre">slayer.spikeLayer.pool()</span></code></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -227,7 +258,7 @@ The output tensor dimension is same as input.</p>
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

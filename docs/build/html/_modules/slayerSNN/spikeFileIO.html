@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>slayerSNN.spikeFileIO &#8212; SLAYER PyTorch 0.1 documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -96,7 +97,7 @@
 			<span class="n">frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">dim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">dim</span><span class="p">[</span><span class="mi">3</span><span class="p">]))</span>
 		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">samplingTime</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="event.toSpikeTensor"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.event.toSpikeTensor">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeTensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emptyTensor</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">randomShift</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
+<div class="viewcode-block" id="event.toSpikeTensor"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.event.toSpikeTensor">[docs]</a>	<span class="k">def</span> <span class="nf">toSpikeTensor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">emptyTensor</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">randomShift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binningMode</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">):</span>	<span class="c1"># Sampling time in ms</span>
 		<span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">		Returns a numpy tensor that contains the spike events sampled in bins of `samplingTime`.</span>
 <span class="sd">		The tensor is of dimension (channels, height, width, time) or``CHWT``.</span>
@@ -105,6 +106,7 @@
 <span class="sd">			* ``emptyTensor`` (``numpy or torch tensor``): an empty tensor to hold spike data </span>
 <span class="sd">			* ``samplingTime``: the width of time bin to use.</span>
 <span class="sd">			* ``randomShift``: flag to shift the sample in time or not. Default: False.</span>
+<span class="sd">			* ``binningMode``: the way spikes are binned. &#39;SUM&#39; or &#39;OR&#39; are supported. Default: &#39;OR&#39;</span>
 
 <span class="sd">		Usage:</span>
 
@@ -136,10 +138,19 @@
 								   <span class="p">(</span><span class="n">xEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
 								   <span class="p">(</span><span class="n">pEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
 								   <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">))</span>
-			<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
-						<span class="mi">0</span><span class="p">,</span> 
-				  		<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
-				  		<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+			<span class="k">if</span> <span class="n">binningMode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;OR&#39;</span><span class="p">:</span>
+				<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="mi">0</span><span class="p">,</span> 
+							<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+			<span class="k">elif</span> <span class="n">binningMode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SUM&#39;</span><span class="p">:</span>
+				<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="mi">0</span><span class="p">,</span> 
+							<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported binningMode. It was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">binningMode</span><span class="p">))</span>
+
 		<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
 			<span class="n">yEvent</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
 			<span class="n">validInd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argwhere</span><span class="p">((</span><span class="n">xEvent</span> <span class="o">&lt;</span> <span class="n">emptyTensor</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&amp;</span>
@@ -150,10 +161,20 @@
 								   <span class="p">(</span><span class="n">yEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span> 
 								   <span class="p">(</span><span class="n">pEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&amp;</span>
 								   <span class="p">(</span><span class="n">tEvent</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">))</span>
-			<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span> 
-				  		<span class="n">yEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
-				  		<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
-				  		<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+
+			<span class="k">if</span> <span class="n">binningMode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;OR&#39;</span><span class="p">:</span>
+				<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span> 
+							<span class="n">yEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+			<span class="k">elif</span> <span class="n">binningMode</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SUM&#39;</span><span class="p">:</span>
+				<span class="n">emptyTensor</span><span class="p">[</span><span class="n">pEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span> 
+							<span class="n">yEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">xEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">],</span>
+							<span class="n">tEvent</span><span class="p">[</span><span class="n">validInd</span><span class="p">]]</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="n">samplingTime</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unsupported binningMode. It was </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">binningMode</span><span class="p">))</span>
+			
 		<span class="k">return</span> <span class="n">emptyTensor</span></div></div>
 
 <div class="viewcode-block" id="spikeArrayToEvent"><a class="viewcode-back" href="../../spikeIO.html#slayerSNN.spikeFileIO.spikeArrayToEvent">[docs]</a><span class="k">def</span> <span class="nf">spikeArrayToEvent</span><span class="p">(</span><span class="n">spikeMat</span><span class="p">,</span> <span class="n">samplingTime</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -704,7 +725,7 @@
       &copy;2019, Sumit Bam Shrestha.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>
