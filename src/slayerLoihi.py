@@ -129,6 +129,7 @@ class spikeLayer(slayer.spikeLayer):
 
         Arguments:
             The arguments that are different from :meth:`slayer.spikeLayer.dense` are listed.
+            
             * ``weightScale``: sale factor of default initialized weights. Default: 100
             * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
         Usage:
@@ -145,6 +146,7 @@ class spikeLayer(slayer.spikeLayer):
 
         Arguments:
             The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.
+            
             * ``weightScale``: sale factor of default initialized weights. Default: 100
             * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
         Usage:
@@ -178,6 +180,7 @@ class spikeLayer(slayer.spikeLayer):
 
         Arguments:
             The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.
+            
             * ``weightScale``: sale factor of default initialized weights. Default: 100
             * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.
         Usage:
