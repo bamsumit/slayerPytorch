@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>slayerSNN.auto.dataset &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for slayerSNN.auto.dataset</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">spikeFileIO</span> <span class="k">as</span> <span class="n">sio</span>
+
+<div class="viewcode-block" id="SlayerDataset"><a class="viewcode-back" href="../../../auto/dataset.html#slayerSNN.auto.dataset.SlayerDataset">[docs]</a><span class="k">class</span> <span class="nc">SlayerDataset</span><span class="p">(</span><span class="n">Dataset</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class wraps a basic dataset class to be used in SLAYER training. This allows the use</span>
+<span class="sd">    of the same basic dataset definition on some other platform other than SLAYER, for e.g. for</span>
+<span class="sd">    implementation in a neuromorphic hardware with its SDK.</span>
+
+<span class="sd">    The basic dataset must return a numpy array of events where each row consists of an AER event</span>
+<span class="sd">    represented by x, y, polarity and time (in ms).</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``dataset``: basic dataset to be wrapped.</span>
+<span class="sd">        * ``network``: an ``auto`` module network with which the dataset is intended to be used with. </span>
+<span class="sd">            The shape of the tensor is determined from the netowrk definition.</span>
+<span class="sd">        * ``randomShift``: a flag to indicate if the sample must be randomly shifted in time over the </span>
+<span class="sd">            entire sample length. Default: False</span>
+<span class="sd">        * ``binningMode``: the way the overlapping events are binned. Supports ``SUM`` and ``OR`` binning.</span>
+<span class="sd">            Default: ``OR``</span>
+<span class="sd">        * ``fullDataset``: a flag that indicates weather the full dataset is to be processed or not.</span>
+<span class="sd">            If ``True``, full length of the events is loaded into tensor. This will cause problems with</span>
+<span class="sd">            default batching, as the number of time bins will not match for all the samples in a minibatch.</span>
+<span class="sd">            In this case, the dataloader&#39;s ``collate_fn`` must be custom defined or a batch size of 1 should</span>
+<span class="sd">            be used. Default: ``False``</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        dataset = SlayerDataset(dataset, net)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># this expects np event and label from dataset</span>
+    <span class="c1"># np event should have events ordered in x, y, p, t(ms)</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dataset</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">randomShift</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">binningMode</span><span class="o">=</span><span class="s1">&#39;OR&#39;</span><span class="p">,</span> <span class="n">fullDataset</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># fullDataset = True superseds randomShift, nTimeBins and tensorShape. It is expected to be run with batch size of 1 only</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SlayerDataset</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">samplingTime</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">][</span><span class="s1">&#39;Ts&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampleLength</span> <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">][</span><span class="s1">&#39;tSample&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nTimeBins</span>    <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampleLength</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingTime</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span>   <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">inputShape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nOutput</span>      <span class="o">=</span> <span class="n">network</span><span class="o">.</span><span class="n">nOutput</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tensorShape</span>  <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">nTimeBins</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">randomShift</span>  <span class="o">=</span> <span class="n">randomShift</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">binningMode</span>  <span class="o">=</span> <span class="n">binningMode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fullDataset</span>  <span class="o">=</span> <span class="n">fullDataset</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="n">event</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fullDataset</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">inputSpikes</span> <span class="o">=</span> <span class="n">sio</span><span class="o">.</span><span class="n">event</span><span class="p">(</span>
+                <span class="n">event</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tensorShape</span><span class="p">),</span> 
+                <span class="n">samplingTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingTime</span><span class="p">,</span>
+                <span class="n">randomShift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">randomShift</span><span class="p">,</span>
+                <span class="n">binningMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">binningMode</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">nTimeBins</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">event</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">max</span><span class="p">()))</span>
+            <span class="n">tensorShape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">nTimeBins</span><span class="p">)</span>
+            <span class="n">inputSpikes</span> <span class="o">=</span> <span class="n">snn</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">event</span><span class="p">(</span>
+                <span class="n">event</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">event</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">toSpikeTensor</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">tensorShape</span><span class="p">),</span> 
+                <span class="n">samplingTime</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">samplingTime</span><span class="p">,</span>
+                <span class="n">randomShift</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">randomShift</span><span class="p">,</span>
+                <span class="n">binningMode</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">binningMode</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="n">desiredClass</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">nOutput</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">desiredClass</span><span class="p">[</span><span class="n">label</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">inputSpikes</span><span class="p">,</span> <span class="n">desiredClass</span><span class="p">,</span> <span class="n">label</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataset</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto/index.html">SLAYER Auto modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -45,6 +45,6 @@ setup(
 
 setup(
     name='slayerSNN',
-    packages = ['slayerSNN'],
+    packages = ['slayerSNN', 'slayerSNN.auto'],
     package_dir = {'slayerSNN': 'src'},
 )

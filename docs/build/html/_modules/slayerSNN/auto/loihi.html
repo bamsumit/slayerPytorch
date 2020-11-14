@@ -1,0 +1,744 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>slayerSNN.auto.loihi &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for slayerSNN.auto.loihi</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Sumit Bam Shrestha 09/28/2020 5pm</span>
+<span class="c1"># =================================</span>
+<span class="c1"># This is a wrapper code that generates feedforward slayerSNN network from a </span>
+<span class="c1"># network config file (*.yaml). This will also include modules to output a </span>
+<span class="c1"># network description file (*.hdf5) OR SOME OTHER FORMAT (TO BE DECIDED) which</span>
+<span class="c1"># will be directly loadable in nxsdk (PERHAPS THIS NEEDS REMOVING LATER) </span>
+<span class="c1"># module to load the trained network in Loihi hardware.</span>
+<span class="c1">#</span>
+<span class="c1"># This module should be merged with slayerSNN.loihi later and served from </span>
+<span class="c1"># SLAYER-PyTorch module</span>
+<span class="c1"># It shall be accessible as slayerSNN.auto.loihi</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">utils</span>
+<span class="kn">from</span> <span class="nn">..slayerLoihi</span> <span class="kn">import</span> <span class="n">spikeLayer</span> <span class="k">as</span> <span class="n">loihi</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">_count_elements</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+
+<div class="viewcode-block" id="denseBlock"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.denseBlock">[docs]</a><span class="k">class</span> <span class="nc">denseBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class creates a dense layer block with Loihi neuron. It groups the </span>
+<span class="sd">    synaptic interaction, Loihi neuron response and the associated delays.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``slayer`` (``slayerLoihi.slayer``): pre-initialized slayer loihi module.</span>
+<span class="sd">        * ``inFeatures``: number of input features.</span>
+<span class="sd">        * ``outFeatures``: number of output features.</span>
+<span class="sd">        * ``weightScale``: scale factor of the defaule initialized weights. Default: 100</span>
+<span class="sd">        * ``preHoodFx``: a function that operates on weight before applying it. Could be used for quantization etc.</span>
+<span class="sd">        * ``weightNorm``: a flag to indicate if weight normalization should be applied or not. Default: False</span>
+<span class="sd">        * ``delay``: a flag to inidicate if axonal delays should be applied or not. Default: False</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = denseBlock(self.slayer, 512, 10)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slayer</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+                 <span class="n">preHookFx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">weightNorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">denseBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="o">=</span> <span class="n">weightNorm</span>
+        <span class="k">if</span> <span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">weight_norm</span><span class="p">(</span><span class="n">slayer</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span>  <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">outFeatures</span><span class="p">)</span> <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradLog</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsDict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;inFeatures&#39;</span>  <span class="p">:</span> <span class="n">inFeatures</span><span class="p">,</span>
+            <span class="s1">&#39;outFeatures&#39;</span> <span class="p">:</span> <span class="n">outFeatures</span><span class="p">,</span>
+        <span class="p">}</span> 
+
+<div class="viewcode-block" id="denseBlock.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.denseBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">spikeLoihi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span><span class="p">(</span><span class="n">spike</span><span class="p">))</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span></div></div>
+
+<div class="viewcode-block" id="convBlock"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.convBlock">[docs]</a><span class="k">class</span> <span class="nc">convBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class creates a conv layer block with Loihi neuron. It groups the </span>
+<span class="sd">    synaptic interaction, Loihi neuron response and the associated delays.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``slayer`` (``slayerLoihi.slayer``): pre-initialized slayer loihi module.</span>
+<span class="sd">        * ``inChannels``: number of input channels.</span>
+<span class="sd">        * ``outChannels``: number of output channels.</span>
+<span class="sd">        * ``kernelSize``: size of convolution kernel.</span>
+<span class="sd">        * ``stride``: size of convolution stride. Default: 1</span>
+<span class="sd">        * ``padding``: size of padding. Default: 0</span>
+<span class="sd">        * ``dialtion``: size of convolution dilation. Default: 1</span>
+<span class="sd">        * ``groups``: number of convolution groups. Default: 1</span>
+<span class="sd">        * ``weightScale``: scale factor of the defaule initialized weights. Default: 100</span>
+<span class="sd">        * ``preHoodFx``: a function that operates on weight before applying it. Could be used for quantization etc.</span>
+<span class="sd">            Default: quantization in step of 2 (Mixed weight mode in Loihi)</span>
+<span class="sd">        * ``weightNorm``: a flag to indicate if weight normalization should be applied or not. Default: False</span>
+<span class="sd">        * ``delay``: a flag to inidicate if axonal delays should be applied or not. Default: False</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = convBlock(self.slayer, 16, 31, 3, padding=1)</span>
+<span class="sd">        spike = blk(spike)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slayer</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">groups</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weightScale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> 
+                 <span class="n">preHookFx</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">weightNorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">convBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="o">=</span> <span class="n">weightNorm</span>
+        <span class="k">if</span> <span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">weight_norm</span><span class="p">(</span>
+                <span class="n">slayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">),</span> 
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="n">preHookFx</span><span class="p">)</span>
+        <span class="c1"># only channel wise delay is supported for conv layer</span>
+        <span class="c1"># for neuron wise delay, one will need to write a custom block as it would require the spatial dimension as well</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span>  <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">delay</span><span class="p">(</span><span class="n">outChannels</span><span class="p">)</span> <span class="k">if</span> <span class="n">delay</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="kc">None</span>    
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradLog</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsDict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;inChannels&#39;</span>  <span class="p">:</span> <span class="n">inChannels</span><span class="p">,</span>
+            <span class="s1">&#39;outChannels&#39;</span> <span class="p">:</span> <span class="n">outChannels</span><span class="p">,</span>
+            <span class="s1">&#39;kernelSize&#39;</span>  <span class="p">:</span> <span class="n">kernelSize</span><span class="p">,</span>
+            <span class="s1">&#39;stride&#39;</span>      <span class="p">:</span> <span class="n">stride</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span>     <span class="p">:</span> <span class="n">padding</span><span class="p">,</span>
+            <span class="s1">&#39;dilation&#39;</span>    <span class="p">:</span> <span class="n">dilation</span><span class="p">,</span>
+            <span class="s1">&#39;groups&#39;</span>      <span class="p">:</span> <span class="n">groups</span><span class="p">,</span>
+        <span class="p">}</span> 
+
+<div class="viewcode-block" id="convBlock.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.convBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">spikeLoihi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span><span class="p">(</span><span class="n">spike</span><span class="p">))</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span></div></div>
+
+<div class="viewcode-block" id="poolBlock"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.poolBlock">[docs]</a><span class="k">class</span> <span class="nc">poolBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class creates a pool layer block with Loihi neuron. It groups the </span>
+<span class="sd">    synaptic interaction, Loihi neuron response and the associated delays.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``slayer`` (``slayerLoihi.slayer``): pre-initialized slayer loihi module.</span>
+<span class="sd">        * ``kernelSize``: size of pooling kernel.</span>
+<span class="sd">        * ``stride``: size of pooling stride. Default: None(same as ``kernelSize``)</span>
+<span class="sd">        * ``padding``: size of padding. Default: 0</span>
+<span class="sd">        * ``dialtion``: size of convolution dilation. Default: 1</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = poolBlock(self.slayer, 2)</span>
+<span class="sd">        spike = blk(spike)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">slayer</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">poolBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">slayer</span><span class="o">.</span><span class="n">pool</span><span class="p">(</span><span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># it does not make sense to have axonal delays after pool block</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradLog</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># no need to monitor gradients</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsDict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;kernelSize&#39;</span> <span class="p">:</span> <span class="n">kernelSize</span><span class="p">,</span>
+            <span class="s1">&#39;stride&#39;</span>     <span class="p">:</span> <span class="n">kernelSize</span> <span class="k">if</span> <span class="n">stride</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">stride</span><span class="p">,</span>
+            <span class="s1">&#39;padding&#39;</span>    <span class="p">:</span> <span class="n">padding</span><span class="p">,</span>
+            <span class="s1">&#39;dilation&#39;</span>   <span class="p">:</span> <span class="n">dilation</span><span class="p">,</span> 
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="poolBlock.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.poolBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">spikeLoihi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span><span class="p">(</span><span class="n">spike</span><span class="p">))</span>
+        <span class="n">spike</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">delayShift</span><span class="p">(</span><span class="n">spike</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="p">,</span> <span class="kc">None</span>  <span class="c1"># return None for count. It does not make sense to count for pool layer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span></div></div>
+
+<div class="viewcode-block" id="flattenBlock"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.flattenBlock">[docs]</a><span class="k">class</span> <span class="nc">flattenBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class flattens the spatial dimension. The resulting tensor is compatible with dense layer.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = flattenBlock(self.slayer, True)</span>
+<span class="sd">        spike = blk(spike)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">flattenBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradLog</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsDict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="flattenBlock.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.flattenBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">spike</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">spike</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])),</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">spike</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">spike</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span></div></div>
+
+<div class="viewcode-block" id="averageBlock"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.averageBlock">[docs]</a><span class="k">class</span> <span class="nc">averageBlock</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class averages the spikes among n different output groups for population voting.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``nOutputs``: number of output groups (Equal to the number of ouptut classes).</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = averageBlock(self.slayer, nOutputs=10)</span>
+<span class="sd">        spike = blk(spike)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nOutputs</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">averageBlock</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nOutputs</span> <span class="o">=</span> <span class="n">nOutputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delayOp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradLog</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">paramsDict</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="averageBlock.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.averageBlock.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="n">N</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="n">spike</span><span class="o">.</span><span class="n">shape</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">spike</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nOutputs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">T</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">torch</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">spike</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nOutputs</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">T</span><span class="p">)),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">keepdim</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div></div>
+
+
+
+
+<div class="viewcode-block" id="Network"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network">[docs]</a><span class="k">class</span> <span class="nc">Network</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class encapsulates the network creation from the networks described in netParams</span>
+<span class="sd">    configuration. A netParams configuration is ``slayerSNN.slayerParams.yamlParams`` which</span>
+<span class="sd">    can be initialized from a yaml config file or a dictionary.</span>
+
+<span class="sd">    In addition to the standard network ``forward`` function, it also includes ``clamp`` function </span>
+<span class="sd">    for clamping delays, ``gradFlow`` function for monitioring the gradient flow, and ``genModel``</span>
+<span class="sd">    function for exporting a hdf5 file which is a packs network specification and trained </span>
+<span class="sd">    parameter into a single file that can be possibly used to generate the inference network </span>
+<span class="sd">    specific to a hardware, with some support.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``nOutputs``: number of output groups (Equal to the number of ouptut classes).</span>
+<span class="sd">        * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. </span>
+<span class="sd">            Default: False</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        blk = averageBlock(self.slayer, nOutputs=10)</span>
+<span class="sd">        spike = blk(spike)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">netParams</span><span class="p">,</span> <span class="n">preHookFx</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">utils</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">weightNorm</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">countLog</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Network</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span> <span class="o">=</span> <span class="n">netParams</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s1">&#39;simulation&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span><span class="o">.</span><span class="n">print</span><span class="p">(</span><span class="s1">&#39;neuron&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="c1"># TODO print netParams</span>
+
+        <span class="c1"># initialize slayer</span>
+        <span class="n">slayer</span> <span class="o">=</span> <span class="n">loihi</span><span class="p">(</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">],</span> <span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span> <span class="o">=</span> <span class="n">slayer</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nOutput</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="o">=</span> <span class="n">weightNorm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">preHookFx</span> <span class="o">=</span><span class="n">preHookFx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="o">=</span> <span class="n">countLog</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># parse the layer information</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parseLayers</span><span class="p">()</span>
+        
+        <span class="c1"># TODO pass through core usage estimator</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TODO core usage estimator&#39;</span><span class="p">)</span>
+
+
+    <span class="k">def</span> <span class="nf">_layerType</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dim</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span> <span class="ow">is</span> <span class="nb">int</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;dense&#39;</span>
+        <span class="k">elif</span> <span class="n">dim</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;c&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;conv&#39;</span>
+        <span class="k">elif</span> <span class="n">dim</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;avg&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;average&#39;</span>
+        <span class="k">elif</span> <span class="n">dim</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;pool&#39;</span>
+        <span class="k">elif</span> <span class="n">dim</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;input&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not parse the layer description. Found </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dim</span><span class="p">))</span>
+        <span class="c1"># return [int(i) for i in re.findall(r&#39;\d+&#39;, dim)]</span>
+
+    <span class="k">def</span> <span class="nf">_tableStr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">typeStr</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">channel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stride</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">padding</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">numParams</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">footer</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">header</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;|</span><span class="si">{:10s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:10s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s1">&#39;   Type   &#39;</span><span class="p">,</span> <span class="s1">&#39;  W  &#39;</span><span class="p">,</span> <span class="s1">&#39;  H  &#39;</span><span class="p">,</span> <span class="s1">&#39;  C  &#39;</span><span class="p">,</span> <span class="s1">&#39; ker &#39;</span><span class="p">,</span> <span class="s1">&#39; str &#39;</span><span class="p">,</span> <span class="s1">&#39; pad &#39;</span><span class="p">,</span> <span class="s1">&#39;delay&#39;</span><span class="p">,</span> <span class="s1">&#39;  params  &#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">footer</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">numParams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;|</span><span class="si">{:10s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1"> </span><span class="si">{:5s}</span><span class="s1">|</span><span class="si">{:-10d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="s1">&#39;Total&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">numParams</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">entry</span> <span class="o">=</span> <span class="s1">&#39;|&#39;</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:10s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">typeStr</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">kernel</span><span class="p">)</span> <span class="k">if</span> <span class="n">kernel</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">{:5s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stride</span><span class="p">)</span> <span class="k">if</span> <span class="n">stride</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">{:5s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-5d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">padding</span><span class="p">)</span> <span class="k">if</span> <span class="n">padding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">{:5s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:5s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">delay</span><span class="p">))</span>
+            <span class="n">entry</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="si">{:-10d}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">numParams</span><span class="p">)</span> <span class="k">if</span> <span class="n">numParams</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;</span><span class="si">{:10s}</span><span class="s1">|&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">entry</span>
+
+    <span class="k">def</span> <span class="nf">_parseLayers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">blocks</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ModuleList</span><span class="p">()</span>
+        <span class="n">layerDim</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># CHW</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Network Architecture:&#39;</span><span class="p">)</span>
+        <span class="c1"># print(&#39;=====================&#39;)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]:</span>
+            <span class="n">layerType</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_layerType</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])</span>
+            <span class="c1"># print(i, layerType)</span>
+
+            <span class="c1"># if layer has neuron feild, then use the slayer initialized with it and self.netParams[&#39;simulation&#39;]</span>
+            <span class="k">if</span> <span class="s1">&#39;neuron&#39;</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">layerType</span><span class="p">,</span> <span class="s1">&#39;using individual slayer&#39;</span><span class="p">)</span>
+                <span class="n">slayer</span> <span class="o">=</span> <span class="n">loihi</span><span class="p">(</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;neuron&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">slayer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">slayer</span>
+
+            <span class="k">if</span> <span class="n">i</span><span class="o">==</span><span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> 
+                <span class="k">if</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;input&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">numStr</span><span class="p">)</span> <span class="k">for</span> <span class="n">numStr</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])])</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">layerDim</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                        <span class="n">layerDim</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Could not parse the input dimension. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">))</span>
+                <span class="k">elif</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;dense&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">]])</span>
+                    <span class="n">layerDim</span> <span class="o">=</span> <span class="p">[</span><span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Input dimension could not be determined! It should be the first entry in the&#39;</span> 
+                                    <span class="o">+</span> <span class="s2">&quot;&#39;layer&#39; feild.&quot;</span><span class="p">)</span>
+                <span class="c1"># print(self.inputShape)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="s1">&#39;Input&#39;</span><span class="p">,</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># print(i, layer[&#39;dim&#39;], self._layerType(layer[&#39;dim&#39;]))</span>
+                <span class="k">if</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;conv&#39;</span><span class="p">:</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])]</span>
+                    <span class="n">inChannels</span>  <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">outChannels</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">kernelSize</span>  <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">stride</span>      <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;stride&#39;</span><span class="p">]</span>   <span class="k">if</span> <span class="s1">&#39;stride&#39;</span>   <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">1</span>
+                    <span class="n">padding</span>     <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;padding&#39;</span><span class="p">]</span>  <span class="k">if</span> <span class="s1">&#39;padding&#39;</span>  <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="n">kernelSize</span><span class="o">//</span><span class="mi">2</span>
+                    <span class="n">dilation</span>    <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dilation&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;dilation&#39;</span> <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">1</span>
+                    <span class="n">groups</span>      <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;groups&#39;</span><span class="p">]</span>   <span class="k">if</span> <span class="s1">&#39;groups&#39;</span>   <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">1</span>
+                    <span class="n">weightScale</span> <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;wScale&#39;</span><span class="p">]</span>   <span class="k">if</span> <span class="s1">&#39;wScale&#39;</span>   <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">100</span>
+                    <span class="n">delay</span>       <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;delay&#39;</span><span class="p">]</span>    <span class="k">if</span> <span class="s1">&#39;delay&#39;</span>    <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="kc">False</span>
+                    <span class="c1"># print(i, inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale)</span>
+                    
+                    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">convBlock</span><span class="p">(</span><span class="n">slayer</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> 
+                                            <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">preHookFx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> 
+                                            <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span><span class="p">))</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">outChannels</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">padding</span> <span class="o">-</span> <span class="n">dilation</span> <span class="o">*</span> <span class="p">(</span><span class="n">kernelSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">stride</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">padding</span> <span class="o">-</span> <span class="n">dilation</span> <span class="o">*</span> <span class="p">(</span><span class="n">kernelSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="n">stride</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layerDim</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="s1">&#39;Conv&#39;</span><span class="p">,</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> 
+                          <span class="n">delay</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)))</span>
+                <span class="k">elif</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;pool&#39;</span><span class="p">:</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])]</span>
+                    <span class="c1"># print(params[0])</span>
+                    
+                    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">poolBlock</span><span class="p">(</span><span class="n">slayer</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">countLog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">countLog</span><span class="p">))</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layerDim</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="s1">&#39;Pool&#39;</span><span class="p">,</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+                <span class="k">elif</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;dense&#39;</span><span class="p">:</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">]</span>
+                    <span class="c1"># print(params)</span>
+                    <span class="k">if</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># needs flattening of layers</span>
+                        <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flattenBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="p">))</span>
+                        <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+                        <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layerDim</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+                    <span class="n">weightScale</span> <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;wScale&#39;</span><span class="p">]</span>   <span class="k">if</span> <span class="s1">&#39;wScale&#39;</span>   <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="mi">100</span>
+                    <span class="n">delay</span>       <span class="o">=</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;delay&#39;</span><span class="p">]</span>    <span class="k">if</span> <span class="s1">&#39;delay&#39;</span>    <span class="ow">in</span> <span class="n">layer</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">else</span> <span class="kc">False</span>
+                    
+                    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">denseBlock</span><span class="p">(</span><span class="n">slayer</span><span class="p">,</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span> <span class="n">weightScale</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">preHookFx</span><span class="p">,</span> 
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span><span class="p">,</span> <span class="n">delay</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span><span class="p">))</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layerDim</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="s1">&#39;Dense&#39;</span><span class="p">,</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">delay</span><span class="o">=</span><span class="n">delay</span><span class="p">,</span> 
+                                        <span class="n">numParams</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">blocks</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">)))</span>
+                <span class="k">elif</span> <span class="n">layerType</span> <span class="o">==</span> <span class="s1">&#39;average&#39;</span><span class="p">:</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">layer</span><span class="p">[</span><span class="s1">&#39;dim&#39;</span><span class="p">])]</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">layerDim</span><span class="o">.</span><span class="n">copy</span><span class="p">())</span>
+
+                    <span class="n">blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">averageBlock</span><span class="p">(</span><span class="n">nOutputs</span><span class="o">=</span><span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">countLog</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">countLog</span><span class="p">))</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="s1">&#39;Average&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+
+                <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nOutput</span> <span class="o">=</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">layerDim</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tableStr</span><span class="p">(</span><span class="n">numParams</span><span class="o">=</span><span class="nb">sum</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">numel</span><span class="p">()</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">blocks</span><span class="o">.</span><span class="n">parameters</span><span class="p">()</span> <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">requires_grad</span><span class="p">),</span> <span class="n">footer</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">blocks</span>
+
+<div class="viewcode-block" id="Network.forward"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network.forward">[docs]</a>    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spike</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Forward operation of the network.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``spike``: Input spke tensor.</span>
+<span class="sd">        </span>
+<span class="sd">        Usage:</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            </span>
+<span class="sd">            net = Network(netParams)</span>
+<span class="sd">            spikeOut = net.forward(spike)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">:</span>
+            <span class="c1"># print(b)</span>
+            <span class="c1"># print(b.countLog)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">spike</span><span class="p">,</span> <span class="n">cnt</span> <span class="o">=</span> <span class="n">b</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">cnt</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">count</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cnt</span><span class="o">.</span><span class="n">item</span><span class="p">())</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">spike</span> <span class="o">=</span> <span class="n">b</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+            <span class="c1"># print(spike.shape)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span><span class="p">,</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">count</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">spike</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">spike</span></div>
+
+<div class="viewcode-block" id="Network.clamp"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network.clamp">[docs]</a>    <span class="k">def</span> <span class="nf">clamp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Clamp routine for delay parameters after gradient step to ensure positive value and limit </span>
+<span class="sd">        the maximum value.</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            </span>
+<span class="sd">            net = Network(netParams)</span>
+<span class="sd">            net.clamp()</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">d</span><span class="o">.</span><span class="n">delayOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">d</span><span class="o">.</span><span class="n">delayOp</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">clamp_</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">62</span><span class="p">)</span></div>
+                <span class="c1"># print(d.delayOp.delay.shape)</span>
+
+<div class="viewcode-block" id="Network.gradFlow"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network.gradFlow">[docs]</a>    <span class="k">def</span> <span class="nf">gradFlow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        A method to monitor the flow of gradient across the layers. Use it to monitor exploding and</span>
+<span class="sd">        vanishing gradients. ``scaleRho`` must be tweaked to ensure proper gradient flow. Usually</span>
+<span class="sd">        monitoring it for first few epochs is good enough.</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            </span>
+<span class="sd">            net = Network(netParams)</span>
+<span class="sd">            net.gradFlow(path_to_save)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">gradNorm</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">item</span><span class="p">()</span><span class="o">/</span><span class="n">torch</span><span class="o">.</span><span class="n">numel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">grad</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">:</span>
+            <span class="c1"># print(l)</span>
+            <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">gradLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">l</span><span class="o">.</span><span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">grad</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gradNorm</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight_g</span><span class="o">.</span><span class="n">grad</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">grad</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">gradNorm</span><span class="p">(</span><span class="n">l</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">grad</span><span class="p">))</span>
+
+        <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">semilogy</span><span class="p">(</span><span class="n">grad</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;gradFlow.png&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Network.genModel"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network.genModel">[docs]</a>    <span class="k">def</span> <span class="nf">genModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function exports a hdf5 encapsulated neuron parameter, network structure, the weight</span>
+<span class="sd">        and delay parameters of the trained network. This is intended to be platform indepenent</span>
+<span class="sd">        representation of the network. The basic protocol of the file is as follows:</span>
+
+<span class="sd">        .. code-block::</span>
+
+<span class="sd">            |-&gt;simulation # simulation description</span>
+<span class="sd">            |   |-&gt;Ts # sampling time. Usually 1</span>
+<span class="sd">            |   |-&gt;tSample # length of the sample to run</span>
+<span class="sd">            |-&gt;layer # description of network layer blocks such as input, dense, conv, pool, flatten, average</span>
+<span class="sd">                |-&gt;0</span>
+<span class="sd">                |   |-&gt;{shape, type, ...} # each layer description has ateast shape and type attribute</span>
+<span class="sd">                |-&gt;1</span>
+<span class="sd">                |   |-&gt;{shape, type, ...}</span>
+<span class="sd">                :</span>
+<span class="sd">                |-&gt;n</span>
+<span class="sd">                    |-&gt;{shape, type, ...}</span>
+
+<span class="sd">            input  : {shape, type}</span>
+<span class="sd">            flatten: {shape, type}</span>
+<span class="sd">            average: {shape, type}</span>
+<span class="sd">            dense  : {shape, type, neuron, inFeatures, outFeatures, weight, delay(if available)}</span>
+<span class="sd">            pool   : {shape, type, neuron, kernelSize, stride, padding, dilation, weight}</span>
+<span class="sd">            conv   : {shape, type, neuron, inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weight, delay(if available)}</span>
+<span class="sd">                                    |-&gt; this is the description of the compartment parameters</span>
+<span class="sd">                                    |-&gt; {iDecay, vDecay, vThMant, refDelay, ... (other additional parameters can exist)}</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            </span>
+<span class="sd">            net = Network(netParams)</span>
+<span class="sd">            net.genModel(path_to_save)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">qWeights</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">preHookFx</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+        <span class="n">qDelays</span>  <span class="o">=</span> <span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">d</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">()</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+
+        <span class="n">h</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span>
+
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s1">&#39;simulation&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">netParams</span><span class="p">[</span><span class="s1">&#39;simulation&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="c1"># print(key, value)</span>
+            <span class="n">simulation</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        
+        <span class="n">layer</span> <span class="o">=</span> <span class="n">h</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="s1">&#39;layer&#39;</span><span class="p">)</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;0/type&#39;</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="s1">&#39;S10&#39;</span><span class="p">,</span> <span class="p">[</span><span class="sa">b</span><span class="s1">&#39;input&#39;</span><span class="p">])</span>
+        <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;0/shape&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">inputShape</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">):</span>
+            <span class="c1"># print(block.__class__.__name__, self.layerDims[i])</span>
+            <span class="c1"># find the layerType from the block name. Exclude last 5 characters: Block</span>
+            <span class="n">layerType</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+            <span class="c1"># print(layerType.encode(&#39;ascii&#39;, &#39;ignore&#39;))</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/type&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">),</span> <span class="s1">&#39;S10&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">layerType</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">,</span> <span class="s1">&#39;ignore&#39;</span><span class="p">)])</span>
+            <span class="c1"># print(i, self.layerDims[i])</span>
+            <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/shape&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layerDims</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">weightOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">remove_weight_norm</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+                <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/weight&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">qWeights</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight</span><span class="p">))</span>
+            
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">delayOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/delay&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">qDelays</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">delayOp</span><span class="o">.</span><span class="n">delay</span><span class="p">))</span>
+            
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">paramsDict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">param</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">layerType</span> <span class="o">!=</span> <span class="s1">&#39;flatten&#39;</span> <span class="ow">and</span> <span class="n">layerType</span> <span class="o">!=</span> <span class="s1">&#39;average&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">block</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">neuron</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="c1"># print(i, key, value)</span>
+                    <span class="n">layer</span><span class="o">.</span><span class="n">create_dataset</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">/neuron/</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">key</span><span class="p">),</span> <span class="n">data</span><span class="o">=</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Network.loadModel"><a class="viewcode-back" href="../../../auto/loihi.html#slayerSNN.auto.loihi.Network.loadModel">[docs]</a>    <span class="k">def</span> <span class="nf">loadModel</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fname</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        This function loads the network from a perviously saved hdf5 file using ``genModel``.</span>
+
+<span class="sd">        Usage:</span>
+
+<span class="sd">        .. code-block:: python</span>
+<span class="sd">            </span>
+<span class="sd">            net = Network(netParams)</span>
+<span class="sd">            net.loadModel(path_of_model)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># only the layer weights and delays shall be loaded</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+
+        <span class="c1"># one more layer for input layer in the hdf5 file</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;The number of layers in the network does not match with the number of layers in the file </span><span class="si">{}</span><span class="s1">. Expected </span><span class="si">{}</span><span class="s1">, found </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">]))</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">blocks</span><span class="p">):</span>
+            <span class="n">idxKey</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">blockTypeStr</span> <span class="o">=</span> <span class="n">block</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+            <span class="n">layerTypeStr</span> <span class="o">=</span> <span class="n">h</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">][</span><span class="n">idxKey</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">][()][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">layerTypeStr</span> <span class="o">==</span> <span class="n">blockTypeStr</span><span class="p">,</span> <span class="s1">&#39;The layer typestring do not match. Found </span><span class="si">{}</span><span class="s1"> in network and </span><span class="si">{}</span><span class="s1"> in file.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">blockTypeStr</span><span class="p">,</span> <span class="n">layerTypeStr</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">weightOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">remove_weight_norm</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">][</span><span class="n">idxKey</span><span class="p">][</span><span class="s1">&#39;weight&#39;</span><span class="p">][()])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">weightNorm</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">block</span><span class="o">.</span><span class="n">weightOp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">weight_norm</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">weightOp</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">block</span><span class="o">.</span><span class="n">delayOp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">block</span><span class="o">.</span><span class="n">delayOp</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="s1">&#39;layer&#39;</span><span class="p">][</span><span class="n">idxKey</span><span class="p">][</span><span class="s1">&#39;delay&#39;</span><span class="p">][()])</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">delayOp</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="n">block</span><span class="o">.</span><span class="n">delayOp</span><span class="o">.</span><span class="n">delay</span><span class="o">.</span><span class="n">device</span><span class="p">)</span></div></div>
+
+        
+
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto/index.html">SLAYER Auto modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'SLAYER PyTorch'
-copyright = '2019, Sumit Bam Shrestha'
+copyright = '2020, Sumit Bam Shrestha'
 author = 'Sumit Bam Shrestha'
 
 # The full version, including alpha/beta/rc tags

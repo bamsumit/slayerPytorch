@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>slayerSNN.auto.assistant &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for slayerSNN.auto.assistant</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.utils.data</span> <span class="kn">import</span> <span class="n">Dataset</span>
+<span class="kn">from</span> <span class="nn">..spikeClassifier</span> <span class="kn">import</span> <span class="n">spikeClassifier</span> <span class="k">as</span> <span class="n">predict</span>
+<span class="kn">import</span> <span class="nn">slayerCuda</span>
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+
+<div class="viewcode-block" id="Assistant"><a class="viewcode-back" href="../../../auto/assistant.html#slayerSNN.auto.assistant.Assistant">[docs]</a><span class="k">class</span> <span class="nc">Assistant</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    This class provides standard assistant functionalities for traiing and testing workflow.</span>
+<span class="sd">    If you want a different workflow than what is available, you should inherit this module and</span>
+<span class="sd">    overload the particular module to your need.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        * ``net``: the SLAYER network to be run.</span>
+<span class="sd">        * ``trainLoader``: training dataloader.</span>
+<span class="sd">        * ``testLoader``: testing dataloader.</span>
+<span class="sd">        * ``error``: a function object or a lamda function that takes (output, target, label) as its input and returns</span>
+<span class="sd">            a scalar error value.</span>
+<span class="sd">        * ``optimizer``: the learning optimizer.</span>
+<span class="sd">        * ``scheduler``: the learning scheduler. Default: ``None`` meaning no scheduler will be used.</span>
+<span class="sd">        * ``stats``: the SLAYER learning stats logger: ``slayerSNN.stats``. Default: ``None`` meaning no stats will be used.</span>
+<span class="sd">        * ``dataParallel``: flag if dataParallel execution needs to be handled. Default: ``False``.</span>
+<span class="sd">        * ``showTimeSteps``: flag to print timesteps of the sample or not. Default: ``False``.</span>
+<span class="sd">        * ``lossScale``: a scale factor to be used while printing the loss. Default: ``None`` meaning no scaling is done.</span>
+<span class="sd">        * ``printInterval``: number of epochs to print the lerning output once. Default: 1.</span>
+<span class="sd">    </span>
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+<span class="sd">        </span>
+<span class="sd">        assist = assistant(net, trainLoader, testLoader, lambda o, t, l: error.numSpikes(o, t), optimizer, stats)</span>
+
+<span class="sd">        for epoch in range(maxEpoch): </span>
+<span class="sd">            assist.train(epoch)</span>
+<span class="sd">            assist.test(epoch)</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">net</span><span class="p">,</span> <span class="n">trainLoader</span><span class="p">,</span> <span class="n">testLoader</span><span class="p">,</span> <span class="n">error</span><span class="p">,</span> <span class="n">optimizer</span><span class="p">,</span> <span class="n">scheduler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stats</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> 
+                 <span class="n">dataParallel</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">showTimeSteps</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lossScale</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">printInterval</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">net</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">module</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">module</span> <span class="k">if</span> <span class="n">dataParallel</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">net</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error</span> <span class="o">=</span> <span class="n">error</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">slayer</span><span class="o">.</span><span class="n">srmKernel</span><span class="o">.</span><span class="n">device</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span> <span class="o">=</span> <span class="n">optimizer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="o">=</span> <span class="n">scheduler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="o">=</span> <span class="n">stats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">showTimeSteps</span> <span class="o">=</span> <span class="n">showTimeSteps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span> <span class="o">=</span> <span class="n">lossScale</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">printInterval</span> <span class="o">=</span> <span class="n">printInterval</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">trainLoader</span> <span class="o">=</span> <span class="n">trainLoader</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testLoader</span> <span class="o">=</span> <span class="n">testLoader</span>
+
+<div class="viewcode-block" id="Assistant.train"><a class="viewcode-back" href="../../../auto/assistant.html#slayerSNN.auto.assistant.Assistant.train">[docs]</a>    <span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">breakIter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Training assistant fucntion.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``epoch``: training epoch number.</span>
+<span class="sd">            * ``breakIter``: number of samples to wait before breaking out of the training loop. </span>
+<span class="sd">                ``None`` means go over the complete training samples. Default: ``None``.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">tSt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainLoader</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">train</span><span class="p">()</span>
+
+            <span class="nb">input</span>  <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> 
+
+            <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                <span class="n">output</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">predict</span><span class="o">.</span><span class="n">getClass</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span> <span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+
+            <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">training</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">zero_grad</span><span class="p">()</span>
+            <span class="n">loss</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimizer</span><span class="o">.</span><span class="n">step</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">clamp</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">printInterval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">headerList</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainLoader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">i</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">trainLoader</span><span class="p">))]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">headerList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Spike count: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showTimeSteps</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">headerList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;nTimeBins: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                    <span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> 
+                    <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">header</span><span class="o">=</span> <span class="n">headerList</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">breakIter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">breakIter</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">scheduler</span><span class="o">.</span><span class="n">step</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Assistant.test"><a class="viewcode-back" href="../../../auto/assistant.html#slayerSNN.auto.assistant.Assistant.test">[docs]</a>    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">epoch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">evalLoss</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">slidingWindow</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">breakIter</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Testing assistant fucntion.</span>
+
+<span class="sd">        Arguments:</span>
+<span class="sd">            * ``epoch``: training epoch number.</span>
+<span class="sd">            * ``evalLoss``: a flag to enable or disable loss evalutaion. Default: ``True``.</span>
+<span class="sd">            * ``slidingWindow``: the length of sliding window to use for continuous output prediction over time. </span>
+<span class="sd">                ``None`` means total spike count is used to produce one output per sample. If it is not</span>
+<span class="sd">                ``None``, ``evalLoss`` is overwritten to ``False``. Default: ``None``.</span>
+<span class="sd">            * ``breakIter``: number of samples to wait before breaking out of the testing loop. </span>
+<span class="sd">                ``None`` means go over the complete training samples. Default: ``None``.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">slidingWindow</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">filter</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">slidingWindow</span><span class="p">))</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+            <span class="n">evalLoss</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">tSt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="nb">input</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testLoader</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+            <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+                <span class="nb">input</span>  <span class="o">=</span> <span class="nb">input</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span>
+                <span class="n">target</span> <span class="o">=</span> <span class="n">target</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">)</span> 
+
+                <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">output</span><span class="p">,</span> <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">slidingWindow</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">predict</span><span class="o">.</span><span class="n">getClass</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">==</span> <span class="n">label</span> <span class="p">)</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">label</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">filteredOutput</span> <span class="o">=</span> <span class="n">slayerCuda</span><span class="o">.</span><span class="n">conv</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="nb">filter</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">slidingWindow</span><span class="p">:]</span>
+                    <span class="n">predictions</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">filteredOutput</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">filteredOutput</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                    
+                    <span class="c1"># print(output.shape, predictions.shape)</span>
+                    <span class="c1"># print(predictions[:100])</span>
+                    <span class="c1"># print(label)</span>
+                    <span class="c1"># print(torch.sum(predictions == label).item())</span>
+                    <span class="c1"># print(torch.sum(predictions == label).item() / predictions.shape[0])</span>
+
+                    <span class="c1"># assert False, &#39;Just braking&#39;</span>
+                    
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">correctSamples</span> <span class="o">+=</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">predictions</span> <span class="o">==</span> <span class="n">label</span><span class="o">.</span><span class="n">to</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">device</span><span class="p">))</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">numSamples</span>     <span class="o">+=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">evalLoss</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">loss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">+=</span> <span class="n">loss</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">item</span><span class="p">()</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">slidingWindow</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">+=</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">lossSum</span> <span class="o">+=</span> <span class="n">predictions</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">lossScale</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stats</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">epoch</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">printInterval</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">headerList</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;[</span><span class="si">{}</span><span class="s1">/</span><span class="si">{}</span><span class="s1"> (</span><span class="si">{:.0f}</span><span class="s1">%)]&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="nb">len</span><span class="p">(</span><span class="nb">input</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testLoader</span><span class="o">.</span><span class="n">dataset</span><span class="p">),</span> <span class="mf">100.0</span><span class="o">*</span><span class="n">i</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">testLoader</span><span class="p">))]</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">countLog</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">headerList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Spike count: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">c</span><span class="p">))</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">torch</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">count</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()]))</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">showTimeSteps</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">headerList</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;nTimeBins: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]))</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">print</span><span class="p">(</span>
+                    <span class="n">epoch</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> 
+                    <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">tSt</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="nb">input</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                    <span class="n">header</span><span class="o">=</span> <span class="n">headerList</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">breakIter</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="n">breakIter</span><span class="p">:</span>
+                <span class="k">break</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../auto/index.html">SLAYER Auto modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

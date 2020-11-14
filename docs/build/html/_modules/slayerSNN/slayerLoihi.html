@@ -163,6 +163,7 @@
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.dense` are listed.</span>
+<span class="sd">            </span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
 <span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
 <span class="sd">        Usage:</span>
@@ -179,6 +180,7 @@
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.</span>
+<span class="sd">            </span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
 <span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
 <span class="sd">        Usage:</span>
@@ -212,6 +214,7 @@
 
 <span class="sd">        Arguments:</span>
 <span class="sd">            The arguments that are different from :meth:`slayer.spikeLayer.conv` are listed.</span>
+<span class="sd">            </span>
 <span class="sd">            * ``weightScale``: sale factor of default initialized weights. Default: 100</span>
 <span class="sd">            * ``preHookFx``: a function that operates on weight before applying it. Could be used for quantization etc. Default: quantizes in step of 2.</span>
 <span class="sd">        Usage:</span>
@@ -281,11 +284,12 @@
         <span class="n">theta</span>  <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
         <span class="c1"># wScale = 1 &lt;&lt; (6 + neuron[&#39;wgtExp&#39;])</span>
         <span class="n">wgtExp</span> <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;wgtExp&#39;</span><span class="p">]</span>
+        <span class="n">refDelay</span> <span class="o">=</span> <span class="n">neuron</span><span class="p">[</span><span class="s1">&#39;refDelay&#39;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="n">weightedSpikes</span><span class="o">.</span><span class="n">dtype</span> <span class="o">==</span> <span class="n">torch</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
             <span class="n">Ts</span> <span class="o">=</span> <span class="mi">1</span>
         
-        <span class="n">spike</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">slayerLoihiCuda</span><span class="o">.</span><span class="n">getSpikes</span><span class="p">((</span><span class="n">weightedSpikes</span> <span class="o">*</span> <span class="n">Ts</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="n">wgtExp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">iDecay</span><span class="p">,</span> <span class="n">vDecay</span><span class="p">)</span>
+        <span class="n">spike</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span> <span class="o">=</span> <span class="n">slayerLoihiCuda</span><span class="o">.</span><span class="n">getSpikes</span><span class="p">((</span><span class="n">weightedSpikes</span> <span class="o">*</span> <span class="n">Ts</span><span class="p">)</span><span class="o">.</span><span class="n">contiguous</span><span class="p">(),</span> <span class="n">wgtExp</span><span class="p">,</span> <span class="n">theta</span><span class="p">,</span> <span class="n">iDecay</span><span class="p">,</span> <span class="n">vDecay</span><span class="p">,</span> <span class="n">refDelay</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">spike</span><span class="o">/</span><span class="n">Ts</span><span class="p">,</span> <span class="n">voltage</span><span class="p">,</span> <span class="n">current</span>
 
@@ -341,6 +345,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../learningStats.html">Learning statistics</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../optimizer.html">Optimizer</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../auto/index.html">SLAYER Auto modules</a></li>
 </ul>
 
 <div class="relations">
@@ -375,7 +380,7 @@
       <div class="clearer"></div>
     </div>
     <div class="footer">
-      &copy;2019, Sumit Bam Shrestha.
+      &copy;2020, Sumit Bam Shrestha.
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>

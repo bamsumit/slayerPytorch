@@ -1,0 +1,450 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loihi &#8212; SLAYER PyTorch 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Assistant" href="assistant.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="loihi">
+<h1>Loihi<a class="headerlink" href="#loihi" title="Permalink to this headline">¶</a></h1>
+<p>Automatic network creation modle for SLAYER-Loihi. It reads the cofiguration form the network
+description file and returns a network module. It also add capability to load, export and moinitor
+the network during training.</p>
+<span class="target" id="module-slayerSNN.auto.loihi"></span><dl class="py class">
+<dt id="slayerSNN.auto.loihi.Network">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">Network</code><span class="sig-paren">(</span><em class="sig-param">netParams</em>, <em class="sig-param">preHookFx=&lt;function Network.&lt;lambda&gt;&gt;</em>, <em class="sig-param">weightNorm=False</em>, <em class="sig-param">countLog=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class encapsulates the network creation from the networks described in netParams
+configuration. A netParams configuration is <code class="docutils literal notranslate"><span class="pre">slayerSNN.slayerParams.yamlParams</span></code> which
+can be initialized from a yaml config file or a dictionary.</p>
+<p>In addition to the standard network <code class="docutils literal notranslate"><span class="pre">forward</span></code> function, it also includes <code class="docutils literal notranslate"><span class="pre">clamp</span></code> function 
+for clamping delays, <code class="docutils literal notranslate"><span class="pre">gradFlow</span></code> function for monitioring the gradient flow, and <code class="docutils literal notranslate"><span class="pre">genModel</span></code>
+function for exporting a hdf5 file which is a packs network specification and trained 
+parameter into a single file that can be possibly used to generate the inference network 
+specific to a hardware, with some support.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nOutputs</span></code>: number of output groups (Equal to the number of ouptut classes).</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">averageBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="n">nOutputs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">spike</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.Network.clamp">
+<code class="sig-name descname">clamp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network.clamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network.clamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clamp routine for delay parameters after gradient step to ensure positive value and limit 
+the maximum value.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">clamp</span><span class="p">()</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.Network.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Forward operation of the network.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">spike</span></code>: Input spke tensor.</p></li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+<span class="n">spikeOut</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.Network.genModel">
+<code class="sig-name descname">genModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network.genModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network.genModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function exports a hdf5 encapsulated neuron parameter, network structure, the weight
+and delay parameters of the trained network. This is intended to be platform indepenent
+representation of the network. The basic protocol of the file is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">|-&gt;</span><span class="n">simulation</span> <span class="c1"># simulation description</span>
+<span class="o">|</span>   <span class="o">|-&gt;</span><span class="n">Ts</span> <span class="c1"># sampling time. Usually 1</span>
+<span class="o">|</span>   <span class="o">|-&gt;</span><span class="n">tSample</span> <span class="c1"># length of the sample to run</span>
+<span class="o">|-&gt;</span><span class="n">layer</span> <span class="c1"># description of network layer blocks such as input, dense, conv, pool, flatten, average</span>
+    <span class="o">|-&gt;</span><span class="mi">0</span>
+    <span class="o">|</span>   <span class="o">|-&gt;</span><span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span> <span class="c1"># each layer description has ateast shape and type attribute</span>
+    <span class="o">|-&gt;</span><span class="mi">1</span>
+    <span class="o">|</span>   <span class="o">|-&gt;</span><span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span>
+    <span class="p">:</span>
+    <span class="o">|-&gt;</span><span class="n">n</span>
+        <span class="o">|-&gt;</span><span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="o">...</span><span class="p">}</span>
+
+<span class="nb">input</span>  <span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">}</span>
+<span class="n">flatten</span><span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">}</span>
+<span class="n">average</span><span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">}</span>
+<span class="n">dense</span>  <span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">inFeatures</span><span class="p">,</span> <span class="n">outFeatures</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">delay</span><span class="p">(</span><span class="k">if</span> <span class="n">available</span><span class="p">)}</span>
+<span class="n">pool</span>   <span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">weight</span><span class="p">}</span>
+<span class="n">conv</span>   <span class="p">:</span> <span class="p">{</span><span class="n">shape</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">neuron</span><span class="p">,</span> <span class="n">inChannels</span><span class="p">,</span> <span class="n">outChannels</span><span class="p">,</span> <span class="n">kernelSize</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">,</span> <span class="n">dilation</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">delay</span><span class="p">(</span><span class="k">if</span> <span class="n">available</span><span class="p">)}</span>
+                        <span class="o">|-&gt;</span> <span class="n">this</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">description</span> <span class="n">of</span> <span class="n">the</span> <span class="n">compartment</span> <span class="n">parameters</span>
+                        <span class="o">|-&gt;</span> <span class="p">{</span><span class="n">iDecay</span><span class="p">,</span> <span class="n">vDecay</span><span class="p">,</span> <span class="n">vThMant</span><span class="p">,</span> <span class="n">refDelay</span><span class="p">,</span> <span class="o">...</span> <span class="p">(</span><span class="n">other</span> <span class="n">additional</span> <span class="n">parameters</span> <span class="n">can</span> <span class="n">exist</span><span class="p">)}</span>
+</pre></div>
+</div>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">genModel</span><span class="p">(</span><span class="n">path_to_save</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.Network.gradFlow">
+<code class="sig-name descname">gradFlow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">path</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network.gradFlow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network.gradFlow" title="Permalink to this definition">¶</a></dt>
+<dd><p>A method to monitor the flow of gradient across the layers. Use it to monitor exploding and
+vanishing gradients. <code class="docutils literal notranslate"><span class="pre">scaleRho</span></code> must be tweaked to ensure proper gradient flow. Usually
+monitoring it for first few epochs is good enough.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">gradFlow</span><span class="p">(</span><span class="n">path_to_save</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.Network.loadModel">
+<code class="sig-name descname">loadModel</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fname</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#Network.loadModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.Network.loadModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function loads the network from a perviously saved hdf5 file using <code class="docutils literal notranslate"><span class="pre">genModel</span></code>.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">net</span> <span class="o">=</span> <span class="n">Network</span><span class="p">(</span><span class="n">netParams</span><span class="p">)</span>
+<span class="n">net</span><span class="o">.</span><span class="n">loadModel</span><span class="p">(</span><span class="n">path_of_model</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="slayerSNN.auto.loihi.averageBlock">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">averageBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nOutputs</span></em>, <em class="sig-param"><span class="n">countLog</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#averageBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.averageBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class averages the spikes among n different output groups for population voting.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">nOutputs</span></code>: number of output groups (Equal to the number of ouptut classes).</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">averageBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="n">nOutputs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">spike</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.averageBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#averageBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.averageBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="slayerSNN.auto.loihi.convBlock">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">convBlock</code><span class="sig-paren">(</span><em class="sig-param">slayer</em>, <em class="sig-param">inChannels</em>, <em class="sig-param">outChannels</em>, <em class="sig-param">kernelSize</em>, <em class="sig-param">stride=1</em>, <em class="sig-param">padding=0</em>, <em class="sig-param">dilation=1</em>, <em class="sig-param">groups=1</em>, <em class="sig-param">weightScale=100</em>, <em class="sig-param">preHookFx=&lt;function convBlock.&lt;lambda&gt;&gt;</em>, <em class="sig-param">weightNorm=False</em>, <em class="sig-param">delay=False</em>, <em class="sig-param">countLog=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#convBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.convBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class creates a conv layer block with Loihi neuron. It groups the 
+synaptic interaction, Loihi neuron response and the associated delays.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">slayer</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerLoihi.slayer</span></code>): pre-initialized slayer loihi module.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inChannels</span></code>: number of input channels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outChannels</span></code>: number of output channels.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernelSize</span></code>: size of convolution kernel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stride</span></code>: size of convolution stride. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code>: size of padding. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dialtion</span></code>: size of convolution dilation. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">groups</span></code>: number of convolution groups. Default: 1</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: scale factor of the defaule initialized weights. Default: 100</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">preHoodFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</dt><dd><p>Default: quantization in step of 2 (Mixed weight mode in Loihi)</p>
+</dd>
+</dl>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightNorm</span></code>: a flag to indicate if weight normalization should be applied or not. Default: False</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">delay</span></code>: a flag to inidicate if axonal delays should be applied or not. Default: False</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">convBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">31</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">spike</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.convBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#convBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.convBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="slayerSNN.auto.loihi.denseBlock">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">denseBlock</code><span class="sig-paren">(</span><em class="sig-param">slayer</em>, <em class="sig-param">inFeatures</em>, <em class="sig-param">outFeatures</em>, <em class="sig-param">weightScale=100</em>, <em class="sig-param">preHookFx=&lt;function denseBlock.&lt;lambda&gt;&gt;</em>, <em class="sig-param">weightNorm=False</em>, <em class="sig-param">delay=False</em>, <em class="sig-param">countLog=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#denseBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.denseBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class creates a dense layer block with Loihi neuron. It groups the 
+synaptic interaction, Loihi neuron response and the associated delays.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">slayer</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerLoihi.slayer</span></code>): pre-initialized slayer loihi module.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inFeatures</span></code>: number of input features.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">outFeatures</span></code>: number of output features.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightScale</span></code>: scale factor of the defaule initialized weights. Default: 100</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">preHoodFx</span></code>: a function that operates on weight before applying it. Could be used for quantization etc.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">weightNorm</span></code>: a flag to indicate if weight normalization should be applied or not. Default: False</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">delay</span></code>: a flag to inidicate if axonal delays should be applied or not. Default: False</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">denseBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.denseBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#denseBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.denseBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="slayerSNN.auto.loihi.flattenBlock">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">flattenBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">countLog</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#flattenBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.flattenBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class flattens the spatial dimension. The resulting tensor is compatible with dense layer.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">flattenBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">spike</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.flattenBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#flattenBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.flattenBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="slayerSNN.auto.loihi.poolBlock">
+<em class="property">class </em><code class="sig-prename descclassname">slayerSNN.auto.loihi.</code><code class="sig-name descname">poolBlock</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">slayer</span></em>, <em class="sig-param"><span class="n">kernelSize</span></em>, <em class="sig-param"><span class="n">stride</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">padding</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">dilation</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">countLog</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#poolBlock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.poolBlock" title="Permalink to this definition">¶</a></dt>
+<dd><p>This class creates a pool layer block with Loihi neuron. It groups the 
+synaptic interaction, Loihi neuron response and the associated delays.</p>
+<dl class="simple">
+<dt>Arguments:</dt><dd><ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">slayer</span></code> (<code class="docutils literal notranslate"><span class="pre">slayerLoihi.slayer</span></code>): pre-initialized slayer loihi module.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">kernelSize</span></code>: size of pooling kernel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">stride</span></code>: size of pooling stride. Default: None(same as <code class="docutils literal notranslate"><span class="pre">kernelSize</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">padding</span></code>: size of padding. Default: 0</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dialtion</span></code>: size of convolution dilation. Default: 1</p></li>
+<li><dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">countLog</span></code>: a flag to indicate if a log of spike count should be maintained and passed around or not. </dt><dd><p>Default: False</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">blk</span> <span class="o">=</span> <span class="n">poolBlock</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slayer</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">spike</span> <span class="o">=</span> <span class="n">blk</span><span class="p">(</span><span class="n">spike</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="slayerSNN.auto.loihi.poolBlock.forward">
+<code class="sig-name descname">forward</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">spike</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/slayerSNN/auto/loihi.html#poolBlock.forward"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#slayerSNN.auto.loihi.poolBlock.forward" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the computation performed at every call.</p>
+<p>Should be overridden by all subclasses.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Although the recipe for forward pass needs to be defined within
+this function, one should call the <code class="xref py py-class docutils literal notranslate"><span class="pre">Module</span></code> instance afterwards
+instead of this since the former takes care of running the
+registered hooks while the latter silently ignores them.</p>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">SLAYER PyTorch</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../slayerSNN.html">SLAYER PyTorch main</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayer.html">SLAYER module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerLoihi.html">SLAYER Loihi module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../slayerParams.html">SLAYER Parameter</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeClassifier.html">Spike Classifier</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeLoss.html">Spike Loss</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../spikeIO.html">Spike Input/Output</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../learningStats.html">Learning statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../optimizer.html">Optimizer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../quantizeParams.html">Quantize module</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">SLAYER Auto modules</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dataset.html">Dataset</a></li>
+<li class="toctree-l2"><a class="reference internal" href="assistant.html">Assistant</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Loihi</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">SLAYER Auto modules</a><ul>
+      <li>Previous: <a href="assistant.html" title="previous chapter">Assistant</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Sumit Bam Shrestha.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.2.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/auto/loihi.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -20,6 +20,7 @@ Welcome to SLAYER PyTorch's documentation!
    learningStats.rst
    optimizer.rst
    quantizeParams.rst
+   auto/index.rst
 
 
 Indices and tables
