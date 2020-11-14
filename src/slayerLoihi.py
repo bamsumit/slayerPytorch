@@ -250,11 +250,12 @@ class _spike(torch.autograd.Function):
         theta  = neuron['theta']
         # wScale = 1 << (6 + neuron['wgtExp'])
         wgtExp = neuron['wgtExp']
+        refDelay = neuron['refDelay']
 
         if weightedSpikes.dtype == torch.int32:
             Ts = 1
         
-        spike, voltage, current = slayerLoihiCuda.getSpikes((weightedSpikes * Ts).contiguous(), wgtExp, theta, iDecay, vDecay)
+        spike, voltage, current = slayerLoihiCuda.getSpikes((weightedSpikes * Ts).contiguous(), wgtExp, theta, iDecay, vDecay, refDelay)
 
         return spike/Ts, voltage, current
 

@@ -15,7 +15,8 @@ std::vector<torch::Tensor> getSpikesCuda(
 	const unsigned wgtExp,
 	const unsigned theta,
 	const unsigned iDecay,
-	const unsigned vDecay)
+	const unsigned vDecay,
+    const unsigned refDelay)
 {
 	CHECK_INPUT(weightedSpikes);
 
@@ -31,13 +32,14 @@ std::vector<torch::Tensor> getSpikesCuda(
 	
 	// std::cout << "Ns = " << Ns << std::endl	
 	// 		  << "nNeurons = " << nNeurons << std::endl;
+	// std::cout << "refDelay = " << refDelay << std::endl;
 
 	getSpikes<float>(spike.data<float>(),
 					 voltage.data<float>(), 
 					 current.data<float>(), 
 					 weightedSpikes.data<float>(), 
 					 // weightScale, nNeurons, Ns, iDecay, vDecay, theta);
-					 wgtExp, nNeurons, Ns, iDecay, vDecay, theta);
+					 wgtExp, nNeurons, Ns, iDecay, vDecay, refDelay, theta);
 
 	// return {weightedSpikes, weightedSpikes, weightedSpikes};
 	return {spike, voltage, current};
