@@ -55,13 +55,13 @@ In that scenario, you can explicitly pass the class name: <code class="docutils 
 The <cite>target region</cite> and <cite>desired spike count</cite> is specified in <code class="docutils literal notranslate"><span class="pre">error.errorDescriptor['tgtSpikeRegion']</span></code>
 Any spikes outside the target region are penalized with <code class="docutils literal notranslate"><span class="pre">error.spikeTime</span></code> loss..</p>
 <div class="math">
-<p><span class="math">e(t) &amp;= 
+<p><img src="_images/math/62e754a2fbccfb8836c0e1e7a25c701b11afe1aa.png" alt="e(t) &amp;= 
 \begin{cases}
 \frac{acutalSpikeCount - desiredSpikeCount}{targetRegionLength} &amp; \text{for }t \in targetRegion\\
 \left(\varepsilon * (output - desired)\right)(t) &amp; \text{otherwise}
 \end{cases}
 
-E &amp;= \int_0^T e(t)^2 \text{d}t</span></p>
+E &amp;= \int_0^T e(t)^2 \text{d}t"/></p>
 </div><dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">spikeOut</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code>): spike tensor</p></li>
@@ -81,7 +81,7 @@ E &amp;= \int_0^T e(t)^2 \text{d}t</span></p>
 <dd><p>Calculates spike loss based on spike time.
 The loss is similar to van Rossum distance between output and desired spike train.</p>
 <div class="math">
-<p><span class="math">E = \int_0^T \left( \varepsilon * (output -desired) \right)(t)^2\ \text{d}t</span></p>
+<p><img src="_images/math/64021c5ef62fad4c41c1c665153b2233e97721ca.png" alt="E = \int_0^T \left( \varepsilon * (output -desired) \right)(t)^2\ \text{d}t"/></p>
 </div><dl class="simple">
 <dt>Arguments:</dt><dd><ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">spikeOut</span></code> (<code class="docutils literal notranslate"><span class="pre">torch.tensor</span></code>): spike tensor</p></li>
