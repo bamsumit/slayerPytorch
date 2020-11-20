@@ -34,6 +34,7 @@ class denseBlock(torch.nn.Module):
         * ``preHoodFx``: a function that operates on weight before applying it. Could be used for quantization etc.
         * ``weightNorm``: a flag to indicate if weight normalization should be applied or not. Default: False
         * ``delay``: a flag to inidicate if axonal delays should be applied or not. Default: False
+        * ``maxDelay``: maximum allowable delay. Default: 62
         * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. 
             Default: False
     
@@ -44,7 +45,8 @@ class denseBlock(torch.nn.Module):
         blk = denseBlock(self.slayer, 512, 10)
     '''
     def __init__(self, slayer, inFeatures, outFeatures, weightScale=100, 
-                 preHookFx = lambda x: utils.quantize(x, step=2), weightNorm=False, delay=False, countLog=False):
+                 preHookFx = lambda x: utils.quantize(x, step=2), weightNorm=False, 
+                 delay=False, maxDelay=62, countLog=False):
         super(denseBlock, self).__init__()
         self.slayer = slayer
         self.weightNorm = weightNorm
@@ -55,6 +57,7 @@ class denseBlock(torch.nn.Module):
         self.delayOp  = slayer.delay(outFeatures) if delay is True else None
         self.countLog = countLog
         self.gradLog = True
+        self.maxDelay = maxDelay
 
         self.paramsDict = {
             'inFeatures'  : inFeatures,
@@ -91,6 +94,7 @@ class convBlock(torch.nn.Module):
             Default: quantization in step of 2 (Mixed weight mode in Loihi)
         * ``weightNorm``: a flag to indicate if weight normalization should be applied or not. Default: False
         * ``delay``: a flag to inidicate if axonal delays should be applied or not. Default: False
+        * ``maxDelay``: maximum allowable delay. Default: 62
         * ``countLog``: a flag to indicate if a log of spike count should be maintained and passed around or not. 
             Default: False
     
@@ -102,7 +106,8 @@ class convBlock(torch.nn.Module):
         spike = blk(spike)
     '''
     def __init__(self, slayer, inChannels, outChannels, kernelSize, stride=1, padding=0, dilation=1, groups=1, weightScale=100, 
-                 preHookFx = lambda x: utils.quantize(x, step=2), weightNorm=False, delay=False, countLog=False):
+                 preHookFx = lambda x: utils.quantize(x, step=2), weightNorm=False, 
+                 delay=False, maxDelay=62, countLog=False):
         super(convBlock, self).__init__()
         self.slayer = slayer
         self.weightNorm = weightNorm
@@ -118,6 +123,7 @@ class convBlock(torch.nn.Module):
         self.delayOp  = slayer.delay(outChannels) if delay is True else None    
         self.countLog = countLog
         self.gradLog = True
+        self.maxDelay = maxDelay
 
         self.paramsDict = {
             'inChannels'  : inChannels,
@@ -387,11 +393,12 @@ class Network(torch.nn.Module):
                     groups      = layer['groups']   if 'groups'   in layer.keys() else 1
                     weightScale = layer['wScale']   if 'wScale'   in layer.keys() else 100
                     delay       = layer['delay']    if 'delay'    in layer.keys() else False
+                    maxDelay    = layer['maxDelay'] if 'maxDelay' in layer.keys() else 62
                     # print(i, inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale)
                     
                     blocks.append(convBlock(slayer, inChannels, outChannels, kernelSize, stride, padding, 
-                                            dilation, groups, weightScale, self.preHookFx, self.weightNorm, delay, 
-                                            self.countLog))
+                                            dilation, groups, weightScale, self.preHookFx, self.weightNorm, 
+                                            delay, maxDelay, self.countLog))
                     layerDim[0] = outChannels
                     layerDim[1] = int(np.floor((layerDim[1] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
                     layerDim[2] = int(np.floor((layerDim[2] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
@@ -419,9 +426,10 @@ class Network(torch.nn.Module):
                         self.layerDims.append(layerDim.copy())
                     weightScale = layer['wScale']   if 'wScale'   in layer.keys() else 100
                     delay       = layer['delay']    if 'delay'    in layer.keys() else False
+                    maxDelay    = layer['maxDelay'] if 'maxDelay' in layer.keys() else 62
                     
                     blocks.append(denseBlock(slayer, layerDim[0], params, weightScale, self.preHookFx, 
-                                  self.weightNorm, delay, self.countLog))
+                                  self.weightNorm, delay, maxDelay, self.countLog))
                     layerDim[0] = params
                     layerDim[1] = layerDim[2] = 1
                     self.layerDims.append(layerDim.copy())
@@ -488,7 +496,10 @@ class Network(torch.nn.Module):
         '''
         for d in self.blocks:
             if d.delayOp is not None:
-                d.delayOp.delay.data.clamp_(0, 62)
+                # d.delayOp.delay.data.clamp_(0, 62)
+                d.delayOp.delay.data.clamp_(0, d.maxDelay)
+                # print(d.maxDelay)
+                # print()
                 # print(d.delayOp.delay.shape)
 
     def gradFlow(self, path):

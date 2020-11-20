@@ -86,7 +86,7 @@ class Assistant:
             self.module.clamp()
 
             if self.stats is not None and epoch%self.printInterval == 0:
-                headerList = ['[{}/{} ({:.0f}%)]'.format(i*len(input), len(self.trainLoader.dataset), 100.0*i/len(self.trainLoader))]
+                headerList = ['[{}/{} ({:.0f}%)]'.format(i*self.trainLoader.batch_size, len(self.trainLoader.dataset), 100.0*i/len(self.trainLoader))]
                 if self.module.countLog is True:
                     headerList.append('Spike count: ' + ', '.join(['{}'.format(int(c)) for c in torch.sum(count, dim=0).tolist()]))
                 if self.showTimeSteps is True:
@@ -167,7 +167,7 @@ class Assistant:
                             self.stats.testing.lossSum += predictions.shape[0] * (1 if self.lossScale is None else self.lossScale)
 
             if self.stats is not None and epoch%self.printInterval == 0:
-                headerList = ['[{}/{} ({:.0f}%)]'.format(i*len(input), len(self.testLoader.dataset), 100.0*i/len(self.testLoader))]
+                headerList = ['[{}/{} ({:.0f}%)]'.format(i*self.testLoader.batch_size, len(self.testLoader.dataset), 100.0*i/len(self.testLoader))]
                 if self.module.countLog is True:
                     headerList.append('Spike count: ' + ', '.join(['{}'.format(int(c)) for c in torch.sum(count, dim=0).tolist()]))
                 if self.showTimeSteps is True:
