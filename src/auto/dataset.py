@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 from .. import spikeFileIO as sio
@@ -62,7 +63,7 @@ class SlayerDataset(Dataset):
         else:
             nTimeBins = int(np.ceil(event[:, 3].max()))
             tensorShape = (self.inputShape[2], self.inputShape[1], self.inputShape[0], nTimeBins)
-            inputSpikes = snn.io.event(
+            inputSpikes = sio.event(
                 event[:, 0], event[:, 1], event[:, 2], event[:, 3]
             ).toSpikeTensor(
                 torch.zeros(tensorShape), 

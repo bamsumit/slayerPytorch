@@ -347,6 +347,7 @@ class Network(torch.nn.Module):
         i = 0
         blocks = torch.nn.ModuleList()
         layerDim = [] # CHW
+        is1Dconv = False
 
         print('\nNetwork Architecture:')
         # print('=====================')
@@ -380,6 +381,8 @@ class Network(torch.nn.Module):
                                     + "'layer' feild.")
                 # print(self.inputShape)
                 print(self._tableStr('Input', layerDim[2], layerDim[1], layerDim[0]))
+                if layerDim[1] == 1:
+                    is1Dconv = True
             else:
                 # print(i, layer['dim'], self._layerType(layer['dim']))
                 if layerType == 'conv':
@@ -396,12 +399,20 @@ class Network(torch.nn.Module):
                     maxDelay    = layer['maxDelay'] if 'maxDelay' in layer.keys() else 62
                     # print(i, inChannels, outChannels, kernelSize, stride, padding, dilation, groups, weightScale)
                     
-                    blocks.append(convBlock(slayer, inChannels, outChannels, kernelSize, stride, padding, 
-                                            dilation, groups, weightScale, self.preHookFx, self.weightNorm, 
-                                            delay, maxDelay, self.countLog))
-                    layerDim[0] = outChannels
-                    layerDim[1] = int(np.floor((layerDim[1] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
-                    layerDim[2] = int(np.floor((layerDim[2] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
+                    if is1Dconv is False:
+                        blocks.append(convBlock(slayer, inChannels, outChannels, kernelSize, stride, padding, 
+                                                dilation, groups, weightScale, self.preHookFx, self.weightNorm, 
+                                                delay, maxDelay, self.countLog))
+                        layerDim[0] = outChannels
+                        layerDim[1] = int(np.floor((layerDim[1] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
+                        layerDim[2] = int(np.floor((layerDim[2] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
+                    else:
+                        blocks.append(convBlock(slayer, inChannels, outChannels, [1, kernelSize], [1, stride], [0, padding], 
+                                                [1, dilation], groups, weightScale, self.preHookFx, self.weightNorm, 
+                                                delay, maxDelay, self.countLog))
+                        layerDim[0] = outChannels
+                        layerDim[1] = 1
+                        layerDim[2] = int(np.floor((layerDim[2] + 2*padding - dilation * (kernelSize - 1) - 1)/stride + 1))
                     self.layerDims.append(layerDim.copy())
 
                     print(self._tableStr('Conv', layerDim[2], layerDim[1], layerDim[0], kernelSize, stride, padding, 
