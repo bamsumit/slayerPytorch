@@ -39,7 +39,7 @@ class Assistant:
         self.net = net
         self.module = net.module if dataParallel is True else net
         self.error = error
-        self.device = net.slayer.srmKernel.device
+        self.device = self.module.slayer.srmKernel.device
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.stats = stats
