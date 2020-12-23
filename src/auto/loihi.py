@@ -616,6 +616,8 @@ class Network(torch.nn.Module):
                     # print(i, key, value)
                     layer.create_dataset('{}/neuron/{}'.format(i+1, key), data=value)
 
+        h.close()
+
 
     def loadModel(self, fname):
         '''

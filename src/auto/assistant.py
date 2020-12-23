@@ -94,7 +94,7 @@ class Assistant:
 
                 self.stats.print(
                     epoch, i, 
-                    (datetime.now() - tSt).total_seconds() / (i+1) / input.shape[0],
+                    (datetime.now() - tSt).total_seconds() / (i+1) / self.trainLoader.batch_size,
                     header= headerList,
                 )
 
@@ -175,7 +175,7 @@ class Assistant:
 
                 self.stats.print(
                     epoch, i, 
-                    (datetime.now() - tSt).total_seconds() / (i+1) / input.shape[0],
+                    (datetime.now() - tSt).total_seconds() / (i+1) / self.testLoader.batch_size,
                     header= headerList,
                 )
 
