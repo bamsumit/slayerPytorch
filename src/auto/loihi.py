@@ -602,7 +602,7 @@ class Network(torch.nn.Module):
             layer.create_dataset('{}/shape'.format(i+1), data=np.array(self.layerDims[i]))
             
             if block.weightOp is not None:
-                if self.weightNorm is True:
+                if self.weightNorm is True and layerType != 'pool':
                     torch.nn.utils.remove_weight_norm(block.weightOp, name='weight')
                 layer.create_dataset('{}/weight'.format(i+1), data=qWeights(block.weightOp.weight))
             
@@ -643,10 +643,10 @@ class Network(torch.nn.Module):
             assert layerTypeStr == blockTypeStr, 'The layer typestring do not match. Found {} in network and {} in file.'.format(blockTypeStr, layerTypeStr)
 
             if block.weightOp is not None:
-                if self.weightNorm is True:
+                if self.weightNorm is True and layerTypeStr != 'pool':
                     torch.nn.utils.remove_weight_norm(block.weightOp, name='weight')
                 block.weightOp.weight.data = torch.FloatTensor(h['layer'][idxKey]['weight'][()]).reshape(block.weightOp.weight.shape).to(block.weightOp.weight.device)
-                if self.weightNorm is True:
+                if self.weightNorm is True and layerTypeStr != 'pool':
                     block.weightOp = torch.nn.utils.weight_norm(block.weightOp, name='weight')
 
             if block.delayOp is not None:
