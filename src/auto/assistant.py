@@ -50,7 +50,7 @@ class Assistant:
         self.trainLoader = trainLoader
         self.testLoader = testLoader
 
-    def train(self, epoch=0, breakIter = None):
+    def train(self, epoch=0, breakIter = None, printLog=True):
         '''
         Training assistant fucntion.
 
@@ -85,7 +85,7 @@ class Assistant:
             self.optimizer.step()
             self.module.clamp()
 
-            if self.stats is not None and i%self.printInterval == 0:
+            if self.stats is not None and i%self.printInterval == 0 and printLog is True:
                 headerList = ['[{}/{} ({:.0f}%)]'.format(i*self.trainLoader.batch_size, len(self.trainLoader.dataset), 100.0*i/len(self.trainLoader))]
                 if self.module.countLog is True:
                     headerList.append('Spike count: ' + ', '.join(['{}'.format(int(c)) for c in torch.sum(count, dim=0).tolist()]))
@@ -104,7 +104,7 @@ class Assistant:
             if self.scheduler is not None:
                 self.scheduler.step()
 
-    def test(self, epoch=0, evalLoss=True, slidingWindow=None, breakIter = None):
+    def test(self, epoch=0, evalLoss=True, slidingWindow=None, breakIter = None, printLog=True):
         '''
         Testing assistant fucntion.
 
@@ -166,7 +166,7 @@ class Assistant:
                         else:
                             self.stats.testing.lossSum += predictions.shape[0] * (1 if self.lossScale is None else self.lossScale)
 
-            if self.stats is not None and i%self.printInterval == 0:
+            if self.stats is not None and i%self.printInterval == 0 and printLog is True:
                 headerList = ['[{}/{} ({:.0f}%)]'.format(i*self.testLoader.batch_size, len(self.testLoader.dataset), 100.0*i/len(self.testLoader))]
                 if self.module.countLog is True:
                     headerList.append('Spike count: ' + ', '.join(['{}'.format(int(c)) for c in torch.sum(count, dim=0).tolist()]))
