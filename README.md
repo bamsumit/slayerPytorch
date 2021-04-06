@@ -30,7 +30,7 @@ In _Advances in Neural Information Processing Systems_, pp. 1417-1426. 2018.
 
 ## What is this repository for? ##
 
-* For learning weight (delay learning not yet implemented) parameters of a multilayer spiking neural network.
+* For learning synaptic weight and axonal delay parameters of a multilayer spiking neural network.
 * Natively handles multiple spikes in each layer and error backpropagation through the layers. 
 * Version 0.1
 
