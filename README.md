@@ -37,9 +37,11 @@ In _Advances in Neural Information Processing Systems_, pp. 1417-1426. 2018.
 ## Requirements
 Python 3 with the following packages installed:
 
-* PyTorch (tested with version 1.0.1.post2)
+* PyTorch 
 * numpy
+* matplotlib
 * pyyaml
+* h5py
 
 A **CUDA** enabled **GPU** is required for training any model.
 No plans on CPU only implementation yet.
