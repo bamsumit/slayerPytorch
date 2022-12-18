@@ -3,5 +3,5 @@ numpy==1.22.0
 pickleshare==0.7.5
 PyYAML==5.4.1
 h5py==3.2.1
-torch==1.7.1
+torch==1.13.1
 torchvision==0.8.2
