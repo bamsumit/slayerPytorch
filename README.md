@@ -28,6 +28,8 @@ In _Advances in Neural Information Processing Systems_, pp. 1417-1426. 2018.
 }
 ```
 
+# SLAYER 2.0, an enhanced version of SLAYER with extended feature support is publically available in [https://github.com/lava-nc/lava-dl](https://github.com/lava-nc/lava-dl) #
+
 ## What is this repository for? ##
 
 * For learning synaptic weight and axonal delay parameters of a multilayer spiking neural network.
