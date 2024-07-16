@@ -5,5 +5,5 @@ PyYAML==5.4.1
 h5py==3.2.1
 torch==1.13.1
 torchvision==0.8.2
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
+setuptools>=70.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
 wheel>=0.38.0 # not directly required, pinned by Snyk to avoid a vulnerability
